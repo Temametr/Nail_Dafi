@@ -185,6 +185,7 @@ function switchBookingTab(filter) {
     renderClientBookings(); 
 }
 
+// ОНОВЛЕНИЙ ДИЗАЙН КАРТОК КЛІЄНТА (Стиль панелі майстра)
 function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
     
@@ -204,17 +205,34 @@ function renderClientBookings() {
     container.innerHTML = filteredBookings.map(b => {
         const isPending = b.status === 'В очереди';
         const statusData = getStatusData(b.status);
+        
+        // Знаходимо ім'я майстра по ID
+        const masterObj = state.masters.find(m => m.id.toString() === (b.masterId || '').toString());
+        const masterName = masterObj ? masterObj.name : 'Майстер';
+
         return `
-            <div class="glass p-5 rounded-2xl mb-4 shadow-sm border border-slate-100">
+            <div class="glass p-5 rounded-2xl mb-4 border-l-4 ${isPending ? 'border-yellow-400' : 'border-transparent'} shadow-sm">
                 <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <div class="font-bold text-slate-800 text-base mb-1">${b.service}</div>
-                        <div class="text-sm text-slate-500"><span class="font-semibold text-slate-700">${b.date}</span> • <span class="font-semibold text-slate-700">${formatDisplayTime(b.time)}</span></div>
+                    <div class="w-full pr-3">
+                        <div class="font-bold text-slate-800 text-base mb-3 leading-tight">Запис на ${b.service}</div>
+                        <div class="text-sm text-slate-600 mb-1">Обрана дата: <span class="font-semibold text-slate-800">${b.date}</span></div>
+                        <div class="text-sm text-slate-600 mb-3">Обраний час: <span class="font-semibold text-slate-800">${formatDisplayTime(b.time)}</span></div>
+                        <div class="text-sm font-medium text-slate-700 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center text-xs shadow-sm">💅</span>Майстер: ${masterName}
+                        </div>
                     </div>
-                    <span class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg shrink-0 ${statusData.color}">${statusData.text}</span>
+                    <span class="text-xs font-bold px-2 py-1 rounded-lg shrink-0 ${statusData.color}">${statusData.text}</span>
                 </div>
-                ${b.cancelReason ? `<div class="text-xs text-red-500 mt-2 bg-red-50 p-2.5 rounded-xl border border-red-100">Причина: ${b.cancelReason}</div>` : ''}
-                ${isPending ? `<button onclick="changeBookingStatus('${b.id}', 'Отменено', 'Скасовано клієнтом')" class="w-full mt-3 py-2.5 bg-slate-100/80 text-slate-600 hover:bg-slate-200 rounded-xl text-sm font-semibold active:scale-95 transition-all">Скасувати візит</button>` : ''}
+                
+                ${b.cancelReason ? `<div class="text-xs text-red-500 mt-3 bg-red-50 p-2 rounded-lg">Причина: ${b.cancelReason}</div>` : ''}
+                
+                ${isPending ? `
+                    <div class="mt-3 pt-3 border-t border-slate-200/50">
+                        <button onclick="changeBookingStatus('${b.id}', 'Отменено', 'Скасовано клієнтом')" class="w-full py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-sm font-semibold active:scale-95 transition-all shadow-sm border border-slate-200/60">
+                            Скасувати візит
+                        </button>
+                    </div>
+                ` : ''}
             </div>
         `;
     }).join('');
@@ -284,14 +302,11 @@ function confirmCancelAdmin() {
     closeCancelModal();
 }
 
-// === ОНОВЛЕНИЙ ДИЗАЙН КАРТОК СТВОРЕННЯ ЗАПИСУ ===
-
 function renderServices() {
     const list = document.getElementById('services-list');
     list.innerHTML = state.services.map(s => `
         <div onclick="selectService(${s.id})" class="group bg-white/80 backdrop-blur-md p-4 rounded-3xl mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60">
             
-            <!-- Ліва частина (Іконка + Текст) -->
             <div class="flex items-center gap-3 flex-1 min-w-0 pr-2">
                 <div class="shrink-0 w-12 h-12 bg-rose-100/60 rounded-2xl flex items-center justify-center text-rose-500 text-xl shadow-inner">
                     💅
@@ -305,7 +320,6 @@ function renderServices() {
                 </div>
             </div>
 
-            <!-- Права частина (Ціна + Стрілочка в одному ряду) -->
             <div class="flex items-center gap-2 shrink-0">
                 <div class="text-rose-600 font-extrabold text-lg whitespace-nowrap">${s.price} ₴</div>
                 <div class="text-slate-300">
