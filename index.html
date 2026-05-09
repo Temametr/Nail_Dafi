@@ -4,12 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Запис на манікюр TMA</title>
-    <!-- Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js для графіків -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         .glass {
@@ -31,17 +27,12 @@
 
     <div id="app" class="max-w-md mx-auto p-4">
         
-        <!-- Завантажувач -->
         <div id="loader" class="flex flex-col items-center justify-center h-64">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
             <p class="mt-4 text-slate-500">Завантаження магії...</p>
         </div>
 
-        <!-- ========================================== -->
-        <!--             ЕКРАН КЛІЄНТА                  -->
-        <!-- ========================================== -->
         <div id="client-screen" class="hidden-step fade-in">
-            <!-- Вкладка: Головна -->
             <div id="tab-home" class="tab-content pt-24">
                 <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-white border-b border-slate-200 px-4 py-4 shadow-sm">
                     <h1 class="text-2xl font-bold text-slate-900">Привіт, <span id="user-name">Гостю</span>! 👋</h1>
@@ -64,7 +55,6 @@
                 </div>
             </div>
 
-            <!-- Вкладка: Візити -->
             <div id="tab-bookings" class="tab-content hidden-step pt-36">
                 <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-white shadow-sm">
                     <div class="px-4 py-4 border-b border-slate-200">
@@ -78,7 +68,6 @@
                 <div id="my-bookings-list" class="space-y-3 text-sm"></div>
             </div>
 
-            <!-- Вкладка: Профіль -->
             <div id="tab-profile" class="tab-content hidden-step pt-24">
                 <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-white border-b border-slate-200 px-4 py-4 shadow-sm">
                     <h1 class="text-2xl font-bold text-slate-900">Особистий кабінет 👤</h1>
@@ -99,56 +88,50 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!--             ЕКРАН МАЙСТРА (АДМІН)          -->
-        <!-- ========================================== -->
         <div id="admin-screen" class="hidden-step fade-in">
             
-            <!-- Вкладка: Головна (Дашборд) -->
             <div id="admin-tab-home" class="admin-tab-content pt-24">
                 <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-white border-b border-slate-200 px-4 py-4 shadow-sm">
                     <h1 class="text-xl font-bold text-slate-900 truncate">Панель майстра: <span id="admin-header-name"></span></h1>
                     <p class="text-slate-500 text-sm">Статистика та аналітика</p>
                 </header>
                 
-                <div class="flex gap-2 mb-4 bg-slate-200/50 p-1 rounded-xl">
-                    <button onclick="renderAdminStats('day')" id="stat-btn-day" class="flex-1 py-1.5 bg-white shadow-sm rounded-lg text-sm font-bold text-slate-800 transition-all">Сьогодні</button>
-                    <button onclick="renderAdminStats('week')" id="stat-btn-week" class="flex-1 py-1.5 text-slate-500 rounded-lg text-sm font-bold transition-all">Тиждень</button>
-                    <button onclick="renderAdminStats('month')" id="stat-btn-month" class="flex-1 py-1.5 text-slate-500 rounded-lg text-sm font-bold transition-all">Місяць</button>
+                <div class="flex gap-2 mb-6 bg-slate-200/50 p-1 rounded-xl">
+                    <button onclick="renderAdminStats('day')" id="stat-btn-day" class="flex-1 py-2 bg-white shadow-sm rounded-lg text-sm font-bold text-slate-800 transition-all">Сьогодні</button>
+                    <button onclick="renderAdminStats('week')" id="stat-btn-week" class="flex-1 py-2 text-slate-500 rounded-lg text-sm font-bold transition-all">Тиждень</button>
+                    <button onclick="renderAdminStats('month')" id="stat-btn-month" class="flex-1 py-2 text-slate-500 rounded-lg text-sm font-bold transition-all">Місяць</button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="glass bg-white/90 p-4 rounded-3xl shadow-sm text-center">
-                        <div class="text-3xl font-extrabold text-rose-500" id="stat-count">0</div>
-                        <div class="text-xs font-semibold text-slate-500 mt-1 uppercase">Записів</div>
+                <div class="grid grid-cols-3 gap-2 mb-6">
+                    <div class="glass bg-white/90 p-4 rounded-3xl shadow-sm text-center border border-slate-100 flex flex-col justify-center">
+                        <div class="text-2xl font-extrabold text-slate-800" id="stat-count">0</div>
+                        <div class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">Записів</div>
                     </div>
-                    <div class="glass bg-white/90 p-4 rounded-3xl shadow-sm text-center">
-                        <div class="text-xl font-extrabold text-teal-600 mt-1" id="stat-revenue">0 ₴</div>
-                        <div class="text-xs font-semibold text-slate-500 mt-1.5 uppercase">Дохід</div>
+                    <div class="glass bg-white/90 p-4 rounded-3xl shadow-sm text-center border border-slate-100 flex flex-col justify-center">
+                        <div class="text-xl font-extrabold text-teal-600" id="stat-revenue">0 ₴</div>
+                        <div class="text-[10px] font-bold text-slate-500 mt-1.5 uppercase tracking-wider">Дохід</div>
                     </div>
-                </div>
-
-                <div class="glass bg-white/90 p-4 rounded-3xl shadow-sm">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">Динаміка записів</h3>
-                    <canvas id="statsChart" class="w-full h-48"></canvas>
+                    <div class="glass bg-white/90 p-4 rounded-3xl shadow-sm text-center border border-slate-100 flex flex-col justify-center">
+                        <div class="text-2xl font-extrabold text-rose-500" id="stat-cancelled">0</div>
+                        <div class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">Скасовано</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Вкладка: Записи -->
             <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-36">
                 <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-white shadow-sm">
                     <div class="px-4 py-4 border-b border-slate-200">
                         <h1 class="text-xl font-bold text-slate-900 truncate">Панель майстра: <span id="admin-header-name-2"></span></h1>
                     </div>
                     <div class="flex">
-                        <button onclick="switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-sm font-bold border-b-2 border-rose-500 text-rose-600">Активні</button>
+                        <button onclick="switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-sm font-bold border-b-2 border-teal-500 text-teal-600">Активні</button>
                         <button onclick="switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400">Скасовані</button>
                     </div>
                 </header>
+                
                 <div id="admin-bookings-list" class="space-y-4"></div>
             </div>
 
-            <!-- Вкладка: Профіль -->
             <div id="admin-tab-profile" class="admin-tab-content hidden-step pt-24">
                 <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-white border-b border-slate-200 px-4 py-4 shadow-sm">
                     <h1 class="text-xl font-bold text-slate-900 truncate">Панель майстра: <span id="admin-header-name-3"></span></h1>
@@ -165,11 +148,6 @@
 
     </div>
 
-    <!-- ========================================== -->
-    <!--             НАВІГАЦІЙНІ БАРИ               -->
-    <!-- ========================================== -->
-    
-    <!-- Навбар Клієнта -->
     <nav id="client-bottom-nav" class="hidden-step fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-2 pb-6 z-50 max-w-md mx-auto shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
         <button onclick="switchTab('client', 'home')" id="client-nav-home" class="flex flex-col items-center justify-center p-2 text-rose-500 transition-colors w-20">
             <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3l9-8z"/></svg>
@@ -185,7 +163,6 @@
         </button>
     </nav>
 
-    <!-- Навбар Майстра -->
     <nav id="admin-bottom-nav" class="hidden-step fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-2 pb-6 z-50 max-w-md mx-auto shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
         <button onclick="switchTab('admin', 'home')" id="admin-nav-home" class="flex flex-col items-center justify-center p-2 text-teal-600 transition-colors w-20">
             <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
@@ -201,7 +178,6 @@
         </button>
     </nav>
 
-    <!-- Модальне вікно скасування -->
     <div id="cancel-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-6 z-50">
         <div class="bg-white rounded-3xl p-6 w-full max-w-sm space-y-4">
             <h3 class="font-bold text-lg">Причина скасування</h3>
