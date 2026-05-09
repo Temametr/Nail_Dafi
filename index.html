@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nail Booking TMA</title>
+    <!-- Подключаем Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Tailwind CSS через CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Стеклянный морфизм */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        /* Анимация появления */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Скрытие элементов */
+        .hidden-step { display: none; }
+        
+        /* Кастомные стили для кнопок времени */
+        .time-slot:disabled {
+            background: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-rose-100 to-teal-50 min-h-screen font-sans antialiased text-slate-800">
+
+    <!-- Контейнер приложения -->
+    <div id="app" class="max-w-md mx-auto p-4 pb-24">
+        
+        <!-- Загрузчик (Лоадер) -->
+        <div id="loader" class="flex flex-col items-center justify-center h-64">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+            <p class="mt-4 text-slate-500">Загрузка магии...</p>
+        </div>
+
+        <!-- ГЛАВНЫЙ ЭКРАН (КЛИЕНТ) -->
+        <div id="client-screen" class="hidden-step fade-in">
+            <header class="mb-6">
+                <h1 class="text-2xl font-bold text-slate-900">Привет, <span id="user-name">Гость</span>!</h1>
+                <p class="text-slate-500 text-sm">Запишись на идеальный маникюр</p>
+            </header>
+
+            <!-- Кнопки переключения (Мои записи / Новая запись) -->
+            <div class="flex gap-2 mb-6">
+                <button onclick="showStep('step-booking')" class="flex-1 py-3 px-4 glass rounded-2xl text-sm font-semibold active:scale-95 transition-all">Новая запись</button>
+                <button onclick="showStep('step-my-bookings')" class="flex-1 py-3 px-4 glass rounded-2xl text-sm font-semibold active:scale-95 transition-all">Мои визиты</button>
+            </div>
+
+            <!-- ШАГ 1: ВЫБОР УСЛУГИ -->
+            <div id="step-booking" class="step-content space-y-4">
+                <h3 class="font-bold text-lg px-1">Выберите услугу</h3>
+                <div id="services-list" class="space-y-3">
+                    <!-- Сюда JS вставит услуги -->
+                </div>
+            </div>
+
+            <!-- ШАГ 2: ВЫБОР МАСТЕРА -->
+            <div id="step-master" class="step-content hidden-step space-y-4">
+                <h3 class="font-bold text-lg px-1">Выберите мастера</h3>
+                <div id="masters-list" class="space-y-3">
+                    <!-- Сюда JS вставит мастеров -->
+                </div>
+            </div>
+
+            <!-- ШАГ 3: ВЫБОР ДАТЫ И ВРЕМЕНИ -->
+            <div id="step-datetime" class="step-content hidden-step space-y-4">
+                <h3 class="font-bold text-lg px-1">Дата и время</h3>
+                <input type="date" id="date-input" class="w-full p-4 glass rounded-2xl outline-none focus:ring-2 ring-rose-300 transition-all mb-4">
+                <div id="time-slots" class="grid grid-cols-3 gap-2">
+                    <!-- Сюда JS вставит слоты времени -->
+                </div>
+            </div>
+
+            <!-- МОИ ЗАПИСИ -->
+            <div id="step-my-bookings" class="step-content hidden-step space-y-4">
+                <h3 class="font-bold text-lg px-1">Ваши записи</h3>
+                <div id="my-bookings-list" class="space-y-3">
+                    <!-- Список записей клиента -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ЭКРАН АДМИНИСТРАТОРА -->
+        <div id="admin-screen" class="hidden-step fade-in">
+            <header class="mb-6">
+                <h1 class="text-2xl font-bold text-slate-900">Панель мастера</h1>
+                <p class="text-slate-500 text-sm">Управление записями на сегодня</p>
+            </header>
+            <div id="admin-bookings-list" class="space-y-4">
+                <!-- Список всех записей для мастера -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Модальное окно для отмены (Админ) -->
+    <div id="cancel-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-6 z-50">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm space-y-4">
+            <h3 class="font-bold text-lg">Причина отмены</h3>
+            <textarea id="cancel-reason" class="w-full p-4 bg-slate-100 rounded-2xl outline-none h-32" placeholder="Напишите клиенту, почему не получается принять..."></textarea>
+            <div class="flex gap-2">
+                <button onclick="closeCancelModal()" class="flex-1 py-3 rounded-xl bg-slate-200 font-semibold">Назад</button>
+                <button id="confirm-cancel-btn" class="flex-1 py-3 rounded-xl bg-red-500 text-white font-semibold">Отменить</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
