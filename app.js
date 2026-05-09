@@ -1,9 +1,9 @@
 // Ініціалізація Telegram WebApp
 const tg = window.Telegram.WebApp;
-tg.expand(); // Розширюємо на весь екран
+tg.expand();
 tg.ready();
 
-// УВАГА: Встав сюди свій URL від Google Apps Script (який закінчується на /exec)
+// УВАГА: Встав сюди свій URL від Google Apps Script
 const API_URL = "https://script.google.com/macros/s/AKfycbxlQQ5e4FzxLUyAX6OSxfKMdjLqU_1nbfTwMpxC_3Tm-Ga_VvnVScIklojzwdoQ-6VBIw/exec";
 
 // Глобальний стан додатку
@@ -18,18 +18,22 @@ let state = {
     isAdmin: false
 };
 
+// Змінна для модального вікна
+let currentCancelBookingId = null;
+
 // Запуск при завантаженні сторінки
 window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('user-name').innerText = state.user.first_name;
-    
-    // Налаштування кольору кнопки Telegram під дизайн
     tg.MainButton.color = "#f43f5e"; 
+    
+    // Прив'язуємо кнопку скасування в модалці
+    document.getElementById('confirm-cancel-btn').addEventListener('click', confirmCancelAdmin);
     
     await loadInitialData();
 });
 
 /**
- * Завантаження послуг та майстрів з бази
+ * Базове завантаження
  */
 async function loadInitialData() {
     try {
@@ -38,26 +42,23 @@ async function loadInitialData() {
         
         state.services = data.services;
         state.masters = data.masters;
-
-        // Перевіряємо, чи є користувач майстром (адміном)
         state.isAdmin = state.masters.some(m => m.id.toString() === state.user.id.toString());
 
         renderApp();
     } catch (e) {
-        tg.showAlert("Помилка завантаження даних: " + e.message);
+        tg.showAlert("Помилка завантаження даних.");
     } finally {
         document.getElementById('loader').classList.add('hidden');
     }
 }
 
 /**
- * Відображення інтерфейсу залежно від ролі
+ * Розподіл ролей
  */
 function renderApp() {
     if (state.isAdmin) {
         document.getElementById('admin-screen').classList.remove('hidden-step');
-        // loadAdminBookings(); // Цю функцію додамо на наступних етапах для адмінки
-        document.getElementById('admin-bookings-list').innerHTML = "<p class='text-slate-500'>Список записів з'явиться тут.</p>";
+        loadBookings('admin');
     } else {
         document.getElementById('client-screen').classList.remove('hidden-step');
         renderServices();
@@ -65,16 +66,19 @@ function renderApp() {
 }
 
 /**
- * Навігація по кроках
+ * Навігація
  */
 function showStep(stepId) {
     document.querySelectorAll('.step-content').forEach(s => s.classList.add('hidden-step'));
     document.getElementById(stepId).classList.remove('hidden-step');
 
-    // Керування кнопкою "Назад" від Telegram
+    if (stepId === 'step-my-bookings') {
+        loadBookings('client'); // Завантажуємо записи клієнта при переході на вкладку
+    }
+
     if (stepId === 'step-booking') {
         tg.BackButton.hide();
-        tg.MainButton.hide(); // Ховаємо головну кнопку на першому кроці
+        tg.MainButton.hide();
         state.selectedService = null;
         state.selectedMaster = null;
         state.selectedDate = null;
@@ -90,9 +94,165 @@ function showStep(stepId) {
     }
 }
 
+// === ЛОГІКА ЗАПИСІВ (НОВЕ) ===
+
 /**
- * КРОК 1: Відображення послуг
+ * Завантаження списку записів з бази
  */
+async function loadBookings(role) {
+    const containerId = role === 'admin' ? 'admin-bookings-list' : 'my-bookings-list';
+    document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-slate-500 animate-pulse">Оновлення списку...</div>';
+    
+    try {
+        const response = await fetch(`${API_URL}?action=getBookings&userId=${state.user.id}&role=${role}`);
+        const data = await response.json();
+        
+        if (role === 'admin') renderAdminBookings(data.bookings || []);
+        else renderClientBookings(data.bookings || []);
+    } catch (e) {
+        document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-red-500">Помилка мережі.</div>';
+    }
+}
+
+/**
+ * Отрисовка для КЛІЄНТА
+ */
+function renderClientBookings(bookings) {
+    const container = document.getElementById('my-bookings-list');
+    if (bookings.length === 0) {
+        container.innerHTML = "<div class='text-center py-4 text-slate-500'>У вас ще немає записів.</div>";
+        return;
+    }
+
+    container.innerHTML = bookings.map(b => {
+        const isPending = b.status === 'В очереди';
+        const statusData = getStatusData(b.status);
+        
+        return `
+            <div class="glass p-4 rounded-2xl mb-3">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <div class="font-bold text-slate-800">${b.date} • ${b.time}</div>
+                        <div class="text-sm text-slate-600">${b.service}</div>
+                    </div>
+                    <span class="text-xs font-bold px-2 py-1 rounded-lg ${statusData.color}">${statusData.text}</span>
+                </div>
+                ${b.cancelReason ? `<div class="text-xs text-red-500 mt-2 bg-red-50 p-2 rounded-lg">Причина: ${b.cancelReason}</div>` : ''}
+                
+                ${isPending ? `
+                    <button onclick="changeBookingStatus('${b.id}', 'Отменено', 'Скасовано клієнтом')" 
+                            class="w-full mt-3 py-2 bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold active:scale-95 transition-all">
+                        Скасувати запис
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Отрисовка для АДМІНА
+ */
+function renderAdminBookings(bookings) {
+    const container = document.getElementById('admin-bookings-list');
+    if (bookings.length === 0) {
+        container.innerHTML = "<div class='text-center py-4 text-slate-500'>Наразі записів немає.</div>";
+        return;
+    }
+
+    container.innerHTML = bookings.map(b => {
+        const isPending = b.status === 'В очереди';
+        const statusData = getStatusData(b.status);
+
+        return `
+            <div class="glass p-4 rounded-2xl mb-3 border-l-4 ${isPending ? 'border-yellow-400' : 'border-transparent'}">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <div class="font-bold text-slate-800 text-lg">${b.date} • ${b.time}</div>
+                        <div class="text-sm font-semibold text-slate-700 mt-1">👤 ${b.clientName}</div>
+                        <div class="text-xs text-slate-500">${b.service}</div>
+                    </div>
+                    <span class="text-xs font-bold px-2 py-1 rounded-lg ${statusData.color}">${statusData.text}</span>
+                </div>
+                
+                <a href="tg://user?id=${b.clientId}" class="inline-block px-3 py-1.5 bg-rose-100 text-rose-600 rounded-lg text-xs font-bold mt-2 active:scale-95 transition-all">
+                    ✉️ Написати клієнту
+                </a>
+                
+                ${b.cancelReason ? `<div class="text-xs text-red-500 mt-3 bg-red-50 p-2 rounded-lg">Причина: ${b.cancelReason}</div>` : ''}
+                
+                ${isPending ? `
+                    <div class="flex gap-2 mt-4 border-t border-slate-200/50 pt-3">
+                        <button onclick="changeBookingStatus('${b.id}', 'Выполнено')" class="flex-1 py-2.5 bg-teal-500 text-white rounded-xl text-sm font-semibold active:scale-95 transition-all shadow-sm">Виконано</button>
+                        <button onclick="openCancelModal('${b.id}')" class="flex-1 py-2.5 bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold active:scale-95 transition-all">Скасувати</button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Хелпер для статусів
+ */
+function getStatusData(dbStatus) {
+    if (dbStatus === 'В очереди') return { text: 'Очікує', color: 'text-yellow-600 bg-yellow-100' };
+    if (dbStatus === 'Выполнено') return { text: 'Виконано', color: 'text-teal-600 bg-teal-100' };
+    return { text: 'Скасовано', color: 'text-red-600 bg-red-100' };
+}
+
+/**
+ * Мережевий запит на зміну статусу
+ */
+async function changeBookingStatus(bookingId, newStatus, reason = "") {
+    tg.MainButton.showProgress();
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'updateStatus', bookingId, newStatus, reason })
+        });
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            tg.HapticFeedback.notificationOccurred('success'); // Вібрація
+            loadBookings(state.isAdmin ? 'admin' : 'client'); // Оновлюємо список
+        } else {
+            tg.showAlert('Помилка: ' + result.message);
+        }
+    } catch (e) {
+        tg.showAlert('Помилка з\'єднання. Спробуйте ще раз.');
+    } finally {
+        tg.MainButton.hideProgress();
+    }
+}
+
+// === ЛОГІКА МОДАЛЬНОГО ВІКНА (СКАСУВАННЯ АДМІНОМ) ===
+
+function openCancelModal(bookingId) {
+    currentCancelBookingId = bookingId;
+    document.getElementById('cancel-modal').classList.remove('hidden');
+    document.getElementById('cancel-modal').classList.add('flex');
+}
+
+function closeCancelModal() {
+    currentCancelBookingId = null;
+    document.getElementById('cancel-modal').classList.add('hidden');
+    document.getElementById('cancel-modal').classList.remove('flex');
+    document.getElementById('cancel-reason').value = '';
+}
+
+function confirmCancelAdmin() {
+    const reason = document.getElementById('cancel-reason').value.trim();
+    if (!reason) {
+        tg.showAlert("Будь ласка, вкажіть причину для клієнта.");
+        return;
+    }
+    changeBookingStatus(currentCancelBookingId, 'Отменено', reason);
+    closeCancelModal();
+}
+
+// === ІСНУЮЧИЙ КОД ДЛЯ СТВОРЕННЯ ЗАПИСУ (ЗБЕРІГАЄМО) ===
+
 function renderServices() {
     const list = document.getElementById('services-list');
     list.innerHTML = state.services.map(s => `
@@ -112,16 +272,11 @@ function selectService(id) {
     showStep('step-master');
 }
 
-/**
- * КРОК 2: Відображення майстрів
- */
 function renderMasters() {
     const list = document.getElementById('masters-list');
     list.innerHTML = state.masters.map(m => `
         <div onclick="selectMaster(${m.id})" class="glass p-4 rounded-2xl flex items-center gap-4 active:scale-95 transition-all cursor-pointer">
-            <div class="w-12 h-12 bg-rose-200 rounded-full flex items-center justify-center font-bold text-rose-600 shadow-sm">
-                ${m.name.charAt(0)}
-            </div>
+            <div class="w-12 h-12 bg-rose-200 rounded-full flex items-center justify-center font-bold text-rose-600 shadow-sm">${m.name.charAt(0)}</div>
             <div>
                 <div class="font-bold text-slate-800">${m.name}</div>
                 <div class="text-xs text-slate-500">Працює: ${m.workHours}</div>
@@ -136,13 +291,10 @@ function selectMaster(id) {
     showStep('step-datetime');
 }
 
-/**
- * КРОК 3: Розумний календар (генерація дат)
- */
 function renderCalendar() {
     const container = document.getElementById('date-scroll');
     container.innerHTML = '';
-    document.getElementById('time-slots').innerHTML = ''; // Очищаємо час
+    document.getElementById('time-slots').innerHTML = ''; 
     state.selectedDate = null;
     state.selectedTime = null;
     tg.MainButton.hide();
@@ -150,66 +302,41 @@ function renderCalendar() {
     const today = new Date();
     let datesHTML = '';
 
-    // Генеруємо наступні 14 днів
     for (let i = 0; i < 14; i++) {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
-        
-        const dayOfWeek = d.getDay(); // 0 - Нд, 1 - Пн ... 6 - Сб
-        
-        // Бізнес-правило: Пн (1) завжди вихідний + графік конкретного майстра
+        const dayOfWeek = d.getDay(); 
         const isWorkingDay = dayOfWeek !== 1 && state.selectedMaster.workDays.includes(dayOfWeek);
-        
-        const dateStr = d.toISOString().split('T')[0]; // Формат YYYY-MM-DD
+        const dateStr = d.toISOString().split('T')[0]; 
         const dayNames = ['Нд', 'Пн', 'Вв', 'Ср', 'Чт', 'Пт', 'Сб'];
         const dayName = dayNames[dayOfWeek];
         const dayNum = d.getDate();
 
-        // Якщо день робочий - кнопка активна, якщо ні - сіра і заблокована
         if (isWorkingDay) {
-            datesHTML += `
-                <button onclick="selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center transition-all glass active:scale-95 text-slate-800 border-2 border-transparent">
-                    <span class="text-xs uppercase font-medium">${dayName}</span>
-                    <span class="text-xl font-bold">${dayNum}</span>
-                </button>
-            `;
+            datesHTML += `<button onclick="selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center transition-all glass active:scale-95 text-slate-800 border-2 border-transparent"><span class="text-xs uppercase font-medium">${dayName}</span><span class="text-xl font-bold">${dayNum}</span></button>`;
         } else {
-            datesHTML += `
-                <button disabled class="flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center bg-slate-200 text-slate-400 opacity-60 cursor-not-allowed">
-                    <span class="text-xs uppercase">${dayName}</span>
-                    <span class="text-xl font-bold">${dayNum}</span>
-                </button>
-            `;
+            datesHTML += `<button disabled class="flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center bg-slate-200 text-slate-400 opacity-60 cursor-not-allowed"><span class="text-xs uppercase">${dayName}</span><span class="text-xl font-bold">${dayNum}</span></button>`;
         }
     }
     container.innerHTML = datesHTML;
 }
 
-/**
- * Обробка вибору дати та запит вільних слотів
- */
 async function selectDate(dateStr, btnElement) {
     state.selectedDate = dateStr;
     state.selectedTime = null;
     tg.MainButton.hide();
-
-    // Візуально виділяємо обрану дату
     document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('selected-item'));
     btnElement.classList.add('selected-item');
 
-    // Показуємо лоадер часу
     const timeSlotsContainer = document.getElementById('time-slots');
     const timeLoader = document.getElementById('time-loader');
     timeSlotsContainer.innerHTML = '';
     timeLoader.classList.remove('hidden');
 
     try {
-        // Запитуємо у бэкенда зайняті слоти
         const response = await fetch(`${API_URL}?action=getOccupiedSlots&date=${dateStr}&masterId=${state.selectedMaster.id}`);
         const data = await response.json();
-        const occupiedSlots = data.occupiedSlots || [];
-
-        renderTimeSlots(occupiedSlots);
+        renderTimeSlots(data.occupiedSlots || []);
     } catch (e) {
         tg.showAlert("Не вдалося завантажити розклад.");
     } finally {
@@ -217,69 +344,42 @@ async function selectDate(dateStr, btnElement) {
     }
 }
 
-/**
- * Генерація слотів часу (від 10:00 до 18:00)
- */
 function renderTimeSlots(occupiedSlots) {
     const container = document.getElementById('time-slots');
     let timeHTML = '';
-    
-    // Стандартні слоти часу
     const slots = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
 
     slots.forEach(time => {
-        // Перевіряємо, чи повернув Google Sheets цей час як зайнятий
         const isOccupied = occupiedSlots.some(occTime => {
-            // Форматуємо час з бази (може прийти як повна дата), беремо тільки HH:mm
             const dateObj = new Date(occTime);
             if (!isNaN(dateObj)) {
                 const h = dateObj.getUTCHours().toString().padStart(2, '0');
                 const m = dateObj.getUTCMinutes().toString().padStart(2, '0');
                 return `${h}:${m}` === time;
             }
-            return occTime.includes(time); // Запасний варіант, якщо текст
+            return occTime.includes(time);
         });
 
         if (isOccupied) {
-            timeHTML += `
-                <button disabled class="py-3 rounded-xl bg-slate-200 text-slate-400 line-through text-sm font-semibold cursor-not-allowed">
-                    ${time}
-                </button>
-            `;
+            timeHTML += `<button disabled class="py-3 rounded-xl bg-slate-200 text-slate-400 line-through text-sm font-semibold cursor-not-allowed">${time}</button>`;
         } else {
-            timeHTML += `
-                <button onclick="selectTime('${time}', this)" class="time-btn py-3 rounded-xl glass text-slate-800 text-sm font-semibold active:scale-95 transition-all border-2 border-transparent">
-                    ${time}
-                </button>
-            `;
+            timeHTML += `<button onclick="selectTime('${time}', this)" class="time-btn py-3 rounded-xl glass text-slate-800 text-sm font-semibold active:scale-95 transition-all border-2 border-transparent">${time}</button>`;
         }
     });
-
     container.innerHTML = timeHTML;
 }
 
-/**
- * Вибір часу та активація кнопки Telegram
- */
 function selectTime(time, btnElement) {
     state.selectedTime = time;
-
-    // Виділяємо обраний час
     document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('selected-item'));
     btnElement.classList.add('selected-item');
-
-    // Показуємо головну кнопку підтвердження від Telegram
     tg.MainButton.text = `Підтвердити запис на ${time}`;
     tg.MainButton.show();
     tg.MainButton.onClick(submitBooking);
 }
 
-/**
- * Відправка даних на бэкенд
- */
 async function submitBooking() {
-    tg.MainButton.showProgress(); // Анімація завантаження на кнопці
-
+    tg.MainButton.showProgress();
     const bookingData = {
         action: 'createBooking',
         date: state.selectedDate,
@@ -299,8 +399,9 @@ async function submitBooking() {
         const result = await response.json();
 
         if (result.status === 'success') {
+            tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert('Супер! Ваш запис успішно створено 🎉', () => {
-                tg.close(); // Закриваємо міні-апп після успішного запису
+                showStep('step-my-bookings'); // Замість закриття перекидаємо у список візитів
             });
         } else {
             tg.showAlert('Помилка: ' + result.message);
