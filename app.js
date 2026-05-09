@@ -16,8 +16,8 @@ let state = {
     selectedDate: null,
     selectedTime: null,
     isAdmin: false,
-    clientBookings: [], // Кеш для миттєвого сортування візитів
-    currentBookingFilter: 'active' // За замовчуванням показуємо підтверджені
+    clientBookings: [], 
+    currentBookingFilter: 'active' 
 };
 
 let currentCancelBookingId = null;
@@ -143,7 +143,6 @@ async function loadBookings(role, isSilent = false) {
         if (role === 'admin') {
             renderAdminBookings(data.bookings || []);
         } else {
-            // Кешуємо записи клієнта для миттєвого сортування
             state.clientBookings = data.bookings || [];
             renderClientBookings();
         }
@@ -169,7 +168,6 @@ function getStatusData(dbStatus) {
     return { text: 'Скасовано', color: 'text-red-600 bg-red-100' };
 }
 
-// НОВА ФУНКЦІЯ: Перемикання вкладок активних/скасованих візитів
 function switchBookingTab(filter) {
     state.currentBookingFilter = filter;
     
@@ -184,14 +182,12 @@ function switchBookingTab(filter) {
         btnActive.className = "flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 transition-colors";
     }
     
-    renderClientBookings(); // Перемальовуємо миттєво з кешу
+    renderClientBookings(); 
 }
 
-// ОНОВЛЕНА ФУНКЦІЯ: Відображає записи залежно від обраного фільтру
 function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
     
-    // Фільтруємо записи з кешу
     const filteredBookings = state.clientBookings.filter(b => {
         if (state.currentBookingFilter === 'active') {
             return b.status === 'В очереди' || b.status === 'Выполнено';
@@ -288,16 +284,30 @@ function confirmCancelAdmin() {
     closeCancelModal();
 }
 
-// === ІСНУЮЧИЙ КОД ДЛЯ СТВОРЕННЯ ЗАПИСУ ===
+// === ОНОВЛЕНИЙ СУЧАСНИЙ ДИЗАЙН КАРТОК СТВОРЕННЯ ЗАПИСУ ===
+
 function renderServices() {
     const list = document.getElementById('services-list');
     list.innerHTML = state.services.map(s => `
-        <div onclick="selectService(${s.id})" class="glass p-4 rounded-2xl flex justify-between items-center active:scale-95 transition-all cursor-pointer shadow-sm">
-            <div>
-                <div class="font-bold text-slate-800">${s.name}</div>
-                <div class="text-xs text-slate-500 mt-1">${s.duration} хв</div>
+        <div onclick="selectService(${s.id})" class="group bg-white/80 backdrop-blur-md p-5 rounded-3xl mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-rose-100/60 rounded-2xl flex items-center justify-center text-rose-500 text-xl shadow-inner">
+                    💅
+                </div>
+                <div>
+                    <div class="font-bold text-slate-800 text-base leading-tight">${s.name}</div>
+                    <div class="flex items-center gap-1 text-xs text-slate-500 mt-1 font-medium">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        ${s.duration} хв
+                    </div>
+                </div>
             </div>
-            <div class="text-rose-600 font-bold bg-rose-50 px-3 py-1.5 rounded-lg">${s.price} ₴</div>
+            <div class="flex flex-col items-end">
+                <div class="text-rose-600 font-extrabold text-lg">${s.price} ₴</div>
+                <div class="text-slate-300 mt-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+            </div>
         </div>
     `).join('');
 }
@@ -311,11 +321,19 @@ function selectService(id) {
 function renderMasters() {
     const list = document.getElementById('masters-list');
     list.innerHTML = state.masters.map(m => `
-        <div onclick="selectMaster('${m.id}')" class="glass p-4 rounded-2xl flex items-center gap-4 active:scale-95 transition-all cursor-pointer shadow-sm">
-            <div class="w-14 h-14 bg-gradient-to-br from-rose-200 to-rose-100 rounded-full flex items-center justify-center font-bold text-rose-600 text-xl shadow-inner">${m.name.charAt(0)}</div>
-            <div>
-                <div class="font-bold text-slate-800 text-lg">${m.name}</div>
-                <div class="text-xs text-slate-500 mt-0.5">Працює: ${m.workHours}</div>
+        <div onclick="selectMaster('${m.id}')" class="group bg-white/80 backdrop-blur-md p-5 rounded-3xl mb-4 flex items-center justify-between active:scale-95 transition-all duration-300 cursor-pointer shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60">
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <div class="w-16 h-16 bg-gradient-to-br from-rose-100 to-teal-50 rounded-full flex items-center justify-center font-bold text-teal-700 text-2xl shadow-inner border border-white">${m.name.charAt(0)}</div>
+                    <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 border-2 border-white rounded-full shadow-sm"></div>
+                </div>
+                <div>
+                    <div class="font-bold text-slate-800 text-lg">${m.name}</div>
+                    <div class="text-xs text-slate-500 mt-1 font-medium bg-slate-100 px-2 py-1 rounded-lg inline-block">Часи роботи: ${m.workHours}</div>
+                </div>
+            </div>
+            <div class="text-slate-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </div>
         </div>
     `).join('');
@@ -352,10 +370,11 @@ function renderCalendar() {
         const dayName = dayNames[dayOfWeek];
         const dayNum = d.getDate();
 
+        // Оновлений дизайн кнопок дат (більш круглі та м'які)
         if (isWorkingDay) {
-            datesHTML += `<button onclick="selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center transition-all glass active:scale-95 text-slate-800 border-2 border-transparent shadow-sm"><span class="text-xs uppercase font-medium">${dayName}</span><span class="text-xl font-bold">${dayNum}</span></button>`;
+            datesHTML += `<button onclick="selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-16 h-22 py-3 rounded-3xl flex flex-col items-center justify-center transition-all bg-white/80 backdrop-blur-sm active:scale-95 text-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/80"><span class="text-[10px] uppercase font-bold text-slate-400 mb-1">${dayName}</span><span class="text-2xl font-extrabold text-slate-800">${dayNum}</span></button>`;
         } else {
-            datesHTML += `<button disabled class="flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center bg-slate-200/60 text-slate-400 opacity-60 cursor-not-allowed"><span class="text-xs uppercase">${dayName}</span><span class="text-xl font-bold">${dayNum}</span></button>`;
+            datesHTML += `<button disabled class="flex-shrink-0 w-16 h-22 py-3 rounded-3xl flex flex-col items-center justify-center bg-slate-100/50 text-slate-400 opacity-50 cursor-not-allowed border border-transparent"><span class="text-[10px] uppercase font-bold mb-1">${dayName}</span><span class="text-2xl font-extrabold">${dayNum}</span></button>`;
         }
     }
     container.innerHTML = datesHTML;
@@ -365,8 +384,21 @@ async function selectDate(dateStr, btnElement) {
     state.selectedDate = dateStr;
     state.selectedTime = null;
     tg.MainButton.hide();
-    document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('selected-item'));
-    btnElement.classList.add('selected-item');
+    
+    document.querySelectorAll('.date-btn').forEach(btn => {
+        btn.classList.remove('bg-rose-500', 'text-white', 'border-rose-500', 'shadow-md', 'shadow-rose-200');
+        btn.classList.add('bg-white/80', 'text-slate-700');
+        const daySpan = btn.querySelector('span:first-child');
+        const numSpan = btn.querySelector('span:last-child');
+        if(daySpan) daySpan.classList.replace('text-rose-100', 'text-slate-400');
+        if(numSpan) numSpan.classList.replace('text-white', 'text-slate-800');
+    });
+    
+    // Новий стиль обраної дати
+    btnElement.classList.remove('bg-white/80', 'text-slate-700');
+    btnElement.classList.add('bg-rose-500', 'text-white', 'border-rose-500', 'shadow-md', 'shadow-rose-200');
+    btnElement.querySelector('span:first-child').classList.replace('text-slate-400', 'text-rose-100');
+    btnElement.querySelector('span:last-child').classList.replace('text-slate-800', 'text-white');
 
     const timeSlotsContainer = document.getElementById('time-slots');
     const timeLoader = document.getElementById('time-loader');
@@ -423,11 +455,12 @@ function renderTimeSlots(occupiedSlots) {
             }
         }
 
+        // Оновлений дизайн кнопок часу
         if (!isAvailable) {
-            timeHTML += `<button disabled class="py-3 rounded-xl bg-slate-200/60 text-slate-400 line-through text-sm font-semibold cursor-not-allowed">${time}</button>`;
+            timeHTML += `<button disabled class="py-3.5 rounded-2xl bg-slate-100/60 text-slate-400 line-through text-sm font-bold cursor-not-allowed border border-transparent">${time}</button>`;
         } else {
             availableSlotsCount++;
-            timeHTML += `<button onclick="selectTime('${time}', this)" class="time-btn py-3 rounded-xl glass text-slate-800 text-sm font-semibold active:scale-95 transition-all border-2 border-transparent shadow-sm">${time}</button>`;
+            timeHTML += `<button onclick="selectTime('${time}', this)" class="time-btn py-3.5 rounded-2xl bg-white/80 backdrop-blur-sm text-slate-700 text-sm font-bold active:scale-95 transition-all shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/80">${time}</button>`;
         }
     });
 
@@ -440,8 +473,15 @@ function renderTimeSlots(occupiedSlots) {
 
 function selectTime(time, btnElement) {
     state.selectedTime = time;
-    document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('selected-item'));
-    btnElement.classList.add('selected-item');
+    
+    document.querySelectorAll('.time-btn').forEach(btn => {
+        btn.classList.remove('bg-rose-500', 'text-white', 'border-rose-500', 'shadow-md', 'shadow-rose-200');
+        btn.classList.add('bg-white/80', 'text-slate-700');
+    });
+    
+    btnElement.classList.remove('bg-white/80', 'text-slate-700');
+    btnElement.classList.add('bg-rose-500', 'text-white', 'border-rose-500', 'shadow-md', 'shadow-rose-200');
+    
     tg.MainButton.text = `Підтвердити запис на ${time}`;
     tg.MainButton.show();
     tg.MainButton.onClick(submitBooking);
