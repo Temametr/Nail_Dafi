@@ -275,7 +275,8 @@ function selectService(id) {
 function renderMasters() {
     const list = document.getElementById('masters-list');
     list.innerHTML = state.masters.map(m => `
-        <div onclick="selectMaster(${m.id})" class="glass p-4 rounded-2xl flex items-center gap-4 active:scale-95 transition-all cursor-pointer">
+        <!-- Добавили одинарные кавычки вокруг ${m.id}, чтобы передавать строку -->
+        <div onclick="selectMaster('${m.id}')" class="glass p-4 rounded-2xl flex items-center gap-4 active:scale-95 transition-all cursor-pointer">
             <div class="w-12 h-12 bg-rose-200 rounded-full flex items-center justify-center font-bold text-rose-600 shadow-sm">${m.name.charAt(0)}</div>
             <div>
                 <div class="font-bold text-slate-800">${m.name}</div>
@@ -286,10 +287,14 @@ function renderMasters() {
 }
 
 function selectMaster(id) {
-    state.selectedMaster = state.masters.find(m => m.id === id);
+    // Надежное сравнение: приводим оба значения к строке
+    state.selectedMaster = state.masters.find(m => m.id.toString() === id.toString());
+    
+    // Запускаем календарь и переключаем шаг
     renderCalendar();
     showStep('step-datetime');
 }
+
 
 function renderCalendar() {
     const container = document.getElementById('date-scroll');
