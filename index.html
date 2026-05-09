@@ -9,9 +9,7 @@
     <style>
         .glass {
             background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn {
@@ -39,15 +37,17 @@
         </div>
 
         <!-- ГОЛОВНИЙ ЕКРАН (КЛІЄНТ) -->
-        <div id="client-screen" class="hidden-step fade-in pt-20">
-            <!-- ФІКСОВАНИЙ ЗАГОЛОВОК (З ефектом скла) -->
-            <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-white/70 backdrop-blur-xl border-b border-white/50 px-4 py-4 shadow-sm">
-                <h1 class="text-2xl font-bold text-slate-900">Привіт, <span id="user-name">Гостю</span>! 👋</h1>
-                <p class="text-slate-500 text-sm">Твій ідеальний манікюр чекає</p>
-            </header>
+        <div id="client-screen" class="hidden-step fade-in">
 
             <!-- ВКЛАДКА 1: ГОЛОВНА (Флоу запису) -->
-            <div id="tab-home" class="tab-content">
+            <div id="tab-home" class="tab-content pt-24">
+                
+                <!-- ФІКСОВАНИЙ ЗАГОЛОВОК (Без розмиття, тільки для Головної) -->
+                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-white border-b border-slate-200 px-4 py-4 shadow-sm">
+                    <h1 class="text-2xl font-bold text-slate-900">Привіт, <span id="user-name">Гостю</span>! 👋</h1>
+                    <p class="text-slate-500 text-sm">Твій ідеальний манікюр чекає</p>
+                </header>
+
                 <!-- Крок 1: Послуги -->
                 <div id="step-booking" class="step-content space-y-4 fade-in">
                     <h3 class="font-bold text-lg px-1">Оберіть послугу</h3>
@@ -71,15 +71,18 @@
             </div>
 
             <!-- ВКЛАДКА 2: МОЇ ВІЗИТИ -->
-            <div id="tab-bookings" class="tab-content hidden-step space-y-4 fade-in">
-                <h3 class="font-bold text-lg px-1">Ваші записи</h3>
+            <div id="tab-bookings" class="tab-content hidden-step space-y-4 fade-in pt-6">
+                <!-- Власний заголовок сторінки візитів -->
+                <h2 class="text-2xl font-bold text-slate-900 px-1 mb-4">Ваші візити</h2>
                 <div id="my-bookings-list" class="space-y-3 text-sm"></div>
             </div>
 
             <!-- ВКЛАДКА 3: МІЙ ПРОФІЛЬ -->
-            <div id="tab-profile" class="tab-content hidden-step space-y-4 fade-in">
-                <h3 class="font-bold text-lg px-1">Особистий кабінет</h3>
-                <div class="glass p-5 rounded-3xl flex items-center gap-4 shadow-sm">
+            <div id="tab-profile" class="tab-content hidden-step space-y-4 fade-in pt-6">
+                <!-- Власний заголовок сторінки профілю -->
+                <h2 class="text-2xl font-bold text-slate-900 px-1 mb-4">Особистий кабінет</h2>
+                
+                <div class="glass bg-white/80 p-5 rounded-3xl flex items-center gap-4 shadow-sm">
                     <div class="w-16 h-16 bg-rose-200 rounded-full flex items-center justify-center text-2xl font-bold text-rose-600 shadow-sm" id="profile-avatar"></div>
                     <div>
                         <div class="font-bold text-slate-800 text-lg" id="profile-name"></div>
@@ -87,7 +90,7 @@
                     </div>
                 </div>
                 
-                <div class="glass p-5 rounded-3xl mt-4 space-y-4 shadow-sm">
+                <div class="glass bg-white/80 p-5 rounded-3xl mt-4 space-y-4 shadow-sm">
                     <div class="flex justify-between items-center text-sm font-semibold text-slate-700">
                         <span class="flex items-center gap-2">🔔 Сповіщення</span>
                         <span class="text-teal-500 bg-teal-50 px-2 py-1 rounded-md">Увімкнено</span>
@@ -102,9 +105,9 @@
         </div>
 
         <!-- ЕКРАН АДМІНІСТРАТОРА -->
-        <div id="admin-screen" class="hidden-step fade-in pt-20">
-            <!-- ФІКСОВАНИЙ ЗАГОЛОВОК МАЙСТРА -->
-            <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-white/70 backdrop-blur-xl border-b border-white/50 px-4 py-4 shadow-sm">
+        <div id="admin-screen" class="hidden-step fade-in pt-24">
+            <!-- ФІКСОВАНИЙ ЗАГОЛОВОК МАЙСТРА (Без розмиття) -->
+            <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-white border-b border-slate-200 px-4 py-4 shadow-sm">
                 <h1 class="text-2xl font-bold text-slate-900">Панель майстра</h1>
                 <p class="text-slate-500 text-sm">Керування записами</p>
             </header>
@@ -113,8 +116,8 @@
 
     </div>
 
-    <!-- НИЖНІЙ НАВІГАЦІЙНИЙ БАР (Тільки для Клієнта) -->
-    <nav id="client-bottom-nav" class="hidden-step fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-200 flex justify-around p-2 pb-6 z-50 max-w-md mx-auto shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+    <!-- НИЖНІЙ НАВІГАЦІЙНИЙ БАР (Без розмиття, суцільний білий) -->
+    <nav id="client-bottom-nav" class="hidden-step fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-2 pb-6 z-50 max-w-md mx-auto shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
         <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center justify-center p-2 text-rose-500 transition-colors w-20">
             <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3l9-8z"/></svg>
             <span class="text-[10px] font-bold uppercase tracking-wider">Головна</span>
@@ -130,7 +133,7 @@
     </nav>
 
     <!-- Модальне вікно для скасування (Адмін) -->
-    <div id="cancel-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-6 z-50">
+    <div id="cancel-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-6 z-50">
         <div class="bg-white rounded-3xl p-6 w-full max-w-sm space-y-4">
             <h3 class="font-bold text-lg">Причина скасування</h3>
             <textarea id="cancel-reason" class="w-full p-4 bg-slate-100 rounded-2xl outline-none h-32" placeholder="Напишіть клієнту, чому не виходить прийняти..."></textarea>
