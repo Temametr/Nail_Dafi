@@ -1,11 +1,11 @@
-// =========================================
+// ==========================================
 // НАЛАШТУВАННЯ ТА СТАН
 // ==========================================
 const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
-// УВАГА: Твій URL
+// УВАГА: Встав сюди свій URL від Google Apps Script
 const API_URL = "https://script.google.com/macros/s/AKfycbxlQQ5e4FzxLUyAX6OSxfKMdjLqU_1nbfTwMpxC_3Tm-Ga_VvnVScIklojzwdoQ-6VBIw/exec";
 
 let state = {
@@ -22,7 +22,7 @@ let state = {
     clientBookings: [], 
     adminBookings: [],
     
-    currentBookingFilter: 'active', // Для клієнта і майстра
+    currentBookingFilter: 'active',
     chartInstance: null
 };
 
@@ -46,7 +46,6 @@ async function loadInitialData() {
         state.services = data.services;
         state.masters = data.masters;
         
-        // Перевіряємо чи це майстер
         const masterData = state.masters.find(m => m.id.toString() === state.user.id.toString());
         if (masterData) {
             state.isAdmin = true;
@@ -63,7 +62,6 @@ async function loadInitialData() {
 
 function renderApp() {
     if (state.isAdmin) {
-        // Підготовка Адміна
         document.getElementById('admin-screen').classList.remove('hidden-step');
         document.getElementById('admin-bottom-nav').classList.remove('hidden-step');
         
@@ -76,7 +74,6 @@ function renderApp() {
         
         switchTab('admin', 'home');
     } else {
-        // Підготовка Клієнта
         document.getElementById('client-screen').classList.remove('hidden-step');
         document.getElementById('client-bottom-nav').classList.remove('hidden-step'); 
         
@@ -94,13 +91,9 @@ function renderApp() {
 // НАВІГАЦІЯ ТА ПОЛІНГ
 // ==========================================
 function switchTab(role, tabId) {
-    // 1. Ховаємо всі контенти відповідної ролі
     document.querySelectorAll(role === 'admin' ? '.admin-tab-content' : '.tab-content').forEach(el => el.classList.add('hidden-step'));
-    
-    // 2. Показуємо потрібний
     document.getElementById(role === 'admin' ? `admin-tab-${tabId}` : `tab-${tabId}`).classList.remove('hidden-step');
 
-    // 3. Змінюємо кольори кнопок в Навбарі
     const activeColor = role === 'admin' ? 'text-teal-600' : 'text-rose-500';
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`${role}-nav-${nav}`);
@@ -117,13 +110,12 @@ function switchTab(role, tabId) {
     tg.MainButton.hide();
     stopPolling();
 
-    // 4. Логіка сторінок
     if (role === 'client') {
         if (tabId === 'home') showStep('step-booking'); 
         else if (tabId === 'bookings') { loadBookings('client'); startPolling('client'); }
     } else {
-        if (tabId === 'home') { loadBookings('admin'); startPolling('admin', true); } // Дашборд
-        else if (tabId === 'bookings') { loadBookings('admin'); startPolling('admin'); } // Список
+        if (tabId === 'home') { loadBookings('admin', false, true); startPolling('admin', true); } 
+        else if (tabId === 'bookings') { loadBookings('admin'); startPolling('admin'); }
     }
 }
 
@@ -161,9 +153,9 @@ function switchBookingTab(filter, role) {
 // МЕРЕЖА ТА ДАНІ ЗАПИСІВ
 // ==========================================
 async function loadBookings(role, isSilent = false, forDashboard = false) {
-    const containerId = role === 'admin' ? 'admin-bookings-list' : 'my-bookings-list';
+    const containerId = role === 'admin' ? (forDashboard ? null : 'admin-bookings-list') : 'my-bookings-list';
     
-    if (!isSilent && !forDashboard) {
+    if (!isSilent && containerId) {
         document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-slate-500 animate-pulse">Завантаження...</div>';
     }
     
@@ -173,14 +165,14 @@ async function loadBookings(role, isSilent = false, forDashboard = false) {
         
         if (role === 'admin') {
             state.adminBookings = data.bookings || [];
-            if (forDashboard) renderAdminStats('day'); // За замовчуванням день
+            if (forDashboard) renderAdminStats('day'); 
             else renderAdminBookings();
         } else {
             state.clientBookings = data.bookings || [];
             renderClientBookings();
         }
     } catch (e) {
-        if (!isSilent) document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-red-500">Помилка мережі.</div>';
+        if (!isSilent && containerId) document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-red-500">Помилка мережі.</div>';
     }
 }
 
@@ -200,11 +192,27 @@ async function changeBookingStatus(bookingId, newStatus, reason = "") {
 // ==========================================
 // ЛОГІКА МАЙСТРА (АДМІНА) - СТАТИСТИКА
 // ==========================================
+
+// Хелпер для безпечного парсингу дат з Google Таблиць
+function parseSafeDate(dateStr) {
+    if (!dateStr) return new Date(0);
+    const str = String(dateStr);
+    if (str.includes('-')) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    } else if (str.includes('.')) {
+        let [d, m, y] = str.split('.').map(Number);
+        if (y < 2000) y += 2000;
+        return new Date(y, m - 1, d);
+    }
+    return new Date(str);
+}
+
 function renderAdminStats(period) {
-    // Підсвітка кнопок періоду
+    // Підсвітка активної кнопки періоду
     ['day', 'week', 'month'].forEach(p => {
         const btn = document.getElementById(`stat-btn-${p}`);
-        if(p === period) {
+        if (p === period) {
             btn.classList.remove('text-slate-500');
             btn.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
         } else {
@@ -214,95 +222,158 @@ function renderAdminStats(period) {
     });
 
     const now = new Date();
-    // Вираховуємо дату відліку
-    let startDate = new Date();
-    if (period === 'week') startDate.setDate(now.getDate() - 7);
-    if (period === 'month') startDate.setMonth(now.getMonth() - 1);
-    startDate.setHours(0,0,0,0);
+    now.setHours(0, 0, 0, 0); // Обнуляємо час для точного порівняння дат
+    
+    let startDate = new Date(now);
+    if (period === 'week') startDate.setDate(now.getDate() - 6); // Останні 7 днів
+    else if (period === 'month') startDate.setDate(now.getDate() - 29); // Останні 30 днів
 
     let totalCount = 0;
     let totalRevenue = 0;
-    let chartLabels = [];
-    let chartData = [];
 
-    // Групуємо для графіка
+    // Створюємо структуру з пустими датами (щоб графік не стрибав, якщо в якісь дні не було записів)
     const groupedByDate = {};
+    if (period !== 'day') {
+        for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+            const dateKey = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+            groupedByDate[dateKey] = 0;
+        }
+    }
+
+    // Зберігаємо статистику по конкретних послугах для "Сьогодні"
+    const servicesCount = {};
 
     state.adminBookings.forEach(b => {
-        // Тільки підтверджені та виконані йдуть у дохід
+        // Рахуємо тільки успішні та активні записи
         if (b.status === 'Выполнено' || b.status === 'В очереди') {
-            const [day, month, year] = b.date.split('.');
-            const bDate = new Date(year, month - 1, day);
-            
+            const bDate = parseSafeDate(b.date);
+            bDate.setHours(0, 0, 0, 0);
+
+            const s = state.services.find(srv => srv.name === b.service);
+            const price = s ? Number(s.price) : 0;
+
             if (period === 'day') {
-                // Якщо обрано сьогодні, показуємо тільки сьогоднішні
-                if (bDate.toDateString() === now.toDateString()) {
+                // Тільки сьогоднішні записи
+                if (bDate.getTime() === now.getTime()) {
                     totalCount++;
-                    const s = state.services.find(s => s.name === b.service);
-                    totalRevenue += s ? Number(s.price) : 0;
+                    totalRevenue += price;
+                    servicesCount[b.service] = (servicesCount[b.service] || 0) + 1;
                 }
             } else {
-                if (bDate >= startDate) {
+                // Записи за період (тиждень/місяць)
+                if (bDate >= startDate && bDate <= now) {
                     totalCount++;
-                    const s = state.services.find(s => s.name === b.service);
-                    totalRevenue += s ? Number(s.price) : 0;
-                    
-                    const dateKey = `${day}.${month}`;
-                    groupedByDate[dateKey] = (groupedByDate[dateKey] || 0) + 1;
+                    totalRevenue += price;
+                    const dateKey = `${bDate.getDate().toString().padStart(2, '0')}.${(bDate.getMonth() + 1).toString().padStart(2, '0')}`;
+                    if (groupedByDate[dateKey] !== undefined) {
+                        groupedByDate[dateKey]++;
+                    }
                 }
             }
         }
     });
 
+    // Оновлюємо цифри на екрані
     document.getElementById('stat-count').innerText = totalCount;
     document.getElementById('stat-revenue').innerText = `${totalRevenue} ₴`;
 
-    // Малюємо графік
+    // Формуємо дані для красивого графіка
+    let chartLabels = [];
+    let chartData = [];
+    let chartType = 'line';
+
     if (period === 'day') {
-        // Для одного дня малюємо просто статистику послуг
-        chartLabels = ['Сьогодні'];
-        chartData = [totalCount];
+        // Якщо вибрано "Сьогодні", малюємо стовпці з переліком послуг
+        chartType = 'bar';
+        chartLabels = Object.keys(servicesCount);
+        chartData = Object.values(servicesCount);
+        if (chartLabels.length === 0) { 
+            chartLabels = ['Немає записів']; 
+            chartData = [0]; 
+        }
     } else {
-        // Сортуємо дати
-        const sortedDates = Object.keys(groupedByDate).sort();
-        chartLabels = sortedDates;
-        chartData = sortedDates.map(d => groupedByDate[d]);
+        // Для тижня/місяця малюємо лінію динаміки
+        chartLabels = Object.keys(groupedByDate);
+        chartData = Object.values(groupedByDate);
     }
 
-    drawChart(chartLabels, chartData);
+    drawChart(chartLabels, chartData, chartType);
 }
 
-function drawChart(labels, data) {
+// Функція малювання преміум-графіка Chart.js
+function drawChart(labels, data, type) {
     const ctx = document.getElementById('statsChart').getContext('2d');
     
+    // Видаляємо старий графік, якщо він існує, щоб уникнути багів накладання
     if (state.chartInstance) {
         state.chartInstance.destroy();
     }
 
+    // Створюємо красивий градієнт під лінією
+    let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(20, 184, 166, 0.4)'); // Напівпрозорий Teal (смарагдовий)
+    gradient.addColorStop(1, 'rgba(20, 184, 166, 0.0)');
+
     state.chartInstance = new Chart(ctx, {
-        type: 'line',
+        type: type,
         data: {
             labels: labels,
             datasets: [{
-                label: 'Кількість записів',
+                label: 'Записів',
                 data: data,
                 borderColor: '#14b8a6', // teal-500
-                backgroundColor: 'rgba(20, 184, 166, 0.2)',
+                backgroundColor: type === 'line' ? gradient : '#14b8a6',
                 borderWidth: 3,
-                tension: 0.4,
-                fill: true,
+                tension: 0.4, // Плавні вигини лінії
+                fill: type === 'line',
                 pointBackgroundColor: '#fff',
                 pointBorderColor: '#14b8a6',
-                pointRadius: 4
+                pointBorderWidth: 2,
+                pointRadius: type === 'line' ? 4 : 0,
+                pointHoverRadius: 6,
+                borderRadius: type === 'bar' ? 8 : 0 // Заокруглені стовпці для Bar chart
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    titleColor: '#1e293b',
+                    bodyColor: '#14b8a6',
+                    bodyFont: { weight: 'bold' },
+                    borderColor: '#e2e8f0',
+                    borderWidth: 1,
+                    padding: 10,
+                    boxPadding: 4,
+                    usePointStyle: true,
+                    callbacks: {
+                        label: function(context) { return ` ${context.parsed.y} записів`; }
+                    }
+                }
+            },
             scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } },
-                x: { grid: { display: false } }
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { stepSize: 1, color: '#94a3b8', font: { family: 'sans-serif' } },
+                    border: { display: false },
+                    grid: { color: '#f1f5f9', drawBorder: false }
+                },
+                x: { 
+                    ticks: { 
+                        color: '#94a3b8', 
+                        font: { family: 'sans-serif' },
+                        maxTicksLimit: 7 // Не показувати більше 7 дат, щоб не злипалося
+                    },
+                    border: { display: false },
+                    grid: { display: false, drawBorder: false }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index',
             }
         }
     });
@@ -317,7 +388,7 @@ function renderAdminBookings() {
     });
 
     if (filtered.length === 0) {
-        container.innerHTML = "<div class='text-center py-4 text-slate-500'>Записів немає.</div>";
+        container.innerHTML = "<div class='text-center py-4 text-slate-500 mt-10'>У цій категорії записів немає.</div>";
         return;
     }
 
@@ -347,7 +418,6 @@ function renderAdminBookings() {
         `;
     }).join('');
 }
-
 
 // ==========================================
 // ЛОГІКА КЛІЄНТА - ВІЗИТИ ТА СТВОРЕННЯ
@@ -390,7 +460,7 @@ function renderClientBookings() {
                 ${b.cancelReason ? `<div class="text-xs text-red-500 mt-3 bg-red-50 p-2 rounded-lg">Причина: ${b.cancelReason}</div>` : ''}
                 ${isPending ? `
                     <div class="mt-3 pt-3 border-t border-slate-200/50">
-                        <button onclick="changeBookingStatus('${b.id}', 'Отменено', 'Скасовано клієнтом')" class="w-full py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-sm font-semibold active:scale-95 transition-all shadow-sm">
+                        <button onclick="changeBookingStatus('${b.id}', 'Отменено', 'Скасовано клієнтом')" class="w-full py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-sm font-semibold active:scale-95 transition-all shadow-sm border border-slate-200/60">
                             Скасувати візит
                         </button>
                     </div>` : ''}
@@ -399,7 +469,6 @@ function renderClientBookings() {
     }).join('');
 }
 
-// -- Флоу створення запису --
 function showStep(stepId) {
     document.querySelectorAll('.step-content').forEach(s => s.classList.add('hidden-step'));
     document.getElementById(stepId).classList.remove('hidden-step');
