@@ -251,7 +251,7 @@ function confirmCancelAdmin() {
     closeCancelModal();
 }
 
-// === ІСНУЮЧИЙ КОД ДЛЯ СТВОРЕННЯ ЗАПИСУ (ЗБЕРІГАЄМО) ===
+// === ІСНУЮЧИЙ КОД ДЛЯ СТВОРЕННЯ ЗАПИСУ ===
 
 function renderServices() {
     const list = document.getElementById('services-list');
@@ -304,15 +304,26 @@ function renderCalendar() {
     state.selectedTime = null;
     tg.MainButton.hide();
 
-    const today = new Date();
+    const now = new Date();
+    const currentHour = now.getHours();
     let datesHTML = '';
 
     for (let i = 0; i < 14; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() + i);
+        const d = new Date(now);
+        d.setDate(now.getDate() + i);
         const dayOfWeek = d.getDay(); 
-        const isWorkingDay = dayOfWeek !== 1 && state.selectedMaster.workDays.includes(dayOfWeek);
-        const dateStr = d.toISOString().split('T')[0]; 
+        
+        // 1. Базова перевірка: не понеділок і є в графіку
+        let isWorkingDay = dayOfWeek !== 1 && state.selectedMaster.workDays.includes(dayOfWeek);
+        
+        // 2. НОВА ПЕРЕВІРКА: Якщо це сьогодні, а час вже 18:00 або більше - блокуємо день повністю
+        if (i === 0 && currentHour >= 18) {
+            isWorkingDay = false;
+        }
+
+        // Коригування часового поясу для правильного виводу дати (YYYY-MM-DD)
+        const dateStr = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0]; 
+        
         const dayNames = ['Нд', 'Пн', 'Вв', 'Ср', 'Чт', 'Пт', 'Сб'];
         const dayName = dayNames[dayOfWeek];
         const dayNum = d.getDate();
@@ -354,7 +365,16 @@ function renderTimeSlots(occupiedSlots) {
     let timeHTML = '';
     const slots = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
 
+    const now = new Date();
+    // Отримуємо сьогоднішню дату в локальному часі
+    const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    let availableSlotsCount = 0;
+
     slots.forEach(time => {
+        // Перевірка 1: Чи зайнято в базі
         const isOccupied = occupiedSlots.some(occTime => {
             const dateObj = new Date(occTime);
             if (!isNaN(dateObj)) {
@@ -365,13 +385,30 @@ function renderTimeSlots(occupiedSlots) {
             return occTime.includes(time);
         });
 
-        if (isOccupied) {
+        // Перевірка 2: Чи час уже минув (якщо обрано сьогоднішній день)
+        let isPast = false;
+        if (state.selectedDate === todayStr) {
+            const [slotHour, slotMinute] = time.split(':').map(Number);
+            // Якщо година слота менша за поточну АБО (година та сама, але хвилини менші)
+            if (slotHour < currentHour || (slotHour === currentHour && slotMinute <= currentMinute)) {
+                isPast = true;
+            }
+        }
+
+        if (isOccupied || isPast) {
             timeHTML += `<button disabled class="py-3 rounded-xl bg-slate-200 text-slate-400 line-through text-sm font-semibold cursor-not-allowed">${time}</button>`;
         } else {
+            availableSlotsCount++;
             timeHTML += `<button onclick="selectTime('${time}', this)" class="time-btn py-3 rounded-xl glass text-slate-800 text-sm font-semibold active:scale-95 transition-all border-2 border-transparent">${time}</button>`;
         }
     });
-    container.innerHTML = timeHTML;
+
+    // Якщо всі слоти перекреслені
+    if (availableSlotsCount === 0) {
+        container.innerHTML = '<div class="col-span-3 text-center text-slate-500 py-4 font-medium">На обрану дату немає вільного часу 😔</div>';
+    } else {
+        container.innerHTML = timeHTML;
+    }
 }
 
 function selectTime(time, btnElement) {
