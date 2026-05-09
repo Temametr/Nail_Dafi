@@ -18,8 +18,9 @@ let state = {
     isAdmin: false
 };
 
-// Змінна для модального вікна
+// Змінні для модального вікна та фонового оновлення
 let currentCancelBookingId = null;
+let pollingInterval = null; // Зберігає ID таймера
 
 // Запуск при завантаженні сторінки
 window.addEventListener('DOMContentLoaded', async () => {
@@ -48,7 +49,9 @@ async function loadInitialData() {
 function renderApp() {
     if (state.isAdmin) {
         document.getElementById('admin-screen').classList.remove('hidden-step');
+        // Завантажуємо записи адміна і вмикаємо фонове оновлення
         loadBookings('admin');
+        startPolling('admin');
     } else {
         document.getElementById('client-screen').classList.remove('hidden-step');
         renderServices();
@@ -59,7 +62,13 @@ function showStep(stepId) {
     document.querySelectorAll('.step-content').forEach(s => s.classList.add('hidden-step'));
     document.getElementById(stepId).classList.remove('hidden-step');
 
-    if (stepId === 'step-my-bookings') loadBookings('client');
+    // Зупиняємо оновлення, якщо ми не на екрані записів
+    stopPolling();
+
+    if (stepId === 'step-my-bookings') {
+        loadBookings('client'); 
+        startPolling('client'); // Вмикаємо фонове оновлення для клієнта
+    }
 
     if (stepId === 'step-booking') {
         tg.BackButton.hide();
@@ -79,18 +88,46 @@ function showStep(stepId) {
     }
 }
 
+// === ЛОГІКА ФОНОВОГО ОНОВЛЕННЯ (REAL-TIME ІМІТАЦІЯ) ===
+
+function startPolling(role) {
+    stopPolling(); // На всякий випадок очищаємо старий таймер
+    // Запускаємо тихе оновлення кожні 10 секунд (10000 мілісекунд)
+    pollingInterval = setInterval(() => {
+        loadBookings(role, true);
+    }, 10000); 
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
 // === ЛОГІКА ЗАПИСІВ ===
-async function loadBookings(role) {
+
+/**
+ * Додано параметр isSilent: якщо true, лоадер "Оновлення..." не показується, 
+ * щоб інтерфейс не блимав кожні 10 секунд.
+ */
+async function loadBookings(role, isSilent = false) {
     const containerId = role === 'admin' ? 'admin-bookings-list' : 'my-bookings-list';
-    document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-slate-500 animate-pulse">Оновлення списку...</div>';
+    
+    if (!isSilent) {
+        document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-slate-500 animate-pulse">Завантаження записів...</div>';
+    }
     
     try {
         const response = await fetch(`${API_URL}?action=getBookings&userId=${state.user.id}&role=${role}`);
         const data = await response.json();
+        
         if (role === 'admin') renderAdminBookings(data.bookings || []);
         else renderClientBookings(data.bookings || []);
     } catch (e) {
-        document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-red-500">Помилка мережі.</div>';
+        if (!isSilent) {
+            document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-red-500">Помилка мережі.</div>';
+        }
     }
 }
 
@@ -294,9 +331,6 @@ async function selectDate(dateStr, btnElement) {
     }
 }
 
-/**
- * ОНОВЛЕНА ЛОГІКА: Враховує тривалість послуги та блокує відповідну кількість годин
- */
 function renderTimeSlots(occupiedSlots) {
     const container = document.getElementById('time-slots');
     let timeHTML = '';
@@ -307,33 +341,27 @@ function renderTimeSlots(occupiedSlots) {
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     
-    // Округлюємо тривалість послуги в годинах (наприклад, 30 хв -> 1 слот, 150 хв -> 3 слоти)
     const requiredSlotsCount = Math.ceil(state.selectedService.duration / 60);
-
     let availableSlotsCount = 0;
 
     slots.forEach((time) => {
         let isAvailable = true;
         const startHourNum = parseInt(time.split(':')[0]);
 
-        // Перевіряємо поточну годину і всі наступні, які будуть зайняті цією послугою
         for (let i = 0; i < requiredSlotsCount; i++) {
             const targetHourNum = startHourNum + i;
             const targetTimeStr = `${targetHourNum.toString().padStart(2, '0')}:00`;
 
-            // 1. Чи не виходить запис за межі робочого дня (закінчення о 20:00)
             if (targetHourNum >= 20) {
                 isAvailable = false;
                 break;
             }
 
-            // 2. Чи не зайнятий цей проміжок (бэкенд повернув розгорнутий масив усіх зайнятих годин)
             if (occupiedSlots.includes(targetTimeStr)) {
                 isAvailable = false;
                 break;
             }
 
-            // 3. Чи не минув час (перевіряємо тільки стартову годину для сьогодні)
             if (state.selectedDate === todayStr && i === 0) {
                 if (startHourNum < currentHour || (startHourNum === currentHour && 0 <= currentMinute)) {
                     isAvailable = false;
