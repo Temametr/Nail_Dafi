@@ -185,7 +185,7 @@ function switchBookingTab(filter) {
     renderClientBookings(); 
 }
 
-// ОНОВЛЕНИЙ ДИЗАЙН КАРТОК КЛІЄНТА (Стиль панелі майстра)
+// === ОНОВЛЕНІ КАРТКИ ВІЗИТІВ (КЛІЄНТ) ===
 function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
     
@@ -206,9 +206,11 @@ function renderClientBookings() {
         const isPending = b.status === 'В очереди';
         const statusData = getStatusData(b.status);
         
-        // Знаходимо ім'я майстра по ID
         const masterObj = state.masters.find(m => m.id.toString() === (b.masterId || '').toString());
-        const masterName = masterObj ? masterObj.name : 'Майстер';
+        let masterName = masterObj ? masterObj.name : 'Майстра не знайдено';
+        
+        // РОЗУМНИЙ ФІЛЬТР: Вирізаємо слова "Мастер" або "Майстер" з імені, щоб уникнути дублювання
+        masterName = masterName.replace(/^(Майстер|Мастер)\s+/i, '').trim();
 
         return `
             <div class="glass p-5 rounded-2xl mb-4 border-l-4 ${isPending ? 'border-yellow-400' : 'border-transparent'} shadow-sm">
