@@ -4,7 +4,7 @@ tg.expand(); // Розширюємо на весь екран
 tg.ready();
 
 // УВАГА: Встав сюди свій URL від Google Apps Script (який закінчується на /exec)
-const API_URL = "https://script.google.com/macros/s/AKfycbxlQQ5e4FzxLUyAX6OSxfKMdjLqU_1nbfTwMpxC_3Tm-Ga_VvnVScIklojzwdoQ-6VBIw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzBs39YQOa4IC-zXJ3zZqpVbBkK9pb2Mfp7U0QP0cB4zN8oUKZLwtPuDrICuqxfwY9sYA/exec";
 
 // Глобальний стан додатку
 let state = {
