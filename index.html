@@ -4,47 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Запис на манікюр TMA</title>
-    <!-- Підключення Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Tailwind CSS через CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Скляний морфізм */
         .glass {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        /* Анімація появи */
-        .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Приховування елементів */
-        .hidden-step { display: none; }
-        
-        /* Приховування скролбару для iOS стилю */
+        .hidden-step { display: none !important; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Стилі для обраних елементів */
         .selected-item {
-            background: #f43f5e !important; /* колір rose-500 */
+            background: #f43f5e !important;
             color: white !important;
             border-color: #f43f5e !important;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-rose-100 to-teal-50 min-h-screen font-sans antialiased text-slate-800">
+<body class="bg-gradient-to-br from-rose-100 to-teal-50 min-h-screen font-sans antialiased text-slate-800 pb-28">
 
-    <!-- Контейнер додатку -->
-    <div id="app" class="max-w-md mx-auto p-4 pb-24">
+    <div id="app" class="max-w-md mx-auto p-4">
         
-        <!-- Завантажувач (Лоадер) -->
+        <!-- Завантажувач -->
         <div id="loader" class="flex flex-col items-center justify-center h-64">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
             <p class="mt-4 text-slate-500">Завантаження магії...</p>
@@ -52,69 +40,93 @@
 
         <!-- ГОЛОВНИЙ ЕКРАН (КЛІЄНТ) -->
         <div id="client-screen" class="hidden-step fade-in">
+            <!-- Фіксований заголовок для всіх вкладок клієнта -->
             <header class="mb-6">
-                <h1 class="text-2xl font-bold text-slate-900">Привіт, <span id="user-name">Гостю</span>!</h1>
-                <p class="text-slate-500 text-sm">Запишись на ідеальний манікюр</p>
+                <h1 class="text-2xl font-bold text-slate-900">Привіт, <span id="user-name">Гостю</span>! 👋</h1>
+                <p class="text-slate-500 text-sm">Твій ідеальний манікюр чекає</p>
             </header>
 
-            <!-- Кнопки перемикання -->
-            <div class="flex gap-2 mb-6">
-                <button onclick="showStep('step-booking')" class="flex-1 py-3 px-4 glass rounded-2xl text-sm font-semibold active:scale-95 transition-all">Новий запис</button>
-                <button onclick="showStep('step-my-bookings')" class="flex-1 py-3 px-4 glass rounded-2xl text-sm font-semibold active:scale-95 transition-all">Мої візити</button>
-            </div>
+            <!-- ВКЛАДКА 1: ГОЛОВНА (Флоу запису) -->
+            <div id="tab-home" class="tab-content">
+                <!-- Крок 1: Послуги -->
+                <div id="step-booking" class="step-content space-y-4 fade-in">
+                    <h3 class="font-bold text-lg px-1">Оберіть послугу</h3>
+                    <div id="services-list" class="space-y-3"></div>
+                </div>
 
-            <!-- КРОК 1: ВИБІР ПОСЛУГИ -->
-            <div id="step-booking" class="step-content space-y-4">
-                <h3 class="font-bold text-lg px-1">Оберіть послугу</h3>
-                <div id="services-list" class="space-y-3">
-                    <!-- Сюди JS вставить послуги -->
+                <!-- Крок 2: Майстри -->
+                <div id="step-master" class="step-content hidden-step space-y-4 fade-in">
+                    <h3 class="font-bold text-lg px-1">Оберіть майстра</h3>
+                    <div id="masters-list" class="space-y-3"></div>
+                </div>
+
+                <!-- Крок 3: Календар та Час -->
+                <div id="step-datetime" class="step-content hidden-step space-y-4 fade-in">
+                    <h3 class="font-bold text-lg px-1">Дата</h3>
+                    <div id="date-scroll" class="flex overflow-x-auto gap-2 pb-2 hide-scrollbar"></div>
+                    <h3 class="font-bold text-lg px-1 mt-4">Вільний час</h3>
+                    <div id="time-loader" class="hidden text-center text-sm text-slate-500">Перевірка графіку...</div>
+                    <div id="time-slots" class="grid grid-cols-3 gap-2"></div>
                 </div>
             </div>
 
-            <!-- КРОК 2: ВИБІР МАЙСТРА -->
-            <div id="step-master" class="step-content hidden-step space-y-4">
-                <h3 class="font-bold text-lg px-1">Оберіть майстра</h3>
-                <div id="masters-list" class="space-y-3">
-                    <!-- Сюди JS вставить майстрів -->
-                </div>
+            <!-- ВКЛАДКА 2: МОЇ ВІЗИТИ -->
+            <div id="tab-bookings" class="tab-content hidden-step space-y-4 fade-in">
+                <h3 class="font-bold text-lg px-1">Ваші записи</h3>
+                <div id="my-bookings-list" class="space-y-3 text-sm"></div>
             </div>
 
-            <!-- КРОК 3: РОЗУМНИЙ ВИБІР ДАТИ ТА ЧАСУ -->
-            <div id="step-datetime" class="step-content hidden-step space-y-4">
-                <h3 class="font-bold text-lg px-1">Дата</h3>
-                <!-- Горизонтальний скрол дат -->
-                <div id="date-scroll" class="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
-                    <!-- Сюди JS вставить дати -->
+            <!-- ВКЛАДКА 3: МІЙ ПРОФІЛЬ -->
+            <div id="tab-profile" class="tab-content hidden-step space-y-4 fade-in">
+                <h3 class="font-bold text-lg px-1">Особистий кабінет</h3>
+                <div class="glass p-5 rounded-3xl flex items-center gap-4 shadow-sm">
+                    <div class="w-16 h-16 bg-rose-200 rounded-full flex items-center justify-center text-2xl font-bold text-rose-600 shadow-sm" id="profile-avatar"></div>
+                    <div>
+                        <div class="font-bold text-slate-800 text-lg" id="profile-name"></div>
+                        <div class="text-xs text-slate-500 bg-slate-200/50 px-2 py-1 rounded-md mt-1 inline-block" id="profile-id"></div>
+                    </div>
                 </div>
                 
-                <h3 class="font-bold text-lg px-1 mt-4">Вільний час</h3>
-                <div id="time-loader" class="hidden text-center text-sm text-slate-500">Перевірка графіку...</div>
-                <div id="time-slots" class="grid grid-cols-3 gap-2">
-                    <!-- Сюди JS вставить слоти часу -->
-                </div>
-            </div>
-
-            <!-- МОЇ ЗАПИСИ -->
-            <div id="step-my-bookings" class="step-content hidden-step space-y-4">
-                <h3 class="font-bold text-lg px-1">Ваші записи</h3>
-                <div id="my-bookings-list" class="space-y-3 text-sm">
-                    <!-- Список записів клієнта -->
+                <div class="glass p-5 rounded-3xl mt-4 space-y-4 shadow-sm">
+                    <div class="flex justify-between items-center text-sm font-semibold text-slate-700">
+                        <span class="flex items-center gap-2">🔔 Сповіщення</span>
+                        <span class="text-teal-500 bg-teal-50 px-2 py-1 rounded-md">Увімкнено</span>
+                    </div>
+                    <hr class="border-slate-200/50">
+                    <div class="flex justify-between items-center text-sm font-semibold text-slate-700">
+                        <span class="flex items-center gap-2">🌍 Мова</span>
+                        <span>Українська 🇺🇦</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- ЕКРАН АДМІНІСТРАТОРА -->
+        <!-- ЕКРАН АДМІНІСТРАТОРА (Без змін) -->
         <div id="admin-screen" class="hidden-step fade-in">
             <header class="mb-6">
                 <h1 class="text-2xl font-bold text-slate-900">Панель майстра</h1>
                 <p class="text-slate-500 text-sm">Керування записами</p>
             </header>
-            <div id="admin-bookings-list" class="space-y-4">
-                <!-- Список всіх записів для майстра -->
-            </div>
+            <div id="admin-bookings-list" class="space-y-4"></div>
         </div>
 
     </div>
+
+    <!-- НИЖНІЙ НАВІГАЦІЙНИЙ БАР (Тільки для Клієнта) -->
+    <nav id="client-bottom-nav" class="hidden-step fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-200 flex justify-around p-2 pb-6 z-50 max-w-md mx-auto shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+        <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center justify-center p-2 text-rose-500 transition-colors w-20">
+            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3l9-8z"/></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Головна</span>
+        </button>
+        <button onclick="switchTab('bookings')" id="nav-bookings" class="flex flex-col items-center justify-center p-2 text-slate-400 transition-colors w-20">
+            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Візити</span>
+        </button>
+        <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center justify-center p-2 text-slate-400 transition-colors w-20">
+            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Профіль</span>
+        </button>
+    </nav>
 
     <!-- Модальне вікно для скасування (Адмін) -->
     <div id="cancel-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-6 z-50">
