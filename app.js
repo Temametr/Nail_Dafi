@@ -15,14 +15,14 @@ let state = {
     selectedMaster: null,
     selectedDate: null,
     selectedTime: null,
-    isAdmin: false
+    isAdmin: false,
+    clientBookings: [], // Кеш для миттєвого сортування візитів
+    currentBookingFilter: 'active' // За замовчуванням показуємо підтверджені
 };
 
-// Змінні для модального вікна та фонового оновлення
 let currentCancelBookingId = null;
 let pollingInterval = null; 
 
-// Запуск при завантаженні сторінки
 window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('user-name').innerText = state.user.first_name;
     tg.MainButton.color = "#f43f5e"; 
@@ -53,28 +53,21 @@ function renderApp() {
         startPolling('admin');
     } else {
         document.getElementById('client-screen').classList.remove('hidden-step');
-        document.getElementById('client-bottom-nav').classList.remove('hidden-step'); // Показуємо навбар
+        document.getElementById('client-bottom-nav').classList.remove('hidden-step'); 
         
-        // Заповнюємо дані профілю
         document.getElementById('profile-avatar').innerText = state.user.first_name.charAt(0);
         document.getElementById('profile-name').innerText = state.user.first_name;
         document.getElementById('profile-id').innerText = `ID: ${state.user.id}`;
 
         renderServices();
-        switchTab('home'); // Відкриваємо головну вкладку за замовчуванням
+        switchTab('home'); 
     }
 }
 
-// === НОВА ЛОГІКА НАВІГАЦІЇ ПО ВКЛАДКАХ ===
-
 function switchTab(tabId) {
-    // 1. Ховаємо всі вкладки контенту
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
-    
-    // 2. Показуємо потрібну вкладку
     document.getElementById(`tab-${tabId}`).classList.remove('hidden-step');
 
-    // 3. Змінюємо кольори кнопок меню (активна - рожева, інші - сірі)
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`nav-${nav}`);
         if (nav === tabId) {
@@ -86,21 +79,18 @@ function switchTab(tabId) {
         }
     });
 
-    // 4. Скидаємо кнопки Telegram
     tg.BackButton.hide();
     tg.MainButton.hide();
     stopPolling();
 
-    // 5. Логіка для кожної вкладки
     if (tabId === 'home') {
-        showStep('step-booking'); // Повертаємось на вибір послуги
+        showStep('step-booking'); 
     } else if (tabId === 'bookings') {
         loadBookings('client');
         startPolling('client');
     }
 }
 
-// Навігація всередині вкладки "Головна" (між послугами, майстрами та часом)
 function showStep(stepId) {
     document.querySelectorAll('.step-content').forEach(s => s.classList.add('hidden-step'));
     document.getElementById(stepId).classList.remove('hidden-step');
@@ -123,13 +113,11 @@ function showStep(stepId) {
     }
 }
 
-// === ЛОГІКА ФОНОВОГО ОНОВЛЕННЯ (10 секунд) ===
-
 function startPolling(role) {
     stopPolling(); 
     pollingInterval = setInterval(() => {
         loadBookings(role, true);
-    }, 10000); // 10000 мс = 10 секунд
+    }, 10000); 
 }
 
 function stopPolling() {
@@ -152,8 +140,13 @@ async function loadBookings(role, isSilent = false) {
         const response = await fetch(`${API_URL}?action=getBookings&userId=${state.user.id}&role=${role}`);
         const data = await response.json();
         
-        if (role === 'admin') renderAdminBookings(data.bookings || []);
-        else renderClientBookings(data.bookings || []);
+        if (role === 'admin') {
+            renderAdminBookings(data.bookings || []);
+        } else {
+            // Кешуємо записи клієнта для миттєвого сортування
+            state.clientBookings = data.bookings || [];
+            renderClientBookings();
+        }
     } catch (e) {
         if (!isSilent) {
             document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-red-500">Помилка мережі.</div>';
@@ -176,13 +169,43 @@ function getStatusData(dbStatus) {
     return { text: 'Скасовано', color: 'text-red-600 bg-red-100' };
 }
 
-function renderClientBookings(bookings) {
+// НОВА ФУНКЦІЯ: Перемикання вкладок активних/скасованих візитів
+function switchBookingTab(filter) {
+    state.currentBookingFilter = filter;
+    
+    const btnActive = document.getElementById('subtab-active');
+    const btnCancelled = document.getElementById('subtab-cancelled');
+    
+    if (filter === 'active') {
+        btnActive.className = "flex-1 py-3 text-sm font-bold border-b-2 border-rose-500 text-rose-600 transition-colors";
+        btnCancelled.className = "flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 transition-colors";
+    } else {
+        btnCancelled.className = "flex-1 py-3 text-sm font-bold border-b-2 border-rose-500 text-rose-600 transition-colors";
+        btnActive.className = "flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 transition-colors";
+    }
+    
+    renderClientBookings(); // Перемальовуємо миттєво з кешу
+}
+
+// ОНОВЛЕНА ФУНКЦІЯ: Відображає записи залежно від обраного фільтру
+function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
-    if (bookings.length === 0) {
-        container.innerHTML = "<div class='text-center py-4 text-slate-500 mt-10'>У вас ще немає записів 💅</div>";
+    
+    // Фільтруємо записи з кешу
+    const filteredBookings = state.clientBookings.filter(b => {
+        if (state.currentBookingFilter === 'active') {
+            return b.status === 'В очереди' || b.status === 'Выполнено';
+        } else {
+            return b.status === 'Отменено';
+        }
+    });
+
+    if (filteredBookings.length === 0) {
+        container.innerHTML = "<div class='text-center py-4 text-slate-500 mt-10'>У цій категорії записів немає.</div>";
         return;
     }
-    container.innerHTML = bookings.map(b => {
+
+    container.innerHTML = filteredBookings.map(b => {
         const isPending = b.status === 'В очереди';
         const statusData = getStatusData(b.status);
         return `
@@ -447,7 +470,7 @@ async function submitBooking() {
         if (result.status === 'success') {
             tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert('Супер! Ваш запис успішно створено 🎉', () => {
-                switchTab('bookings'); // Після запису одразу перемикаємо на вкладку "Візити"
+                switchTab('bookings');
             });
         } else {
             tg.showAlert('Помилка: ' + result.message);
