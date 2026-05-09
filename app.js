@@ -20,7 +20,7 @@ let state = {
 
 // Змінні для модального вікна та фонового оновлення
 let currentCancelBookingId = null;
-let pollingInterval = null; // Зберігає ID таймера
+let pollingInterval = null; 
 
 // Запуск при завантаженні сторінки
 window.addEventListener('DOMContentLoaded', async () => {
@@ -49,26 +49,61 @@ async function loadInitialData() {
 function renderApp() {
     if (state.isAdmin) {
         document.getElementById('admin-screen').classList.remove('hidden-step');
-        // Завантажуємо записи адміна і вмикаємо фонове оновлення
         loadBookings('admin');
         startPolling('admin');
     } else {
         document.getElementById('client-screen').classList.remove('hidden-step');
+        document.getElementById('client-bottom-nav').classList.remove('hidden-step'); // Показуємо навбар
+        
+        // Заповнюємо дані профілю
+        document.getElementById('profile-avatar').innerText = state.user.first_name.charAt(0);
+        document.getElementById('profile-name').innerText = state.user.first_name;
+        document.getElementById('profile-id').innerText = `ID: ${state.user.id}`;
+
         renderServices();
+        switchTab('home'); // Відкриваємо головну вкладку за замовчуванням
     }
 }
 
+// === НОВА ЛОГІКА НАВІГАЦІЇ ПО ВКЛАДКАХ ===
+
+function switchTab(tabId) {
+    // 1. Ховаємо всі вкладки контенту
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
+    
+    // 2. Показуємо потрібну вкладку
+    document.getElementById(`tab-${tabId}`).classList.remove('hidden-step');
+
+    // 3. Змінюємо кольори кнопок меню (активна - рожева, інші - сірі)
+    ['home', 'bookings', 'profile'].forEach(nav => {
+        const btn = document.getElementById(`nav-${nav}`);
+        if (nav === tabId) {
+            btn.classList.remove('text-slate-400');
+            btn.classList.add('text-rose-500');
+        } else {
+            btn.classList.remove('text-rose-500');
+            btn.classList.add('text-slate-400');
+        }
+    });
+
+    // 4. Скидаємо кнопки Telegram
+    tg.BackButton.hide();
+    tg.MainButton.hide();
+    stopPolling();
+
+    // 5. Логіка для кожної вкладки
+    if (tabId === 'home') {
+        showStep('step-booking'); // Повертаємось на вибір послуги
+    } else if (tabId === 'bookings') {
+        loadBookings('client');
+        startPolling('client');
+    }
+}
+
+// Навігація всередині вкладки "Головна" (між послугами, майстрами та часом)
 function showStep(stepId) {
     document.querySelectorAll('.step-content').forEach(s => s.classList.add('hidden-step'));
     document.getElementById(stepId).classList.remove('hidden-step');
-
-    // Зупиняємо оновлення, якщо ми не на екрані записів
-    stopPolling();
-
-    if (stepId === 'step-my-bookings') {
-        loadBookings('client'); 
-        startPolling('client'); // Вмикаємо фонове оновлення для клієнта
-    }
 
     if (stepId === 'step-booking') {
         tg.BackButton.hide();
@@ -88,14 +123,13 @@ function showStep(stepId) {
     }
 }
 
-// === ЛОГІКА ФОНОВОГО ОНОВЛЕННЯ (REAL-TIME ІМІТАЦІЯ) ===
+// === ЛОГІКА ФОНОВОГО ОНОВЛЕННЯ (10 секунд) ===
 
 function startPolling(role) {
-    stopPolling(); // На всякий випадок очищаємо старий таймер
-    // Запускаємо тихе оновлення кожні 10 секунд (10000 мілісекунд)
+    stopPolling(); 
     pollingInterval = setInterval(() => {
         loadBookings(role, true);
-    }, 10000); 
+    }, 10000); // 10000 мс = 10 секунд
 }
 
 function stopPolling() {
@@ -107,10 +141,6 @@ function stopPolling() {
 
 // === ЛОГІКА ЗАПИСІВ ===
 
-/**
- * Додано параметр isSilent: якщо true, лоадер "Оновлення..." не показується, 
- * щоб інтерфейс не блимав кожні 10 секунд.
- */
 async function loadBookings(role, isSilent = false) {
     const containerId = role === 'admin' ? 'admin-bookings-list' : 'my-bookings-list';
     
@@ -149,23 +179,23 @@ function getStatusData(dbStatus) {
 function renderClientBookings(bookings) {
     const container = document.getElementById('my-bookings-list');
     if (bookings.length === 0) {
-        container.innerHTML = "<div class='text-center py-4 text-slate-500'>У вас ще немає записів.</div>";
+        container.innerHTML = "<div class='text-center py-4 text-slate-500 mt-10'>У вас ще немає записів 💅</div>";
         return;
     }
     container.innerHTML = bookings.map(b => {
         const isPending = b.status === 'В очереди';
         const statusData = getStatusData(b.status);
         return `
-            <div class="glass p-4 rounded-2xl mb-3 shadow-sm">
+            <div class="glass p-5 rounded-2xl mb-4 shadow-sm border border-slate-100">
                 <div class="flex justify-between items-start mb-3">
                     <div>
-                        <div class="font-bold text-slate-800 mb-1">${b.service}</div>
-                        <div class="text-sm text-slate-600">${b.date} • <span class="font-semibold">${formatDisplayTime(b.time)}</span></div>
+                        <div class="font-bold text-slate-800 text-base mb-1">${b.service}</div>
+                        <div class="text-sm text-slate-500"><span class="font-semibold text-slate-700">${b.date}</span> • <span class="font-semibold text-slate-700">${formatDisplayTime(b.time)}</span></div>
                     </div>
-                    <span class="text-xs font-bold px-2 py-1 rounded-lg shrink-0 ${statusData.color}">${statusData.text}</span>
+                    <span class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg shrink-0 ${statusData.color}">${statusData.text}</span>
                 </div>
-                ${b.cancelReason ? `<div class="text-xs text-red-500 mt-2 bg-red-50 p-2 rounded-lg">Причина: ${b.cancelReason}</div>` : ''}
-                ${isPending ? `<button onclick="changeBookingStatus('${b.id}', 'Отменено', 'Скасовано клієнтом')" class="w-full mt-2 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-semibold active:scale-95 transition-all">Скасувати запис</button>` : ''}
+                ${b.cancelReason ? `<div class="text-xs text-red-500 mt-2 bg-red-50 p-2.5 rounded-xl border border-red-100">Причина: ${b.cancelReason}</div>` : ''}
+                ${isPending ? `<button onclick="changeBookingStatus('${b.id}', 'Отменено', 'Скасовано клієнтом')" class="w-full mt-3 py-2.5 bg-slate-100/80 text-slate-600 hover:bg-slate-200 rounded-xl text-sm font-semibold active:scale-95 transition-all">Скасувати візит</button>` : ''}
             </div>
         `;
     }).join('');
@@ -239,12 +269,12 @@ function confirmCancelAdmin() {
 function renderServices() {
     const list = document.getElementById('services-list');
     list.innerHTML = state.services.map(s => `
-        <div onclick="selectService(${s.id})" class="glass p-4 rounded-2xl flex justify-between items-center active:scale-95 transition-all cursor-pointer">
+        <div onclick="selectService(${s.id})" class="glass p-4 rounded-2xl flex justify-between items-center active:scale-95 transition-all cursor-pointer shadow-sm">
             <div>
                 <div class="font-bold text-slate-800">${s.name}</div>
-                <div class="text-xs text-slate-500">${s.duration} хв</div>
+                <div class="text-xs text-slate-500 mt-1">${s.duration} хв</div>
             </div>
-            <div class="text-rose-600 font-bold">${s.price} ₴</div>
+            <div class="text-rose-600 font-bold bg-rose-50 px-3 py-1.5 rounded-lg">${s.price} ₴</div>
         </div>
     `).join('');
 }
@@ -258,11 +288,11 @@ function selectService(id) {
 function renderMasters() {
     const list = document.getElementById('masters-list');
     list.innerHTML = state.masters.map(m => `
-        <div onclick="selectMaster('${m.id}')" class="glass p-4 rounded-2xl flex items-center gap-4 active:scale-95 transition-all cursor-pointer">
-            <div class="w-12 h-12 bg-rose-200 rounded-full flex items-center justify-center font-bold text-rose-600 shadow-sm">${m.name.charAt(0)}</div>
+        <div onclick="selectMaster('${m.id}')" class="glass p-4 rounded-2xl flex items-center gap-4 active:scale-95 transition-all cursor-pointer shadow-sm">
+            <div class="w-14 h-14 bg-gradient-to-br from-rose-200 to-rose-100 rounded-full flex items-center justify-center font-bold text-rose-600 text-xl shadow-inner">${m.name.charAt(0)}</div>
             <div>
-                <div class="font-bold text-slate-800">${m.name}</div>
-                <div class="text-xs text-slate-500">Працює: ${m.workHours}</div>
+                <div class="font-bold text-slate-800 text-lg">${m.name}</div>
+                <div class="text-xs text-slate-500 mt-0.5">Працює: ${m.workHours}</div>
             </div>
         </div>
     `).join('');
@@ -300,9 +330,9 @@ function renderCalendar() {
         const dayNum = d.getDate();
 
         if (isWorkingDay) {
-            datesHTML += `<button onclick="selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center transition-all glass active:scale-95 text-slate-800 border-2 border-transparent"><span class="text-xs uppercase font-medium">${dayName}</span><span class="text-xl font-bold">${dayNum}</span></button>`;
+            datesHTML += `<button onclick="selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center transition-all glass active:scale-95 text-slate-800 border-2 border-transparent shadow-sm"><span class="text-xs uppercase font-medium">${dayName}</span><span class="text-xl font-bold">${dayNum}</span></button>`;
         } else {
-            datesHTML += `<button disabled class="flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center bg-slate-200 text-slate-400 opacity-60 cursor-not-allowed"><span class="text-xs uppercase">${dayName}</span><span class="text-xl font-bold">${dayNum}</span></button>`;
+            datesHTML += `<button disabled class="flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center bg-slate-200/60 text-slate-400 opacity-60 cursor-not-allowed"><span class="text-xs uppercase">${dayName}</span><span class="text-xl font-bold">${dayNum}</span></button>`;
         }
     }
     container.innerHTML = datesHTML;
@@ -371,10 +401,10 @@ function renderTimeSlots(occupiedSlots) {
         }
 
         if (!isAvailable) {
-            timeHTML += `<button disabled class="py-3 rounded-xl bg-slate-200 text-slate-400 line-through text-sm font-semibold cursor-not-allowed">${time}</button>`;
+            timeHTML += `<button disabled class="py-3 rounded-xl bg-slate-200/60 text-slate-400 line-through text-sm font-semibold cursor-not-allowed">${time}</button>`;
         } else {
             availableSlotsCount++;
-            timeHTML += `<button onclick="selectTime('${time}', this)" class="time-btn py-3 rounded-xl glass text-slate-800 text-sm font-semibold active:scale-95 transition-all border-2 border-transparent">${time}</button>`;
+            timeHTML += `<button onclick="selectTime('${time}', this)" class="time-btn py-3 rounded-xl glass text-slate-800 text-sm font-semibold active:scale-95 transition-all border-2 border-transparent shadow-sm">${time}</button>`;
         }
     });
 
@@ -417,7 +447,7 @@ async function submitBooking() {
         if (result.status === 'success') {
             tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert('Супер! Ваш запис успішно створено 🎉', () => {
-                showStep('step-my-bookings');
+                switchTab('bookings'); // Після запису одразу перемикаємо на вкладку "Візити"
             });
         } else {
             tg.showAlert('Помилка: ' + result.message);
