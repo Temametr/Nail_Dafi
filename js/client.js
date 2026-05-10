@@ -12,7 +12,7 @@ export function renderHomeMasters() {
         
         return `
         <div onclick="window.appAPI.openMasterProfile('${m.id}')" class="cursor-pointer relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-convex animate-pop-in border-2 border-white/60" style="animation-delay: ${i*50}ms">
-            <img src="${imgSrc}" alt="${cleanName}" class="absolute inset-0 w-full h-full object-cover">
+            <img src="${imgSrc}" alt="${cleanName}" class="absolute inset-0 w-full h-full object-cover object-top">
             <div class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-rose-950/60 via-rose-900/20 to-transparent"></div>
             <div class="absolute bottom-2.5 left-2.5 right-2.5 bg-white/85 backdrop-blur-md rounded-2xl p-2.5 shadow-lg border border-white/60 text-center flex flex-col justify-center items-center">
                 <h3 class="font-black text-slate-900 text-sm tracking-tight leading-none mb-1 truncate w-full">${cleanName}</h3>
@@ -43,13 +43,14 @@ export function renderMasters() {
     const list = document.getElementById('masters-list');
     list.innerHTML = state.masters.map((m, i) => {
         const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        const imgSrc = state.masters.indexOf(m) === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
+        const originalIndex = state.masters.indexOf(m);
+        const imgSrc = originalIndex === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
         return `
         <div onclick="window.appAPI.selectMaster('${m.id}')" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0">
                 <div class="relative shrink-0">
                     <div class="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center font-black text-teal-600 text-2xl shadow-inner border border-teal-100 overflow-hidden">
-                        <img src="${imgSrc}" alt="${cleanName}" class="w-full h-full object-cover">
+                        <img src="${imgSrc}" alt="${cleanName}" class="w-full h-full object-cover object-top">
                     </div>
                     <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full shadow-sm"></div>
                 </div>
@@ -72,9 +73,12 @@ export function renderCalendar() {
     tg.MainButton.hide();
 
     const now = new Date(); const currentHour = now.getHours();
+    let datesHTML = '';
+
     for (let i = 0; i < 14; i++) {
         const d = new Date(now); d.setDate(now.getDate() + i);
         const dayOfWeek = d.getDay(); 
+        
         let isWorkingDay = dayOfWeek !== 1 && state.selectedMaster.workDays.includes(dayOfWeek);
         if (i === 0 && currentHour >= 18) isWorkingDay = false;
 
@@ -83,12 +87,41 @@ export function renderCalendar() {
         const dayName = dayNames[dayOfWeek];
         const dayNum = d.getDate();
 
-        const btn = document.createElement('button');
-        btn.className = isWorkingDay ? "date-btn flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center transition-all duration-300 shadow-convex-sm active:scale-90" : "flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center bg-slate-100/50 text-slate-400 opacity-50 cursor-not-allowed";
-        btn.innerHTML = `<span class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black text-slate-950 tracking-tighter">${dayNum}</span>`;
-        if (isWorkingDay) btn.onclick = (e) => window.appAPI.selectDate(dateStr, e.currentTarget);
-        container.appendChild(btn);
+        if (isWorkingDay) {
+            datesHTML += `<button onclick="window.appAPI.selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center transition-all duration-300 shadow-convex-sm active:scale-90"><span class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black text-slate-950 tracking-tighter">${dayNum}</span></button>`;
+        } else {
+            datesHTML += `<button disabled class="flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center bg-slate-100/50 text-slate-400 opacity-50 cursor-not-allowed"><span class="text-[10px] font-bold mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black tracking-tighter">${dayNum}</span></button>`;
+        }
     }
+    container.innerHTML = datesHTML;
+}
+
+export function renderTimeSlots(occupiedSlots) {
+    const container = document.getElementById('time-slots');
+    const slots = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+    const now = new Date();
+    const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const reqSlots = Math.ceil(state.selectedService.duration / 60);
+
+    let availableSlotsCount = 0;
+    let timeHTML = slots.map((time, i) => {
+        let isAvail = true;
+        const startH = parseInt(time.split(':')[0]);
+        for (let j = 0; j < reqSlots; j++) {
+            const h = startH + j;
+            if (h >= 20 || occupiedSlots.includes(`${h.toString().padStart(2, '0')}:00`)) isAvail = false;
+            if (state.selectedDate === todayStr && j === 0 && (startH < currentHour || (startH === currentHour && 0 <= currentMinute))) isAvail = false;
+        }
+        if (isAvail) availableSlotsCount++;
+        return isAvail 
+            ? `<button onclick="window.appAPI.selectTime('${time}', this)" class="time-btn card-convex-sm shadow-convex-sm py-4 bg-white text-slate-950 text-sm font-black active:scale-90 transition-all duration-300 animate-pop-in" style="animation-delay: ${i*20}ms">${time}</button>` 
+            : `<button disabled class="py-4 rounded-xl bg-slate-100 text-slate-400 line-through text-sm font-bold cursor-not-allowed border border-slate-200">${time}</button>`;
+    }).join('');
+
+    if (availableSlotsCount === 0) container.innerHTML = '<div class="col-span-3 text-center text-slate-500 py-6 font-medium bg-white rounded-2xl border border-slate-100 shadow-convex-sm">На жаль, на цю дату вільного часу немає 😔</div>';
+    else container.innerHTML = timeHTML;
 }
 
 export function renderClientBookings() {
@@ -104,6 +137,7 @@ export function renderClientBookings() {
         const isConfirmed = b.status === 'Выполнено';
         const isPending = b.status === 'В очереди';
         const statusData = getStatusData(b.status);
+        
         const masterObj = state.masters.find(m => m.id.toString() === (b.masterId || '').toString());
         let masterName = masterObj ? masterObj.name : 'Майстра не знайдено';
         masterName = masterName.replace(/^(Майстер|Мастер)\s+/i, '').trim();
@@ -115,22 +149,34 @@ export function renderClientBookings() {
                     <div class="w-full pr-3">
                         <div class="font-extrabold text-slate-950 text-lg mb-4 tracking-tight leading-tight">${b.service}</div>
                         <div class="space-y-2">
-                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500 text-[10px]">📅</span> ${b.date} о ${formatDisplayTime(b.time)}</div>
-                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-rose-50 flex justify-center items-center text-rose-500 text-[10px]">💅</span> Майстер: ${masterName}</div>
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500">📅</span> ${b.date} о ${formatDisplayTime(b.time)}</div>
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-blue-50 flex justify-center items-center text-blue-500">💅</span> Майстер: ${masterName}</div>
                         </div>
                     </div>
                     <span class="text-[10px] font-bold px-3 py-1.5 rounded-full border shrink-0 ${statusData.color}">${statusData.text}</span>
                 </div>
                 ${b.cancelReason ? `<div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">Коментар майстра: ${b.cancelReason}</div>` : ''}
-                ${(isPending || isConfirmed) ? `<div class="mt-4 pt-4 border-t border-slate-100 space-y-3.5">
-                    ${isConfirmed ? `
-                        <button onclick="tg.showAlert('Ця функція скоро з\\'явиться! Поки пишіть у приватні повідомлення 💬')" class="card-convex-sm flex items-center justify-center w-full py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all">Написати майстру 💬</button>
-                        <div class="flex gap-3">
-                            <button onclick="window.appAPI.startReschedule('${b.id}')" class="card-convex-sm flex-1 py-3 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">Перенести</button>
-                            <button onclick="window.appAPI.openCancelModal('${b.id}', 'client')" class="card-convex-sm flex-1 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm font-bold active:scale-95 transition-all border border-red-100">Скасувати</button>
-                        </div>` : `
-                        <button onclick="window.appAPI.openCancelModal('${b.id}', 'client')" class="card-convex-sm w-full py-3.5 bg-white text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">Скасувати візит</button>
-                    `}</div>` : ''}
+                
+                ${(isPending || isConfirmed) ? `
+                    <div class="mt-4 pt-4 border-t border-slate-100 space-y-3.5">
+                        ${isConfirmed ? `
+                            <button onclick="tg.showAlert('Ця функція скоро з\\'явиться! Поки пишіть у приватні повідомлення 💬')" class="card-convex-sm flex items-center justify-center w-full py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all">
+                                Написати майстру 💬
+                            </button>
+                            <div class="flex gap-3">
+                                <button onclick="window.appAPI.startReschedule('${b.id}')" class="card-convex-sm flex-1 py-3 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">
+                                    Перенести
+                                </button>
+                                <button onclick="window.appAPI.openCancelModal('${b.id}', 'client')" class="card-convex-sm flex-1 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm font-bold active:scale-95 transition-all border border-red-100">
+                                    Скасувати
+                                </button>
+                            </div>
+                        ` : `
+                            <button onclick="window.appAPI.openCancelModal('${b.id}', 'client')" class="card-convex-sm w-full py-3.5 bg-white text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">
+                                Скасувати візит
+                            </button>
+                        `}
+                    </div>` : ''}
             </div>
         `;
     }).join('');
