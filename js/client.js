@@ -66,61 +66,110 @@ export function renderMasters() {
     `}).join('');
 }
 
+// ✅ ОНОВЛЕНО: Сітка дат на 30 днів
 export function renderCalendar() {
     const container = document.getElementById('date-scroll');
     container.innerHTML = ''; document.getElementById('time-slots').innerHTML = ''; 
     state.selectedDate = null; state.selectedTime = null;
     tg.MainButton.hide();
 
-    const now = new Date(); const currentHour = now.getHours();
+    const now = new Date(); 
+    const currentHour = now.getHours();
     let datesHTML = '';
+    let currentMonth = -1;
+    
+    const monthNames = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
+    const shortMonths = ['січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
+    const dayNames = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']; // Вторник -> Вт
 
-    for (let i = 0; i < 14; i++) {
+    // Генеруємо 30 днів
+    for (let i = 0; i < 30; i++) {
         const d = new Date(now); d.setDate(now.getDate() + i);
+        const month = d.getMonth();
         const dayOfWeek = d.getDay(); 
         
+        // Розділювач місяців
+        if (month !== currentMonth) {
+            datesHTML += `<div class="col-span-6 text-center text-xs font-black text-slate-800 mt-4 mb-2 uppercase tracking-widest bg-slate-200/50 py-1.5 rounded-xl">${monthNames[month]}</div>`;
+            currentMonth = month;
+        }
+
         let isWorkingDay = dayOfWeek !== 1 && state.selectedMaster.workDays.includes(dayOfWeek);
-        if (i === 0 && currentHour >= 18) isWorkingDay = false;
+        if (i === 0 && currentHour >= 19) isWorkingDay = false;
 
         const dateStr = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0]; 
-        const dayNames = ['Нд', 'Пн', 'Вв', 'Ср', 'Чт', 'Пт', 'Сб'];
         const dayName = dayNames[dayOfWeek];
         const dayNum = d.getDate();
+        const shortMonth = shortMonths[month];
 
         if (isWorkingDay) {
-            datesHTML += `<button onclick="window.appAPI.selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center transition-all duration-300 shadow-convex-sm active:scale-90"><span class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black text-slate-950 tracking-tighter">${dayNum}</span></button>`;
+            datesHTML += `<button onclick="window.appAPI.selectDate('${dateStr}', this)" class="date-btn w-full aspect-[1/1.1] rounded-2xl bg-white text-slate-950 flex flex-col items-center justify-center transition-all duration-300 shadow-convex-sm border border-slate-100 active:scale-90">
+                <span class="text-[9px] font-bold opacity-50 mb-0.5 uppercase">${dayName}</span>
+                <span class="text-[22px] font-black leading-none">${dayNum}</span>
+                <span class="text-[8px] font-bold opacity-50 mt-1 uppercase">${shortMonth}</span>
+            </button>`;
         } else {
-            datesHTML += `<button disabled class="flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center bg-slate-100/50 text-slate-400 opacity-50 cursor-not-allowed"><span class="text-[10px] font-bold mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black tracking-tighter">${dayNum}</span></button>`;
+            datesHTML += `<button disabled class="w-full aspect-[1/1.1] rounded-2xl bg-slate-50/50 text-slate-400 flex flex-col items-center justify-center opacity-50 cursor-not-allowed">
+                <span class="text-[9px] font-bold opacity-50 mb-0.5 uppercase">${dayName}</span>
+                <span class="text-[22px] font-black leading-none">${dayNum}</span>
+                <span class="text-[8px] font-bold opacity-50 mt-1 uppercase">${shortMonth}</span>
+            </button>`;
         }
     }
     container.innerHTML = datesHTML;
 }
 
+// ✅ ОНОВЛЕНО: 30-хвилинні інтервали та перевірка на закінчення до 20:00
 export function renderTimeSlots(occupiedSlots) {
     const container = document.getElementById('time-slots');
-    const slots = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+    
+    const slots = [];
+    for (let h = 10; h <= 19; h++) {
+        slots.push(`${h}:00`);
+        slots.push(`${h}:30`);
+    }
+
     const now = new Date();
     const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
-    const reqSlots = Math.ceil(state.selectedService.duration / 60);
+    
+    // Кількість 30-хвилинних блоків для послуги
+    const reqBlocks = Math.ceil(state.selectedService.duration / 30);
 
     let availableSlotsCount = 0;
     let timeHTML = slots.map((time, i) => {
         let isAvail = true;
-        const startH = parseInt(time.split(':')[0]);
-        for (let j = 0; j < reqSlots; j++) {
-            const h = startH + j;
-            if (h >= 20 || occupiedSlots.includes(`${h.toString().padStart(2, '0')}:00`)) isAvail = false;
-            if (state.selectedDate === todayStr && j === 0 && (startH < currentHour || (startH === currentHour && 0 <= currentMinute))) isAvail = false;
+        
+        // Перевірка 1: Чи встигаємо до 20:00?
+        if (i + reqBlocks > slots.length) {
+            isAvail = false;
+        } else {
+            // Перевірка 2: Чи є серед потрібних блоків зайняті?
+            for (let j = 0; j < reqBlocks; j++) {
+                if (occupiedSlots.includes(slots[i + j])) {
+                    isAvail = false;
+                    break;
+                }
+            }
         }
+
+        // Перевірка 3: Минулий час
+        if (isAvail && state.selectedDate === todayStr) {
+            const [startH, startM] = time.split(':').map(Number);
+            if (startH < currentHour || (startH === currentHour && startM <= currentMinute)) {
+                isAvail = false;
+            }
+        }
+
         if (isAvail) availableSlotsCount++;
+        
         return isAvail 
-            ? `<button onclick="window.appAPI.selectTime('${time}', this)" class="time-btn card-convex-sm shadow-convex-sm py-4 bg-white text-slate-950 text-sm font-black active:scale-90 transition-all duration-300 animate-pop-in" style="animation-delay: ${i*20}ms">${time}</button>` 
-            : `<button disabled class="py-4 rounded-xl bg-slate-100 text-slate-400 line-through text-sm font-bold cursor-not-allowed border border-slate-200">${time}</button>`;
+            ? `<button onclick="window.appAPI.selectTime('${time}', this)" class="time-btn card-convex-sm shadow-convex-sm py-3.5 bg-white text-slate-950 text-[13px] font-black active:scale-90 transition-all duration-300 animate-pop-in" style="animation-delay: ${i*10}ms">${time}</button>` 
+            : `<button disabled class="py-3.5 rounded-xl bg-slate-100 text-slate-400 line-through text-[13px] font-bold cursor-not-allowed border border-slate-200">${time}</button>`;
     }).join('');
 
-    if (availableSlotsCount === 0) container.innerHTML = '<div class="col-span-3 text-center text-slate-500 py-6 font-medium bg-white rounded-2xl border border-slate-100 shadow-convex-sm">На жаль, на цю дату вільного часу немає 😔</div>';
+    if (availableSlotsCount === 0) container.innerHTML = '<div class="col-span-4 text-center text-slate-500 py-6 font-medium bg-white rounded-2xl border border-slate-100 shadow-convex-sm">На жаль, вільного часу немає 😔</div>';
     else container.innerHTML = timeHTML;
 }
 
@@ -149,8 +198,8 @@ export function renderClientBookings() {
                     <div class="w-full pr-3">
                         <div class="font-extrabold text-slate-950 text-lg mb-4 tracking-tight leading-tight">${b.service}</div>
                         <div class="space-y-2">
-                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500">📅</span> ${b.date} о ${formatDisplayTime(b.time)}</div>
-                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-blue-50 flex justify-center items-center text-blue-500">💅</span> Майстер: ${masterName}</div>
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500 text-[10px]">📅</span> ${b.date} о ${formatDisplayTime(b.time)}</div>
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-rose-50 flex justify-center items-center text-rose-500 text-[10px]">💅</span> Майстер: ${masterName}</div>
                         </div>
                     </div>
                     <span class="text-[10px] font-bold px-3 py-1.5 rounded-full border shrink-0 ${statusData.color}">${statusData.text}</span>
