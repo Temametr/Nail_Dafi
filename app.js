@@ -31,7 +31,7 @@ let pollingInterval = null;
 // ІНІЦІАЛІЗАЦІЯ
 // ==========================================
 window.addEventListener('DOMContentLoaded', async () => {
-    tg.MainButton.color = "#f43f5e";
+    tg.MainButton.color = "#3b82f6"; // Блакитна кнопка для клієнта
 
     tg.BackButton.onClick(() => {
         if (!document.getElementById('client-screen').classList.contains('hidden-step')) {
@@ -78,8 +78,8 @@ function renderApp() {
         document.getElementById('admin-bottom-nav').classList.remove('hidden-step');
         
         const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        document.getElementById('admin-header-name').innerText = cleanName;
-        document.getElementById('admin-header-name-2').innerText = cleanName;
+        // Встановлюємо аватар у глобальній шапці
+        document.getElementById('admin-header-avatar').innerText = cleanName.charAt(0);
         
         tg.MainButton.color = "#14b8a6";
         switchTab('admin', 'home');
@@ -87,8 +87,10 @@ function renderApp() {
         document.getElementById('client-screen').classList.remove('hidden-step');
         document.getElementById('client-bottom-nav').classList.remove('hidden-step');
         
-        document.getElementById('user-name').innerText = state.user.first_name;
+        // Встановлюємо дані для шапки і профілю
+        document.getElementById('client-header-avatar').innerText = state.user.first_name.charAt(0);
         document.getElementById('profile-avatar').innerText = state.user.first_name.charAt(0);
+        document.getElementById('profile-name').innerText = state.user.first_name;
         document.getElementById('profile-id').innerText = state.user.id;
 
         renderServices();
@@ -104,27 +106,38 @@ function switchTab(role, tabId) {
     document.getElementById(role === 'admin' ? `admin-tab-${tabId}` : `tab-${tabId}`).classList.remove('hidden-step');
     document.getElementById(`${role}-bottom-nav`).classList.remove('hidden-step');
 
-    const activeColor = role === 'admin' ? 'text-teal-600' : 'text-rose-500';
+    const activeColor = role === 'admin' ? 'text-teal-600' : 'text-blue-500';
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`${role}-nav-${nav}`);
         if (btn) {
             if (nav === tabId) {
                 btn.classList.remove('text-slate-400');
-                btn.classList.add(activeColor, 'bg-rose-50'); // Додав легкий фон для активної кнопки
+                btn.classList.add(activeColor, role === 'admin' ? 'bg-teal-50' : 'bg-blue-50');
             } else {
-                btn.classList.remove(activeColor, 'bg-rose-50');
+                btn.classList.remove(activeColor, 'bg-teal-50', 'bg-blue-50');
                 btn.classList.add('text-slate-400');
             }
         }
     });
 
-    if (role === 'admin') {
-        const navAdmin = document.getElementById('admin-bottom-nav');
-        ['home', 'bookings'].forEach(nav => {
-             const btn = document.getElementById(`admin-nav-${nav}`);
-             if (nav === tabId) btn.classList.add('text-teal-600', 'bg-teal-50');
-             else btn.classList.remove('text-teal-600', 'bg-teal-50');
-        });
+    // ДИНАМІЧНА ШАПКА: змінюємо текст залежно від відкритої вкладки
+    if (role === 'client') {
+        const title = document.getElementById('client-header-title');
+        if (tabId === 'home') {
+            title.innerHTML = `Привіт, <span class="font-black text-blue-600">${state.user.first_name}</span>,<br><span class="font-extrabold">Готові до манікюру?</span>`;
+        } else if (tabId === 'bookings') {
+            title.innerHTML = `Твої візити,<br><span class="font-extrabold text-blue-600">Історія записів 💅</span>`;
+        } else if (tabId === 'profile') {
+            title.innerHTML = `Мій кабінет,<br><span class="font-extrabold text-blue-600">Налаштування ⚙️</span>`;
+        }
+    } else {
+        const title = document.getElementById('admin-header-title');
+        const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
+        if (tabId === 'home') {
+            title.innerHTML = `Панель: <span class="font-black text-teal-600">${cleanName}</span>,<br><span class="font-extrabold">Ваша статистика 📊</span>`;
+        } else if (tabId === 'bookings') {
+            title.innerHTML = `Розклад: <span class="font-black text-teal-600">${cleanName}</span>,<br><span class="font-extrabold">Керування записами 📅</span>`;
+        }
     }
 
     tg.BackButton.hide();
@@ -156,7 +169,7 @@ function showStep(stepId) {
 
 function startPolling(role, forDashboard = false) {
     stopPolling();
-    pollingInterval = setInterval(() => { loadBookings(role, true, forDashboard); }, 15000); // Трохи рідше поллінг
+    pollingInterval = setInterval(() => { loadBookings(role, true, forDashboard); }, 15000); 
 }
 
 function stopPolling() {
@@ -168,7 +181,6 @@ function switchBookingTab(filter, role) {
     const btnActive = document.getElementById(`${role}-subtab-active`);
     const btnCancelled = document.getElementById(`${role}-subtab-cancelled`);
     
-    // Нові класи для підвкладок: виглядають як сегмент-контрол
     if (filter === 'active') {
         btnActive.className = `flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300`;
         btnCancelled.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-slate-200";
@@ -272,7 +284,6 @@ function formatDisplayTime(timeStr) {
 }
 
 function getStatusData(dbStatus) {
-    // Яскравіші статуси з чіткою межею
     if (dbStatus === 'В очереди') return { text: 'Очікує', color: 'text-amber-700 bg-amber-50 border-amber-200' };
     if (dbStatus === 'Выполнено') return { text: 'Підтверджено', color: 'text-teal-700 bg-teal-50 border-teal-200' };
     return { text: 'Скасовано', color: 'text-red-700 bg-red-50 border-red-200' };
@@ -333,7 +344,7 @@ function renderAdminBookings() {
         const delay = i * 40;
 
         return `
-            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in border border-white" style="animation-delay: ${delay}ms;">
+            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in" style="animation-delay: ${delay}ms;">
                 <div class="flex justify-between items-start mb-4">
                     <div class="w-full pr-3">
                         <div class="font-extrabold text-slate-950 text-lg mb-4 tracking-tight leading-tight">${b.service}</div>
@@ -347,7 +358,7 @@ function renderAdminBookings() {
                 
                 <a href="tg://user?id=${b.clientId}" class="card-convex-sm shadow-convex-sm flex items-center justify-center w-full py-3 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-sm font-bold mt-5 active:scale-95 transition-all">💬 Написати клієнту</a>
                 
-                ${b.cancelReason ? `<div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">Причина скасування: ${b.cancelReason}</div>` : ''}
+                ${b.cancelReason ? `<div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">Причина: ${b.cancelReason}</div>` : ''}
                 
                 ${isPending ? `<div class="flex gap-3 mt-4 pt-4 border-t border-slate-100">
                         <button onclick="changeBookingStatus('${b.id}', 'Выполнено')" class="card-convex-sm flex-1 py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-950/20 active:scale-95 transition-all">Підтвердити</button>
@@ -381,13 +392,13 @@ function renderClientBookings() {
         const delay = i * 40;
 
         return `
-            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in border border-white" style="animation-delay: ${delay}ms;">
+            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in" style="animation-delay: ${delay}ms;">
                 <div class="flex justify-between items-start mb-4">
                     <div class="w-full pr-3">
                         <div class="font-extrabold text-slate-950 text-lg mb-4 tracking-tight leading-tight">${b.service}</div>
                         <div class="space-y-2">
                             <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500">📅</span> ${b.date} о ${formatDisplayTime(b.time)}</div>
-                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-rose-50 flex justify-center items-center text-rose-500">💅</span> Майстер: ${masterName}</div>
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-blue-50 flex justify-center items-center text-blue-500">💅</span> Майстер: ${masterName}</div>
                         </div>
                     </div>
                     <span class="text-[10px] font-bold px-3 py-1.5 rounded-full border shrink-0 ${statusData.color}">${statusData.text}</span>
@@ -432,8 +443,8 @@ function startReschedule(bookingId) {
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`client-nav-${nav}`);
         if(btn) {
-            if (nav === 'home') { btn.classList.remove('text-slate-400'); btn.classList.add('text-rose-500', 'bg-rose-50'); }
-            else { btn.classList.remove('text-rose-500', 'bg-rose-50'); btn.classList.add('text-slate-400'); }
+            if (nav === 'home') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
+            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
         }
     });
 
@@ -446,9 +457,9 @@ function startReschedule(bookingId) {
 function renderServices() {
     const list = document.getElementById('services-list');
     list.innerHTML = state.services.map((s, i) => `
-        <div onclick="selectService(${s.id})" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
+        <div onclick="selectService(${s.id})" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in" style="animation-delay: ${i*40}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0 pr-2">
-                <div class="shrink-0 w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 text-2xl shadow-inner border border-rose-100">💅</div>
+                <div class="shrink-0 w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 text-2xl shadow-inner border border-blue-100">💅</div>
                 <div class="flex-1 min-w-0">
                     <div class="font-extrabold text-slate-950 text-lg leading-tight break-words tracking-tight">${s.name}</div>
                     <div class="text-xs font-semibold text-slate-500 mt-1 flex items-center gap-1.5"><span class="w-4 h-4 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">🕒</span> ${s.duration} хв</div>
@@ -472,7 +483,7 @@ function renderMasters() {
     list.innerHTML = state.masters.map((m, i) => {
         const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
         return `
-        <div onclick="selectMaster('${m.id}')" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
+        <div onclick="selectMaster('${m.id}')" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in" style="animation-delay: ${i*40}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0">
                 <div class="relative shrink-0">
                     <div class="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center font-black text-teal-600 text-2xl shadow-inner border border-teal-100">${cleanName.charAt(0)}</div>
@@ -518,10 +529,9 @@ function renderCalendar() {
         const dayNum = d.getDate();
 
         if (isWorkingDay) {
-            // Використовуємо card-convex-sm
-            datesHTML += `<button onclick="selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center transition-all duration-300 shadow-convex-sm active:scale-90 border-2 border-white"><span class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black text-slate-950 tracking-tighter">${dayNum}</span></button>`;
+            datesHTML += `<button onclick="selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center transition-all duration-300 shadow-convex-sm active:scale-90"><span class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black text-slate-950 tracking-tighter">${dayNum}</span></button>`;
         } else {
-            datesHTML += `<button disabled class="flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center bg-slate-100 text-slate-400 opacity-50 cursor-not-allowed border border-slate-200"><span class="text-[10px] font-bold mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black tracking-tighter">${dayNum}</span></button>`;
+            datesHTML += `<button disabled class="flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center bg-slate-100/50 text-slate-400 opacity-50 cursor-not-allowed"><span class="text-[10px] font-bold mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black tracking-tighter">${dayNum}</span></button>`;
         }
     }
     container.innerHTML = datesHTML;
@@ -531,16 +541,16 @@ async function selectDate(dateStr, btnElement) {
     state.selectedDate = dateStr; state.selectedTime = null; tg.MainButton.hide();
     
     document.querySelectorAll('.date-btn').forEach(btn => {
-        btn.classList.remove('selected-item', 'shadow-rose-300');
-        btn.classList.add('bg-white', 'text-slate-700', 'shadow-convex-sm', 'border-white');
+        btn.classList.remove('selected-item', 'shadow-blue-300');
+        btn.classList.add('bg-white', 'text-slate-700', 'shadow-convex-sm');
         const d = btn.querySelector('span:first-child'); const n = btn.querySelector('span:last-child');
-        if(d) d.classList.replace('text-rose-100', 'text-slate-400');
+        if(d) d.classList.replace('text-blue-100', 'text-slate-400');
         if(n) n.classList.replace('text-white', 'text-slate-950');
     });
     
-    btnElement.classList.remove('bg-white', 'text-slate-700', 'shadow-convex-sm', 'border-white');
-    btnElement.classList.add('selected-item', 'shadow-rose-300'); // Тінь під колір виділення
-    btnElement.querySelector('span:first-child').classList.replace('text-slate-400', 'text-rose-100');
+    btnElement.classList.remove('bg-white', 'text-slate-700', 'shadow-convex-sm');
+    btnElement.classList.add('selected-item', 'shadow-blue-300');
+    btnElement.querySelector('span:first-child').classList.replace('text-slate-400', 'text-blue-100');
     btnElement.querySelector('span:last-child').classList.replace('text-slate-950', 'text-white');
 
     const timeLoader = document.getElementById('time-loader');
@@ -581,8 +591,7 @@ function renderTimeSlots(occupiedSlots) {
             timeHTML += `<button disabled class="py-4 rounded-xl bg-slate-100 text-slate-400 line-through text-sm font-bold cursor-not-allowed border border-slate-200">${time}</button>`;
         } else {
             availableSlotsCount++;
-            // Використовуємо card-convex-sm
-            timeHTML += `<button onclick="selectTime('${time}', this)" class="time-btn card-convex-sm shadow-convex-sm py-4 bg-white text-slate-950 text-sm font-black active:scale-90 transition-all duration-300 border-2 border-white animate-pop-in" style="animation-delay: ${i*20}ms">${time}</button>`;
+            timeHTML += `<button onclick="selectTime('${time}', this)" class="time-btn card-convex-sm shadow-convex-sm py-4 bg-white text-slate-950 text-sm font-black active:scale-90 transition-all duration-300 animate-pop-in" style="animation-delay: ${i*20}ms">${time}</button>`;
         }
     });
 
@@ -593,12 +602,12 @@ function renderTimeSlots(occupiedSlots) {
 function selectTime(time, btnElement) {
     state.selectedTime = time;
     document.querySelectorAll('.time-btn').forEach(btn => {
-        btn.classList.remove('selected-item', 'shadow-rose-300');
-        btn.classList.add('bg-white', 'text-slate-950', 'shadow-convex-sm', 'border-white');
+        btn.classList.remove('selected-item', 'shadow-blue-300');
+        btn.classList.add('bg-white', 'text-slate-950', 'shadow-convex-sm');
     });
     
-    btnElement.classList.remove('bg-white', 'text-slate-950', 'shadow-convex-sm', 'border-white');
-    btnElement.classList.add('selected-item', 'shadow-rose-300');
+    btnElement.classList.remove('bg-white', 'text-slate-950', 'shadow-convex-sm');
+    btnElement.classList.add('selected-item', 'shadow-blue-300');
     
     if (state.editingBookingId) tg.MainButton.text = `Перенести візит на ${time}`;
     else tg.MainButton.text = `Підтвердити запис на ${time}`;
