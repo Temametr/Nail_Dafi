@@ -5,7 +5,6 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
-// УВАГА: Встав сюди свій URL від Google Apps Script
 const API_URL = "https://script.google.com/macros/s/AKfycbxlQQ5e4FzxLUyAX6OSxfKMdjLqU_1nbfTwMpxC_3Tm-Ga_VvnVScIklojzwdoQ-6VBIw/exec";
 
 let state = {
@@ -16,7 +15,7 @@ let state = {
     selectedMaster: null,
     selectedDate: null,
     selectedTime: null,
-    editingBookingId: null, // Зберігає ID при перенесенні запису
+    editingBookingId: null,
     isAdmin: false,
     adminMasterInfo: null,
     clientBookings: [],
@@ -32,18 +31,15 @@ let pollingInterval = null;
 // ІНІЦІАЛІЗАЦІЯ ТА КНОПКА НАЗАД
 // ==========================================
 window.addEventListener('DOMContentLoaded', async () => {
-    tg.MainButton.color = "#3b82f6"; // Блакитна кнопка для клієнта за замовчуванням
+    tg.MainButton.color = "#3b82f6"; 
 
-    // Єдиний глобальний обробник кнопки "Назад" у Telegram
     tg.BackButton.onClick(() => {
         if (!document.getElementById('client-screen').classList.contains('hidden-step')) {
-            // Якщо ми переносимо запис
             if (state.editingBookingId && !document.getElementById('step-datetime').classList.contains('hidden-step')) {
                 state.editingBookingId = null;
                 switchTab('client', 'bookings');
                 return;
             }
-            // Стандартна навігація клієнта
             if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
                 showStep('step-master');
             } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
@@ -63,7 +59,6 @@ async function loadInitialData() {
         state.services = data.services;
         state.masters = data.masters;
         
-        // Перевіряємо чи поточний користувач є майстром
         const masterData = state.masters.find(m => m.id.toString() === state.user.id.toString());
         if (masterData) {
             state.isAdmin = true;
@@ -83,22 +78,13 @@ function renderApp() {
         document.getElementById('admin-screen').classList.remove('hidden-step');
         document.getElementById('admin-bottom-nav').classList.remove('hidden-step');
         
-        const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        
-        // Встановлюємо аватар у новій блакитній шапці адміна
-        const adminAvatar = document.getElementById('admin-header-avatar');
-        if(adminAvatar) adminAvatar.innerText = cleanName.charAt(0);
-        
-        tg.MainButton.color = "#14b8a6"; // Бірюзова кнопка для майстра
+        tg.MainButton.color = "#14b8a6"; 
         switchTab('admin', 'home');
     } else {
         document.getElementById('client-screen').classList.remove('hidden-step');
         document.getElementById('client-bottom-nav').classList.remove('hidden-step');
         
-        // Встановлюємо аватари для клієнта
-        const clientAvatarHeader = document.getElementById('client-header-avatar');
         const profileAvatar = document.getElementById('profile-avatar');
-        if(clientAvatarHeader) clientAvatarHeader.innerText = state.user.first_name.charAt(0);
         if(profileAvatar) profileAvatar.innerText = state.user.first_name.charAt(0);
         
         document.getElementById('profile-name').innerText = state.user.first_name;
@@ -117,7 +103,6 @@ function switchTab(role, tabId) {
     document.getElementById(role === 'admin' ? `admin-tab-${tabId}` : `tab-${tabId}`).classList.remove('hidden-step');
     document.getElementById(`${role}-bottom-nav`).classList.remove('hidden-step');
 
-    // Оновлення кольорів кнопок у нижньому навбарі
     const activeColor = role === 'admin' ? 'text-teal-600' : 'text-blue-500';
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`${role}-nav-${nav}`);
@@ -132,27 +117,20 @@ function switchTab(role, tabId) {
         }
     });
 
-    // ДИНАМІЧНА ШАПКА: змінюємо текст залежно від відкритої вкладки
+    // ОНОВЛЕНО: Короткі заголовки для одного ряду з кнопкою дзвіночка
     if (role === 'client') {
         const title = document.getElementById('client-header-title');
         if (title) {
-            if (tabId === 'home') {
-                title.innerHTML = `Привіт, <span class="font-black text-blue-600">${state.user.first_name}</span>,<br><span class="font-extrabold text-slate-800">Готові до манікюру?</span>`;
-            } else if (tabId === 'bookings') {
-                title.innerHTML = `Твої візити,<br><span class="font-extrabold text-blue-600">Історія записів 💅</span>`;
-            } else if (tabId === 'profile') {
-                title.innerHTML = `Мій кабінет,<br><span class="font-extrabold text-blue-600">Налаштування ⚙️</span>`;
-            }
+            if (tabId === 'home') title.innerHTML = `Привіт, <span class="text-blue-600">${state.user.first_name}</span> 👋`;
+            else if (tabId === 'bookings') title.innerHTML = `Твої візити 💅`;
+            else if (tabId === 'profile') title.innerHTML = `Мій кабінет ⚙️`;
         }
     } else {
         const title = document.getElementById('admin-header-title');
         if (title) {
             const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-            if (tabId === 'home') {
-                title.innerHTML = `Панель: <span class="font-black text-teal-600">${cleanName}</span>,<br><span class="font-extrabold text-slate-800">Ваша статистика 📊</span>`;
-            } else if (tabId === 'bookings') {
-                title.innerHTML = `Розклад: <span class="font-black text-teal-600">${cleanName}</span>,<br><span class="font-extrabold text-slate-800">Керування 📅</span>`;
-            }
+            if (tabId === 'home') title.innerHTML = `Панель: <span class="text-teal-600">${cleanName}</span> 📊`;
+            else if (tabId === 'bookings') title.innerHTML = `Розклад 📅`;
         }
     }
 
@@ -202,10 +180,10 @@ function switchBookingTab(filter, role) {
     
     if (filter === 'active') {
         btnActive.className = `flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300`;
-        btnCancelled.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-slate-200";
+        btnCancelled.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100";
     } else {
         btnCancelled.className = `flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300`;
-        btnActive.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-slate-200";
+        btnActive.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100";
     }
     
     if (role === 'admin') renderAdminBookings();
@@ -670,3 +648,4 @@ function confirmCancel() {
     changeBookingStatus(currentCancelBookingId, 'Отменено', reason);
     closeCancelModal();
 }
+function confirmCancelAdmin() { confirmCancel(); }
