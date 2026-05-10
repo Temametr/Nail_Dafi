@@ -62,7 +62,7 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .selected-item { background: linear-gradient(135deg, #fb7185, #e11d48) !important; color: white !important; border-color: transparent !important; box-shadow: 0 10px 20px -3px rgba(225, 29, 72, 0.4) !important; transform: translateY(-2px) scale(1.01); transition: all 0.3s ease; }
+        .selected-item { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; border-color: transparent !important; box-shadow: 0 10px 20px -3px rgba(37, 99, 235, 0.4) !important; transform: translateY(-2px) scale(1.01); transition: all 0.3s ease; }
         .tab-content { transition: opacity 0.3s ease; }
     </style>
 </head>
@@ -85,7 +85,6 @@
                 
                 <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-4">
                     <img src="media/fe3010af-51aa-45b3-a20e-6cd526642666.png" alt="Logo" class="w-14 h-14 object-contain drop-shadow-md shrink-0">
-                    
                     <h1 class="text-[19px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5" id="client-header-title"></h1>
                 </div>
                 
@@ -96,24 +95,37 @@
             </header>
 
             <div id="tab-home" class="tab-content pt-[110px] px-4">
+                <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-3 mt-2">Наша команда</h3>
+                <div id="home-masters-list" class="space-y-5 px-1 pb-4"></div>
+            </div>
+
+            <div id="tab-booking-flow" class="tab-content hidden-step pt-[110px] px-4">
                 <div id="step-booking" class="step-content space-y-4 animate-pop-in mt-2">
-                    <h3 class="font-bold text-xs px-2 text-rose-300 uppercase tracking-[0.15em]">Оберіть послугу</h3>
+                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">Оберіть послугу</h3>
                     <div id="services-list" class="space-y-4 px-1"></div>
                 </div>
                 <div id="step-master" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
-                    <h3 class="font-bold text-xs px-2 text-rose-300 uppercase tracking-[0.15em]">Оберіть майстра</h3>
+                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">Оберіть майстра</h3>
                     <div id="masters-list" class="space-y-4 px-1"></div>
                 </div>
                 <div id="step-datetime" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
-                    <h3 class="font-bold text-xs px-2 text-rose-300 uppercase tracking-[0.15em]">Оберіть дату</h3>
+                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">Оберіть дату</h3>
                     <div id="date-scroll" class="flex overflow-x-auto gap-3 pb-4 px-1 hide-scrollbar -mx-4 px-5"></div>
-                    <h3 class="font-bold text-xs px-2 mt-2 text-rose-300 uppercase tracking-[0.15em]">Вільний час</h3>
+                    <h3 class="font-bold text-xs px-2 mt-2 text-rose-400 uppercase tracking-[0.15em]">Вільний час</h3>
                     <div id="time-loader" class="hidden text-center text-sm font-medium text-rose-300 py-6">Аналізуємо графік...</div>
                     <div id="time-slots" class="grid grid-cols-3 gap-3 px-1"></div>
                 </div>
             </div>
 
             <div id="tab-bookings" class="tab-content hidden-step pt-[110px] px-4">
+                
+                <div class="mb-5 px-1 mt-2">
+                    <button onclick="startClientBookingFlow()" class="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-3xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                        СТВОРИТИ НОВИЙ ВІЗИТ
+                    </button>
+                </div>
+
                 <div class="flex pb-4 gap-2 px-1 mt-2">
                     <button onclick="switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">Підтверджені</button>
                     <button onclick="switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
@@ -153,7 +165,6 @@
                 
                 <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-4">
                     <img src="media/fe3010af-51aa-45b3-a20e-6cd526642666.png" alt="Logo" class="w-14 h-14 object-contain drop-shadow-md shrink-0">
-                    
                     <h1 class="text-[19px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5" id="admin-header-title"></h1>
                 </div>
                 
@@ -200,8 +211,8 @@
     <div id="client-bottom-nav" class="hidden-step fixed bottom-6 left-5 right-5 z-50 max-w-md mx-auto">
         <nav class="floating-nav shadow-floating flex justify-around p-2">
             <button onclick="switchTab('client', 'home')" id="client-nav-home" class="flex flex-col items-center justify-center p-3 text-blue-500 transition-all duration-300 w-20 rounded-xl hover:bg-blue-50">
-                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3l9-8z"/></svg>
-                <span class="text-[10px] font-bold uppercase tracking-wide">Запис</span>
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span class="text-[10px] font-bold uppercase tracking-wide">Головна</span>
             </button>
             <button onclick="switchTab('client', 'bookings')" id="client-nav-bookings" class="flex flex-col items-center justify-center p-3 text-slate-400 transition-all duration-300 w-20 rounded-xl hover:bg-rose-50/50">
                 <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg>
