@@ -30,8 +30,7 @@
 
     <style>
         body { -webkit-tap-highlight-color: transparent; }
-        .card-convex { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 30px 40px -10px rgba(15, 23, 42, 0.06); border-radius: 2rem; }
-        .card-convex-sm { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border-radius: 1.5rem; }
+        .card-convex { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04); border-radius: 2rem; }
         .ios-header { background: linear-gradient(180deg, rgba(230, 240, 250, 0.98) 0%, rgba(240, 244, 249, 0.95) 100%); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.9); border-radius: 0 0 1.75rem 1.75rem; box-shadow: 0 10px 30px -10px rgba(30, 60, 100, 0.12); }
         .floating-nav { background-color: rgba(255, 255, 255, 0.92); backdrop-filter: blur(15px); border: 1px solid rgba(200, 210, 220, 0.5); border-radius: 2rem; }
         .hidden-step { display: none !important; }
@@ -52,7 +51,7 @@
             <p class="mt-6 text-rose-300 font-medium tracking-wide text-sm">Магія налаштовується...</p>
         </div>
 
-        <div id="client-screen" class="hidden-step animate-fade-in-up">
+        <div id="client-screen" class="hidden-step">
             <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-5 flex justify-between items-center">
                 <div class="absolute top-[-1rem] right-[-1rem] w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
                 <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-4">
@@ -65,7 +64,7 @@
                 </div>
             </header>
 
-            <div id="tab-home" class="tab-content pt-[110px] px-4">
+            <div id="tab-home" class="tab-content pt-[110px] px-4 animate-fade-in-up">
                 <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-3 mt-2 text-center">Наша команда</h3>
                 <div id="home-masters-list" class="grid grid-cols-2 gap-3 px-1 pb-2"></div>
 
@@ -122,7 +121,7 @@
                 </div>
             </div>
 
-            <div id="tab-booking-flow" class="tab-content hidden-step pt-[110px] px-4">
+            <div id="tab-booking-flow" class="tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
                 <div id="step-booking" class="step-content space-y-4 animate-pop-in mt-2">
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">Оберіть послугу</h3>
                     <div id="services-list" class="space-y-4 px-1"></div>
@@ -142,7 +141,7 @@
                 </div>
             </div>
 
-            <div id="tab-bookings" class="tab-content hidden-step pt-[110px] px-4">
+            <div id="tab-bookings" class="tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
                 <div class="mb-5 px-1 mt-2">
                     <button onclick="window.appAPI.startClientBookingFlow()" class="w-full py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">СТВОРИТИ НОВИЙ ВІЗИТ</button>
                 </div>
@@ -153,7 +152,7 @@
                 <div id="my-bookings-list" class="space-y-5 px-1"></div>
             </div>
 
-            <div id="tab-profile" class="tab-content hidden-step pt-[110px] px-4">
+            <div id="tab-profile" class="tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
                 <div class="card-convex p-6 flex items-center gap-5 mx-1 mt-2">
                     <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-rose-500 shadow-inner border border-rose-100" id="profile-avatar"></div>
                     <div>
@@ -164,7 +163,7 @@
             </div>
         </div>
 
-        <div id="admin-screen" class="hidden-step animate-fade-in-up">
+        <div id="admin-screen" class="hidden-step">
             <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-5 flex justify-between items-center">
                 <div class="absolute top-[-1rem] right-[-1rem] w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
                 <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-4">
@@ -173,7 +172,7 @@
                 </div>
             </header>
 
-            <div id="admin-tab-home" class="admin-tab-content pt-[110px] px-4">
+            <div id="admin-tab-home" class="admin-tab-content pt-[110px] px-4 animate-fade-in-up">
                 <div class="flex gap-2 mb-6 bg-white/40 border border-white/60 p-1.5 rounded-2xl mx-1 backdrop-blur-sm mt-2">
                     <button onclick="window.appAPI.renderAdminStats('day')" id="stat-btn-day" class="flex-1 py-2.5 bg-white shadow-md rounded-xl text-xs font-bold uppercase tracking-wider text-slate-950 transition-all">Сьогодні</button>
                     <button onclick="window.appAPI.renderAdminStats('week')" id="stat-btn-week" class="flex-1 py-2.5 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">Тиждень</button>
@@ -197,7 +196,7 @@
                 </div>
             </div>
 
-            <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[110px] px-4">
+            <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
                 <div class="flex px-1 pb-4 gap-2 mt-2">
                     <button onclick="window.appAPI.switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase bg-slate-950 text-white rounded-xl shadow-lg transition-all">Активні</button>
                     <button onclick="window.appAPI.switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase bg-white text-slate-500 rounded-xl border border-rose-100 transition-all">Скасовані</button>
