@@ -3,11 +3,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     // ЄДИНИЙ глобальний обробник кнопки Назад
     tg.BackButton.onClick(() => {
         if (!document.getElementById('client-screen').classList.contains('hidden-step')) {
+            // Якщо ми переносимо запис
             if (state.editingBookingId && !document.getElementById('step-datetime').classList.contains('hidden-step')) {
                 state.editingBookingId = null;
                 switchTab('client', 'bookings');
                 return;
             }
+            // Звичайна навігація клієнта
             if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
                 showStep('step-master');
             } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
@@ -18,6 +20,30 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     await loadInitialData();
 });
+
+// НАСПРАВДІ ЦЬОГО БЛОКУ НЕ ВИСТАЧАЛО! 👇
+async function loadInitialData() {
+    try {
+        const response = await fetch(`${API_URL}?action=getInitData`);
+        const data = await response.json();
+        
+        state.services = data.services;
+        state.masters = data.masters;
+        
+        const masterData = state.masters.find(m => m.id.toString() === state.user.id.toString());
+        if (masterData) {
+            state.isAdmin = true;
+            state.adminMasterInfo = masterData;
+        }
+
+        renderApp();
+    } catch (e) {
+        console.error("Init Error:", e);
+        tg.showAlert("Помилка завантаження даних. Перевірте підключення до Інтернету.");
+    } finally {
+        document.getElementById('loader').classList.add('hidden');
+    }
+}
 
 function renderApp() {
     if (state.isAdmin) {
