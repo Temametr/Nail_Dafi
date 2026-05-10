@@ -16,7 +16,7 @@ let state = {
     selectedMaster: null,
     selectedDate: null,
     selectedTime: null,
-    editingBookingId: null, // Зберігає ID при перенесенні запису
+    editingBookingId: null,
     isAdmin: false,
     adminMasterInfo: null,
     clientBookings: [],
@@ -219,16 +219,18 @@ function renderHomeMasters() {
     const list = document.getElementById('home-masters-list');
     list.innerHTML = state.masters.map((m, i) => {
         const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        // Призначаємо фото: 0 індекс = 0222, 1 індекс = 0223
         const imgSrc = i === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
         
         return `
-        <div class="card-convex p-8 mb-5 flex flex-col items-center text-center animate-pop-in border border-white" style="animation-delay: ${i*50}ms">
-            <div class="w-[110px] h-[110px] bg-rose-50 rounded-[2.5rem] flex items-center justify-center mb-5 shadow-inner border border-rose-100 overflow-hidden relative">
-                <img src="${imgSrc}" alt="${cleanName}" class="w-full h-full object-cover">
+        <div class="relative w-full h-[400px] rounded-[2.5rem] overflow-hidden mb-6 shadow-convex animate-pop-in border-4 border-white/40" style="animation-delay: ${i*50}ms">
+            <img src="${imgSrc}" alt="${cleanName}" class="absolute inset-0 w-full h-full object-cover">
+            
+            <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-rose-900/40 via-transparent to-transparent"></div>
+            
+            <div class="absolute bottom-4 left-4 right-4 bg-white/85 backdrop-blur-md rounded-3xl p-5 shadow-lg border border-white/60 text-center flex flex-col justify-center items-center">
+                <h3 class="font-black text-slate-900 text-2xl tracking-tight leading-none mb-1">${cleanName}</h3>
+                <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-1">Топ-майстер</p>
             </div>
-            <h3 class="font-black text-slate-900 text-2xl tracking-tight leading-none mb-2">${cleanName}</h3>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl mt-1">Топ-майстер</p>
         </div>
         `;
     }).join('');
@@ -503,8 +505,9 @@ function renderClientBookings() {
 
 function renderServices() {
     const list = document.getElementById('services-list');
+    // ✅ Виправлено баг з лапками в selectService('${s.id}')
     list.innerHTML = state.services.map((s, i) => `
-        <div onclick="selectService(${s.id})" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
+        <div onclick="selectService('${s.id}')" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0 pr-2">
                 <div class="shrink-0 w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 text-2xl shadow-inner border border-blue-100">💅</div>
                 <div class="flex-1 min-w-0">
@@ -519,11 +522,17 @@ function renderServices() {
     `).join('');
 }
 
+function selectService(id) {
+    // Безпечний пошук незалежно від типу (строка/число)
+    state.selectedService = state.services.find(s => s.id.toString() === id.toString());
+    renderMasters();
+    showStep('step-master');
+}
+
 function renderMasters() {
     const list = document.getElementById('masters-list');
     list.innerHTML = state.masters.map((m, i) => {
         const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        // Вставляємо фото для флоу запису (як в renderHomeMasters)
         const imgSrc = i === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
         
         return `
@@ -694,3 +703,4 @@ function confirmCancel() {
     changeBookingStatus(currentCancelBookingId, 'Отменено', reason);
     closeCancelModal();
 }
+function confirmCancelAdmin() { confirmCancel(); }
