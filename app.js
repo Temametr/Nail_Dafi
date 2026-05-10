@@ -16,7 +16,7 @@ let state = {
     selectedMaster: null,
     selectedDate: null,
     selectedTime: null,
-    editingBookingId: null,
+    editingBookingId: null, // Зберігає ID при перенесенні запису
     isAdmin: false,
     adminMasterInfo: null,
     clientBookings: [],
@@ -32,20 +32,22 @@ let pollingInterval = null;
 // ІНІЦІАЛІЗАЦІЯ ТА КНОПКА НАЗАД
 // ==========================================
 window.addEventListener('DOMContentLoaded', async () => {
-    tg.MainButton.color = "#3b82f6"; 
+    tg.MainButton.color = "#3b82f6"; // Блакитна кнопка для клієнта за замовчуванням
 
+    // Єдиний глобальний обробник кнопки "Назад" у Telegram
     tg.BackButton.onClick(() => {
         if (!document.getElementById('client-screen').classList.contains('hidden-step')) {
-            if (!document.getElementById('tab-booking-flow').classList.contains('hidden-step')) {
-                if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
-                    showStep('step-master');
-                } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
-                    showStep('step-booking');
-                } else if (!document.getElementById('step-booking').classList.contains('hidden-step')) {
-                    state.editingBookingId = null;
-                    switchTab('client', 'bookings');
-                }
+            // Якщо ми переносимо запис
+            if (state.editingBookingId && !document.getElementById('step-datetime').classList.contains('hidden-step')) {
+                state.editingBookingId = null;
+                switchTab('client', 'bookings');
                 return;
+            }
+            // Стандартна навігація клієнта
+            if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
+                showStep('step-master');
+            } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
+                showStep('step-booking');
             }
         }
     });
@@ -61,6 +63,7 @@ async function loadInitialData() {
         state.services = data.services;
         state.masters = data.masters;
         
+        // Перевіряємо чи поточний користувач є майстром
         const masterData = state.masters.find(m => m.id.toString() === state.user.id.toString());
         if (masterData) {
             state.isAdmin = true;
@@ -80,19 +83,27 @@ function renderApp() {
         document.getElementById('admin-screen').classList.remove('hidden-step');
         document.getElementById('admin-bottom-nav').classList.remove('hidden-step');
         
-        tg.MainButton.color = "#14b8a6"; 
+        const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
+        
+        // Встановлюємо аватар у новій блакитній шапці адміна
+        const adminAvatar = document.getElementById('admin-header-avatar');
+        if(adminAvatar) adminAvatar.innerText = cleanName.charAt(0);
+        
+        tg.MainButton.color = "#14b8a6"; // Бірюзова кнопка для майстра
         switchTab('admin', 'home');
     } else {
         document.getElementById('client-screen').classList.remove('hidden-step');
         document.getElementById('client-bottom-nav').classList.remove('hidden-step');
         
+        // Встановлюємо аватари для клієнта
+        const clientAvatarHeader = document.getElementById('client-header-avatar');
         const profileAvatar = document.getElementById('profile-avatar');
+        if(clientAvatarHeader) clientAvatarHeader.innerText = state.user.first_name.charAt(0);
         if(profileAvatar) profileAvatar.innerText = state.user.first_name.charAt(0);
         
         document.getElementById('profile-name').innerText = state.user.first_name;
         document.getElementById('profile-id').innerText = state.user.id;
 
-        renderHomeMasters();
         renderServices();
         switchTab('client', 'home');
     }
@@ -106,6 +117,7 @@ function switchTab(role, tabId) {
     document.getElementById(role === 'admin' ? `admin-tab-${tabId}` : `tab-${tabId}`).classList.remove('hidden-step');
     document.getElementById(`${role}-bottom-nav`).classList.remove('hidden-step');
 
+    // Оновлення кольорів кнопок у нижньому навбарі
     const activeColor = role === 'admin' ? 'text-teal-600' : 'text-blue-500';
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`${role}-nav-${nav}`);
@@ -120,19 +132,27 @@ function switchTab(role, tabId) {
         }
     });
 
+    // ДИНАМІЧНА ШАПКА: змінюємо текст залежно від відкритої вкладки
     if (role === 'client') {
         const title = document.getElementById('client-header-title');
         if (title) {
-            if (tabId === 'home') title.innerHTML = `Привіт, <span class="text-blue-600">${state.user.first_name}</span> 👋`;
-            else if (tabId === 'bookings') title.innerHTML = `Твої візити 💅`;
-            else if (tabId === 'profile') title.innerHTML = `Мій кабінет ⚙️`;
+            if (tabId === 'home') {
+                title.innerHTML = `Привіт, <span class="font-black text-blue-600">${state.user.first_name}</span> 👋`;
+            } else if (tabId === 'bookings') {
+                title.innerHTML = `Твої візити 💅`;
+            } else if (tabId === 'profile') {
+                title.innerHTML = `Мій кабінет ⚙️`;
+            }
         }
     } else {
         const title = document.getElementById('admin-header-title');
         if (title) {
             const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-            if (tabId === 'home') title.innerHTML = `Панель: <span class="text-teal-600">${cleanName}</span> 📊`;
-            else if (tabId === 'bookings') title.innerHTML = `Розклад 📅`;
+            if (tabId === 'home') {
+                title.innerHTML = `Панель: <span class="font-black text-teal-600">${cleanName}</span> 📊`;
+            } else if (tabId === 'bookings') {
+                title.innerHTML = `Розклад 📅`;
+            }
         }
     }
 
@@ -142,64 +162,12 @@ function switchTab(role, tabId) {
     state.editingBookingId = null;
 
     if (role === 'client') {
-        if (tabId === 'bookings') { loadBookings('client'); startPolling('client'); }
+        if (tabId === 'home') renderHomeMasters(); // Рендеримо картки майстрів 3:4
+        else if (tabId === 'bookings') { loadBookings('client'); startPolling('client'); }
     } else {
         if (tabId === 'home') { loadBookings('admin', false, true); startPolling('admin', true); }
         else if (tabId === 'bookings') { loadBookings('admin'); startPolling('admin'); }
     }
-}
-
-// ==========================================
-// ФЛОУ СТВОРЕННЯ / ЗМІНИ ЗАПИСУ (КЛІЄНТ)
-// ==========================================
-function startClientBookingFlow() {
-    state.editingBookingId = null;
-    
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
-    document.getElementById('tab-booking-flow').classList.remove('hidden-step');
-    
-    const title = document.getElementById('client-header-title');
-    if (title) title.innerHTML = `Оформлення <span class="text-blue-600">візиту</span> 📝`;
-
-    ['home', 'bookings', 'profile'].forEach(nav => {
-        const btn = document.getElementById(`client-nav-${nav}`);
-        if(btn) {
-            if (nav === 'bookings') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
-            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
-        }
-    });
-
-    renderServices();
-    showStep('step-booking');
-    tg.BackButton.show();
-}
-
-function startReschedule(bookingId) {
-    const booking = state.clientBookings.find(b => b.id === bookingId);
-    if (!booking) return;
-
-    state.editingBookingId = bookingId;
-    state.selectedService = state.services.find(s => s.name === booking.service);
-    state.selectedMaster = state.masters.find(m => m.id.toString() === booking.masterId.toString());
-
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
-    document.getElementById('tab-booking-flow').classList.remove('hidden-step');
-    
-    const title = document.getElementById('client-header-title');
-    if (title) title.innerHTML = `Зміна <span class="text-blue-600">дати</span> 📅`;
-
-    ['home', 'bookings', 'profile'].forEach(nav => {
-        const btn = document.getElementById(`client-nav-${nav}`);
-        if(btn) {
-            if (nav === 'bookings') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
-            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
-        }
-    });
-
-    stopPolling();
-    renderCalendar();
-    showStep('step-datetime');
-    tg.BackButton.show(); 
 }
 
 function showStep(stepId) {
@@ -210,30 +178,6 @@ function showStep(stepId) {
         tg.MainButton.hide();
         state.selectedService = null; state.selectedMaster = null; state.selectedDate = null; state.selectedTime = null;
     }
-}
-
-// ==========================================
-// ВІТРИНА: ГОЛОВНА СТОРІНКА (КЛІЄНТ)
-// ==========================================
-function renderHomeMasters() {
-    const list = document.getElementById('home-masters-list');
-    list.innerHTML = state.masters.map((m, i) => {
-        const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        const imgSrc = i === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
-        
-        return `
-        <div class="relative w-full h-[400px] rounded-[2.5rem] overflow-hidden mb-6 shadow-convex animate-pop-in border-4 border-white/40" style="animation-delay: ${i*50}ms">
-            <img src="${imgSrc}" alt="${cleanName}" class="absolute inset-0 w-full h-full object-cover">
-            
-            <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-rose-900/40 via-transparent to-transparent"></div>
-            
-            <div class="absolute bottom-4 left-4 right-4 bg-white/85 backdrop-blur-md rounded-3xl p-5 shadow-lg border border-white/60 text-center flex flex-col justify-center items-center">
-                <h3 class="font-black text-slate-900 text-2xl tracking-tight leading-none mb-1">${cleanName}</h3>
-                <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-1">Топ-майстер</p>
-            </div>
-        </div>
-        `;
-    }).join('');
 }
 
 // ==========================================
@@ -285,6 +229,7 @@ async function loadBookings(role, isSilent = false, forDashboard = false) {
             renderClientBookings();
         }
     } catch (e) {
+        console.error("Load Bookings Error:", e);
         if (!isSilent && containerId) document.getElementById(containerId).innerHTML = '<div class="text-center py-12 text-red-500 font-medium">Помилка мережі 🌐</div>';
     }
 }
@@ -443,8 +388,53 @@ function renderAdminBookings() {
 }
 
 // ==========================================
-// ЛОГІКА РЕНДЕРУ (КЛІЄНТ)
+// ЛОГІКА РЕНДЕРУ ТА ФЛОУ (КЛІЄНТ)
 // ==========================================
+
+// ✅ ОНОВЛЕНО: Вітрина майстрів на головній сторінці (прямокутник 3:4)
+function renderHomeMasters() {
+    const list = document.getElementById('home-masters-list');
+    list.innerHTML = state.masters.map((m, i) => {
+        const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
+        const imgSrc = i === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
+        
+        return `
+        <div class="relative w-full aspect-[3/4] rounded-[2.5rem] overflow-hidden mb-6 shadow-convex animate-pop-in border-4 border-white/40" style="animation-delay: ${i*50}ms">
+            <img src="${imgSrc}" alt="${cleanName}" class="absolute inset-0 w-full h-full object-cover">
+            
+            <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-rose-900/40 via-transparent to-transparent"></div>
+            
+            <div class="absolute bottom-4 left-4 right-4 bg-white/85 backdrop-blur-md rounded-3xl p-5 shadow-lg border border-white/60 text-center flex flex-col justify-center items-center">
+                <h3 class="font-black text-slate-900 text-2xl tracking-tight leading-none mb-1">${cleanName}</h3>
+                <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-1">Топ-майстер</p>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+function startClientBookingFlow() {
+    state.editingBookingId = null;
+    
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
+    document.getElementById('tab-booking-flow').classList.remove('hidden-step');
+    
+    const title = document.getElementById('client-header-title');
+    if (title) title.innerHTML = `Оформлення <span class="text-blue-600">візиту</span> 📝`;
+
+    ['home', 'bookings', 'profile'].forEach(nav => {
+        const btn = document.getElementById(`client-nav-${nav}`);
+        if(btn) {
+            if (nav === 'bookings') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
+            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
+        }
+    });
+
+    renderServices();
+    showStep('step-booking');
+    tg.BackButton.show();
+}
+
 function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
     const filtered = state.clientBookings.filter(b => {
@@ -503,9 +493,36 @@ function renderClientBookings() {
     }).join('');
 }
 
+function startReschedule(bookingId) {
+    const booking = state.clientBookings.find(b => b.id === bookingId);
+    if (!booking) return;
+
+    state.editingBookingId = bookingId;
+    state.selectedService = state.services.find(s => s.name === booking.service);
+    state.selectedMaster = state.masters.find(m => m.id.toString() === booking.masterId.toString());
+
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
+    document.getElementById('tab-booking-flow').classList.remove('hidden-step');
+    
+    const title = document.getElementById('client-header-title');
+    if (title) title.innerHTML = `Зміна <span class="text-blue-600">дати</span> 📅`;
+
+    ['home', 'bookings', 'profile'].forEach(nav => {
+        const btn = document.getElementById(`client-nav-${nav}`);
+        if(btn) {
+            if (nav === 'bookings') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
+            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
+        }
+    });
+
+    stopPolling();
+    renderCalendar();
+    showStep('step-datetime');
+    tg.BackButton.show(); 
+}
+
 function renderServices() {
     const list = document.getElementById('services-list');
-    // ✅ Виправлено баг з лапками в selectService('${s.id}')
     list.innerHTML = state.services.map((s, i) => `
         <div onclick="selectService('${s.id}')" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0 pr-2">
@@ -523,7 +540,6 @@ function renderServices() {
 }
 
 function selectService(id) {
-    // Безпечний пошук незалежно від типу (строка/число)
     state.selectedService = state.services.find(s => s.id.toString() === id.toString());
     renderMasters();
     showStep('step-master');
