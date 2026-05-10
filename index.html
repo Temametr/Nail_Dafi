@@ -62,7 +62,7 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .selected-item { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; border-color: transparent !important; box-shadow: 0 10px 20px -3px rgba(37, 99, 235, 0.4) !important; transform: translateY(-2px) scale(1.01); transition: all 0.3s ease; }
+        .selected-item { background: linear-gradient(135deg, #fb7185, #e11d48) !important; color: white !important; border-color: transparent !important; box-shadow: 0 10px 20px -3px rgba(225, 29, 72, 0.4) !important; transform: translateY(-2px) scale(1.01); transition: all 0.3s ease; }
         .tab-content { transition: opacity 0.3s ease; }
     </style>
 </head>
@@ -95,8 +95,10 @@
             </header>
 
             <div id="tab-home" class="tab-content pt-[110px] px-4">
-                <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-3 mt-2">Наша команда</h3>
-                <div id="home-masters-list" class="space-y-5 px-1 pb-4"></div>
+                <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-3 mt-2 text-center">Наша команда</h3>
+                
+                <div id="home-masters-list" class="grid grid-cols-2 gap-3 px-1 pb-4"></div>
+                
             </div>
 
             <div id="tab-booking-flow" class="tab-content hidden-step pt-[110px] px-4">
@@ -118,7 +120,6 @@
             </div>
 
             <div id="tab-bookings" class="tab-content hidden-step pt-[110px] px-4">
-                
                 <div class="mb-5 px-1 mt-2">
                     <button onclick="startClientBookingFlow()" class="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-3xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
