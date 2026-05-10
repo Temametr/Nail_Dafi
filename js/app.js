@@ -7,30 +7,12 @@ window.appAPI = {
     switchTab, switchBookingTab, startClientBookingFlow, startReschedule,
     selectService, selectMaster, selectDate, selectTime,
     changeBookingStatus, openCancelModal, closeCancelModal, confirmCancel,
-    renderAdminStats,
-    openMasterProfile, closeMasterProfile, bookFromProfile
+    renderAdminStats, openMasterProfile, closeMasterProfile, bookFromProfile
 };
 
 window.addEventListener('DOMContentLoaded', async () => {
     tg.MainButton.color = "#3b82f6";
     tg.BackButton.onClick(handleBack);
-    await loadApp();
-});
-
-async function loadInitialData() {
-    try {
-        const data = await fetchInitialData();
-        state.services = data.services;
-        state.masters = data.masters;
-        const masterData = state.masters.find(m => m.id.toString() === state.user.id.toString());
-        if (masterData) {
-            state.isAdmin = true;
-            state.adminMasterInfo = masterData;
-        }
-    } catch (e) { tg.showAlert("Помилка завантаження даних."); }
-}
-
-async function loadApp() {
     await loadInitialData();
     document.getElementById('loader').classList.add('hidden');
     if (state.isAdmin) {
@@ -44,38 +26,28 @@ async function loadApp() {
         renderServices();
         switchTab('client', 'home');
     }
+});
+
+async function loadInitialData() {
+    try {
+        const data = await fetchInitialData();
+        state.services = data.services;
+        state.masters = data.masters;
+        const masterData = state.masters.find(m => m.id.toString() === state.user.id.toString());
+        if (masterData) { state.isAdmin = true; state.adminMasterInfo = masterData; }
+    } catch (e) { tg.showAlert("Помилка мережі"); }
 }
 
 function handleBack() {
-    if (!document.getElementById('master-profile-modal').classList.contains('hidden')) {
-        closeMasterProfile();
-        return;
-    }
-
+    if (!document.getElementById('master-profile-modal').classList.contains('hidden')) { closeMasterProfile(); return; }
     if (!document.getElementById('tab-booking-flow').classList.contains('hidden-step')) {
-        if (state.editingBookingId) {
-            state.editingBookingId = null;
-            switchTab('client', 'bookings');
-            return;
-        }
-
+        if (state.editingBookingId) { state.editingBookingId = null; switchTab('client', 'bookings'); return; }
         if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
-            if (state.viewedMasterId && state.selectedMaster && state.selectedMaster.id.toString() === state.viewedMasterId.toString()) {
-                showStep('step-booking'); 
-            } else {
-                showStep('step-master');
-            }
-        } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
-            showStep('step-booking');
-        } else { 
-            state.editingBookingId = null; 
-            if (state.viewedMasterId) {
-                state.selectedMaster = null;
-                switchTab('client', 'home');
-                openMasterProfile(state.viewedMasterId);
-            } else {
-                switchTab('client', 'bookings'); 
-            }
+            if (state.viewedMasterId) showStep('step-booking'); else showStep('step-master');
+        } else if (!document.getElementById('step-master').classList.contains('hidden-step')) showStep('step-booking');
+        else {
+            if (state.viewedMasterId) { switchTab('client', 'home'); openMasterProfile(state.viewedMasterId); } 
+            else switchTab('client', 'bookings');
         }
     }
 }
@@ -90,28 +62,20 @@ function switchTab(role, tabId) {
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`${role}-nav-${nav}`);
         if (btn) {
-            if (nav === tabId) {
-                btn.classList.remove('text-slate-400');
-                btn.classList.add(activeColor, role === 'admin' ? 'bg-teal-50' : 'bg-blue-50');
-            } else {
-                btn.classList.remove(activeColor, 'bg-teal-50', 'bg-blue-50');
-                btn.classList.add('text-slate-400');
-            }
+            if (nav === tabId) { btn.classList.remove('text-slate-400'); btn.classList.add(activeColor, 'bg-white/50'); }
+            else { btn.classList.remove(activeColor, 'bg-white/50'); btn.classList.add('text-slate-400'); }
         }
     });
 
     updateHeaderTitle(role, tabId);
     tg.BackButton.hide();
     tg.MainButton.hide();
-    stopPolling();
-    state.editingBookingId = null;
-
     if (role === 'client') {
         if (tabId === 'home') renderHomeMasters();
-        else if (tabId === 'bookings') { loadBookings('client'); startPolling('client'); }
+        else if (tabId === 'bookings') loadBookings('client');
     } else {
-        if (tabId === 'home') { loadBookings('admin', false, true); startPolling('admin', true); }
-        else if (tabId === 'bookings') { loadBookings('admin'); startPolling('admin'); }
+        if (tabId === 'home') loadBookings('admin', false, true);
+        else loadBookings('admin');
     }
 }
 
@@ -121,117 +85,53 @@ function updateHeaderTitle(role, tabId) {
     if (role === 'client') {
         if (tabId === 'home') title.innerHTML = `Привіт, <span class="text-blue-600">${state.user.first_name}</span> 👋`;
         else if (tabId === 'bookings') title.innerHTML = `Твої візити 💅`;
-        else if (tabId === 'profile') title.innerHTML = `Мій кабінет ⚙️`;
+        else title.innerHTML = `Мій кабінет ⚙️`;
     } else {
         const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        if (tabId === 'home') title.innerHTML = `Панель: <span class="text-teal-600">${cleanName}</span> 📊`;
-        else title.innerHTML = `Розклад 📅`;
+        title.innerHTML = tabId === 'home' ? `Панель: <span class="text-teal-600">${cleanName}</span> 📊` : `Розклад 📅`;
     }
 }
 
-async function loadBookings(role, isSilent = false, forDashboard = false) {
-    const containerId = role === 'admin' ? (forDashboard ? null : 'admin-bookings-list') : 'my-bookings-list';
-    if (!isSilent && containerId) {
-        const spinnerColor = role === 'admin' ? 'border-t-teal-500' : 'border-t-blue-500';
-        document.getElementById(containerId).innerHTML = `
-            <div class="flex flex-col items-center justify-center py-16 animate-pulse">
-                <div class="w-12 h-12 border-4 border-slate-100 rounded-full ${spinnerColor} animate-spin mb-4 shadow-sm"></div>
-                <p class="text-slate-400 font-medium text-sm">Завантажуємо дані...</p>
-            </div>
-        `;
-    }
-
+async function loadBookings(role, silent = false, dash = false) {
+    const contId = role === 'admin' ? (dash ? null : 'admin-bookings-list') : 'my-bookings-list';
     try {
         const data = await fetchBookings(role);
-        if (role === 'admin') {
-            state.adminBookings = data.bookings || [];
-            if (forDashboard) renderAdminStats('day');
-            else renderAdminBookings();
-        } else {
-            state.clientBookings = data.bookings || [];
-            renderClientBookings();
-        }
-    } catch (e) { 
-        if (!isSilent && containerId) {
-            document.getElementById(containerId).innerHTML = '<div class="text-center py-12 text-red-500 font-medium">Помилка мережі 🌐</div>';
-        }
-    }
-}
-
-function startPolling(role, forDashboard = false) {
-    stopPolling();
-    polling.interval = setInterval(() => loadBookings(role, true, forDashboard), 15000);
-}
-
-function stopPolling() {
-    if (polling.interval) clearInterval(polling.interval);
+        if (role === 'admin') { state.adminBookings = data.bookings || []; dash ? renderAdminStats('day') : renderAdminBookings(); }
+        else { state.clientBookings = data.bookings || []; renderClientBookings(); }
+    } catch (e) { console.error(e); }
 }
 
 function startClientBookingFlow() {
-    state.editingBookingId = null;
-    state.selectedMaster = null;
-    state.viewedMasterId = null; 
-    
+    state.editingBookingId = null; state.selectedMaster = null; state.viewedMasterId = null;
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
-    document.getElementById('client-header-title').innerHTML = `Новий <span class="text-blue-600">візит</span> 📝`;
-    
-    ['home', 'bookings', 'profile'].forEach(nav => {
-        const btn = document.getElementById(`client-nav-${nav}`);
-        if(btn) {
-            if (nav === 'bookings') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
-            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
-        }
-    });
-
     renderServices();
     showStep('step-booking');
     tg.BackButton.show();
 }
 
-function startReschedule(bookingId) {
-    const booking = state.clientBookings.find(b => b.id === bookingId);
-    if (!booking) return;
-    state.editingBookingId = bookingId;
-    state.selectedService = state.services.find(s => s.name === booking.service);
-    state.selectedMaster = state.masters.find(m => m.id.toString() === booking.masterId.toString());
-    
+function startReschedule(id) {
+    const b = state.clientBookings.find(x => x.id === id);
+    state.editingBookingId = id;
+    state.selectedService = state.services.find(s => s.name === b.service);
+    state.selectedMaster = state.masters.find(m => m.id.toString() === b.masterId.toString());
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
-    document.getElementById('client-header-title').innerHTML = `Зміна <span class="text-blue-600">дати</span> 📅`;
-    
-    ['home', 'bookings', 'profile'].forEach(nav => {
-        const btn = document.getElementById(`client-nav-${nav}`);
-        if(btn) {
-            if (nav === 'bookings') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
-            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
-        }
-    });
-
     renderCalendar();
     showStep('step-datetime');
     tg.BackButton.show();
 }
 
-function showStep(stepId) {
+function showStep(sId) {
     document.querySelectorAll('.step-content').forEach(s => s.classList.add('hidden-step'));
-    document.getElementById(stepId).classList.remove('hidden-step');
-    if (stepId === 'step-booking') {
-        tg.MainButton.hide();
-        state.selectedService = null; state.selectedDate = null; state.selectedTime = null;
-    }
+    document.getElementById(sId).classList.remove('hidden-step');
+    if (sId === 'step-booking') tg.MainButton.hide();
 }
 
 function selectService(id) {
     state.selectedService = state.services.find(s => s.id.toString() === id.toString());
-    
-    if (state.selectedMaster) {
-        renderCalendar();
-        showStep('step-datetime');
-    } else {
-        renderMasters();
-        showStep('step-master');
-    }
+    if (state.selectedMaster) { renderCalendar(); showStep('step-datetime'); }
+    else { renderMasters(); showStep('step-master'); }
 }
 
 function selectMaster(id) {
@@ -240,154 +140,65 @@ function selectMaster(id) {
     showStep('step-datetime');
 }
 
-// ✅ ОНОВЛЕНО: Спрощена логіка виділення дати (CSS робить усе сам)
-async function selectDate(dateStr, btnElement) {
-    state.selectedDate = dateStr;
-    
-    document.querySelectorAll('.date-btn').forEach(btn => {
-        btn.classList.remove('selected-item', 'shadow-blue-300', 'border-transparent');
-    });
-    btnElement.classList.add('selected-item', 'shadow-blue-300', 'border-transparent');
-
-    document.getElementById('time-slots').innerHTML = '';
+async function selectDate(date, btn) {
+    state.selectedDate = date;
+    document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected-item'));
+    btn.classList.add('selected-item');
     document.getElementById('time-loader').classList.remove('hidden');
-    try {
-        const data = await fetchOccupiedSlotsAPI(dateStr, state.selectedMaster.id, state.editingBookingId);
-        renderTimeSlots(data.occupiedSlots || []);
-    } finally { document.getElementById('time-loader').classList.add('hidden'); }
+    document.getElementById('time-slots').innerHTML = '';
+    const d = await fetchOccupiedSlotsAPI(date, state.selectedMaster.id, state.editingBookingId);
+    renderTimeSlots(d.occupiedSlots || []);
+    document.getElementById('time-loader').classList.add('hidden');
 }
 
-function selectTime(time, btnElement) {
-    state.selectedTime = time;
-    document.querySelectorAll('.time-btn').forEach(btn => {
-        btn.classList.remove('selected-item', 'shadow-blue-300');
-        btn.classList.add('bg-white', 'text-slate-950', 'shadow-convex-sm');
-    });
-    
-    btnElement.classList.remove('bg-white', 'text-slate-950', 'shadow-convex-sm');
-    btnElement.classList.add('selected-item', 'shadow-blue-300');
-    
-    tg.MainButton.text = state.editingBookingId ? `Перенести на ${time}` : `Записатися на ${time}`;
+function selectTime(t, btn) {
+    state.selectedTime = t;
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected-item'));
+    btn.classList.add('selected-item');
+    tg.MainButton.text = state.editingBookingId ? `Перенести на ${t}` : `Записатися на ${t}`;
     tg.MainButton.show();
     tg.MainButton.onClick(async () => {
         tg.MainButton.showProgress();
-        const res = await submitBookingAPI({
-            action: state.editingBookingId ? 'rescheduleBooking' : 'createBooking',
-            date: state.selectedDate, time: state.selectedTime, masterId: state.selectedMaster.id,
-            clientId: state.user.id.toString(), clientName: state.user.first_name,
-            service: state.selectedService.name, bookingId: state.editingBookingId
-        });
-        if (res.status === 'success') {
-            tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert(state.editingBookingId ? "Запит на перенесення надіслано!" : "Ура! Ти записалася на манікюр 🎉", () => switchTab('client', 'bookings'));
-        } else tg.showAlert('Помилка: ' + res.message);
+        const r = await submitBookingAPI({ action: state.editingBookingId ? 'rescheduleBooking' : 'createBooking', date: state.selectedDate, time: state.selectedTime, masterId: state.selectedMaster.id, clientId: state.user.id.toString(), clientName: state.user.first_name, service: state.selectedService.name, bookingId: state.editingBookingId });
+        if (r.status === 'success') tg.showAlert("Готово!", () => switchTab('client', 'bookings'));
+        else tg.showAlert(r.message);
         tg.MainButton.hideProgress();
     });
 }
 
 function openMasterProfile(id) {
-    state.viewedMasterId = id; 
-    const master = state.masters.find(m => m.id.toString() === id.toString());
-    if (!master) return;
-    
-    const originalIndex = state.masters.indexOf(master);
-    const imgSrc = originalIndex === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
-    
-    document.getElementById('mp-image').src = imgSrc;
-    const cleanName = master.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-    document.getElementById('mp-name').innerText = cleanName;
-    
-    const phone = master.phone || "Не вказано";
-    document.getElementById('mp-phone').innerText = phone;
-    document.getElementById('mp-phone-link').href = master.phone ? `tel:${master.phone.replace(/[^0-9+]/g, '')}` : "#";
-    
-    document.getElementById('mp-description').innerText = master.about || "Найкращий майстер нашого салону! Опис скоро з'явиться...";
-    
+    state.viewedMasterId = id;
+    const m = state.masters.find(x => x.id.toString() === id.toString());
+    const originalIdx = state.masters.indexOf(m);
+    document.getElementById('mp-image').src = originalIdx === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
+    document.getElementById('mp-name').innerText = m.name.replace(/^(Майстер|Мастер)\s+/i, '');
+    document.getElementById('mp-description').innerText = m.about || "Найкращий майстер нашого острівця!";
     document.getElementById('master-profile-modal').classList.remove('hidden');
     document.getElementById('master-profile-modal').classList.add('flex');
-    
-    tg.BackButton.show(); 
+    tg.BackButton.show();
 }
 
 function closeMasterProfile() {
     document.getElementById('master-profile-modal').classList.add('hidden');
     document.getElementById('master-profile-modal').classList.remove('flex');
-    state.viewedMasterId = null;
-    tg.BackButton.hide();
+    state.viewedMasterId = null; tg.BackButton.hide();
 }
 
 function bookFromProfile() {
+    state.selectedMaster = state.masters.find(x => x.id.toString() === state.viewedMasterId.toString());
     document.getElementById('master-profile-modal').classList.add('hidden');
-    document.getElementById('master-profile-modal').classList.remove('flex');
-    
-    state.editingBookingId = null;
-    state.selectedMaster = state.masters.find(m => m.id.toString() === state.viewedMasterId.toString());
-    state.selectedService = null;
-    
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
+    document.getElementById('tab-home').classList.add('hidden-step');
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
-    
-    const cleanName = state.selectedMaster.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-    document.getElementById('client-header-title').innerHTML = `Запис до <span class="text-blue-600">${cleanName}</span> 📝`;
-
-    ['home', 'bookings', 'profile'].forEach(nav => {
-        const btn = document.getElementById(`client-nav-${nav}`);
-        if(btn) {
-            if (nav === 'home') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
-            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
-        }
-    });
-
     renderServices();
     showStep('step-booking');
-    tg.BackButton.show();
 }
 
-function openCancelModal(bookingId, role) {
-    modalState.currentCancelBookingId = bookingId;
-    modalState.currentCancelRole = role;
-    const title = document.getElementById('cancel-modal-title');
-    const input = document.getElementById('cancel-reason');
-    if (role === 'client') {
-        title.innerText = 'Скасувати?';
-        input.placeholder = 'Напишіть причину скасування для майстра...';
-    } else {
-        title.innerText = 'Скасувати?';
-        input.placeholder = 'Напишіть клієнту, чому візит скасовано...';
-    }
-    document.getElementById('cancel-modal').classList.remove('hidden');
-    document.getElementById('cancel-modal').classList.add('flex');
-}
-
-function closeCancelModal() {
-    document.getElementById('cancel-modal').classList.add('hidden');
-    document.getElementById('cancel-modal').classList.remove('flex');
-    document.getElementById('cancel-reason').value = '';
-}
-
+function openCancelModal(id, role) { modalState.currentCancelBookingId = id; document.getElementById('cancel-modal').classList.remove('hidden'); document.getElementById('cancel-modal').classList.add('flex'); }
+function closeCancelModal() { document.getElementById('cancel-modal').classList.add('hidden'); }
 async function confirmCancel() {
-    const reason = document.getElementById('cancel-reason').value.trim();
-    if (!reason) return tg.showAlert("Будь ласка, вкажіть причину для іншої сторони.");
-    const res = await updateBookingStatusAPI(modalState.currentCancelBookingId, 'Отменено', reason);
-    if (res.status === 'success') loadBookings(state.isAdmin ? 'admin' : 'client');
+    const r = await updateBookingStatusAPI(modalState.currentCancelBookingId, 'Отменено', document.getElementById('cancel-reason').value);
+    if (r.status === 'success') loadBookings(state.isAdmin ? 'admin' : 'client');
     closeCancelModal();
 }
-
-async function changeBookingStatus(id, status) {
-    const res = await updateBookingStatusAPI(id, status);
-    if (res.status === 'success') loadBookings('admin');
-}
-
-function switchBookingTab(filter, role) {
-    state.currentBookingFilter = filter;
-    const btnA = document.getElementById(`${role}-subtab-active`);
-    const btnC = document.getElementById(`${role}-subtab-cancelled`);
-    if (filter === 'active') {
-        btnA.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300";
-        btnC.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100";
-    } else {
-        btnC.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300";
-        btnA.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100";
-    }
-    role === 'admin' ? renderAdminBookings() : renderClientBookings();
-}
+function changeBookingStatus(id, s) { updateBookingStatusAPI(id, s).then(() => loadBookings('admin')); }
+function switchBookingTab(f, r) { state.currentBookingFilter = f; renderClientBookings(); }
