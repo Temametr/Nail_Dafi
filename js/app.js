@@ -1,6 +1,6 @@
 import { state, tg, modalState, polling } from './state.js';
 import { fetchInitialData, fetchBookings, updateBookingStatusAPI, submitBookingAPI, fetchOccupiedSlotsAPI } from './api.js';
-import { renderHomeMasters, renderServices, renderMasters, renderCalendar, renderClientBookings, renderTimeSlots } from './client.js';
+import { renderHomeMasters, renderServices, renderMasters, renderCalendar, renderClientBookings, renderTimeSlots, renderUserProfile } from './client.js';
 import { renderAdminStats, renderAdminBookings } from './admin.js';
 
 window.appAPI = {
