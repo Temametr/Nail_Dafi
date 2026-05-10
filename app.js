@@ -5,6 +5,7 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
+// УВАГА: Встав сюди свій URL від Google Apps Script
 const API_URL = "https://script.google.com/macros/s/AKfycbxlQQ5e4FzxLUyAX6OSxfKMdjLqU_1nbfTwMpxC_3Tm-Ga_VvnVScIklojzwdoQ-6VBIw/exec";
 
 let state = {
@@ -15,7 +16,7 @@ let state = {
     selectedMaster: null,
     selectedDate: null,
     selectedTime: null,
-    editingBookingId: null,
+    editingBookingId: null, // Зберігає ID при перенесенні запису
     isAdmin: false,
     adminMasterInfo: null,
     clientBookings: [],
@@ -28,18 +29,21 @@ let currentCancelRole = null;
 let pollingInterval = null;
 
 // ==========================================
-// ІНІЦІАЛІЗАЦІЯ
+// ІНІЦІАЛІЗАЦІЯ ТА КНОПКА НАЗАД
 // ==========================================
 window.addEventListener('DOMContentLoaded', async () => {
-    tg.MainButton.color = "#3b82f6"; // Блакитна кнопка для клієнта
+    tg.MainButton.color = "#3b82f6"; // Блакитна кнопка для клієнта за замовчуванням
 
+    // Єдиний глобальний обробник кнопки "Назад" у Telegram
     tg.BackButton.onClick(() => {
         if (!document.getElementById('client-screen').classList.contains('hidden-step')) {
+            // Якщо ми переносимо запис
             if (state.editingBookingId && !document.getElementById('step-datetime').classList.contains('hidden-step')) {
                 state.editingBookingId = null;
                 switchTab('client', 'bookings');
                 return;
             }
+            // Стандартна навігація клієнта
             if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
                 showStep('step-master');
             } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
@@ -59,6 +63,7 @@ async function loadInitialData() {
         state.services = data.services;
         state.masters = data.masters;
         
+        // Перевіряємо чи поточний користувач є майстром
         const masterData = state.masters.find(m => m.id.toString() === state.user.id.toString());
         if (masterData) {
             state.isAdmin = true;
@@ -66,6 +71,7 @@ async function loadInitialData() {
         }
         renderApp();
     } catch (e) {
+        console.error("Init Error:", e);
         tg.showAlert("Помилка завантаження даних.");
     } finally {
         document.getElementById('loader').classList.add('hidden');
@@ -78,18 +84,23 @@ function renderApp() {
         document.getElementById('admin-bottom-nav').classList.remove('hidden-step');
         
         const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        // Встановлюємо аватар у глобальній шапці
-        document.getElementById('admin-header-avatar').innerText = cleanName.charAt(0);
         
-        tg.MainButton.color = "#14b8a6";
+        // Встановлюємо аватар у новій блакитній шапці адміна
+        const adminAvatar = document.getElementById('admin-header-avatar');
+        if(adminAvatar) adminAvatar.innerText = cleanName.charAt(0);
+        
+        tg.MainButton.color = "#14b8a6"; // Бірюзова кнопка для майстра
         switchTab('admin', 'home');
     } else {
         document.getElementById('client-screen').classList.remove('hidden-step');
         document.getElementById('client-bottom-nav').classList.remove('hidden-step');
         
-        // Встановлюємо дані для шапки і профілю
-        document.getElementById('client-header-avatar').innerText = state.user.first_name.charAt(0);
-        document.getElementById('profile-avatar').innerText = state.user.first_name.charAt(0);
+        // Встановлюємо аватари для клієнта
+        const clientAvatarHeader = document.getElementById('client-header-avatar');
+        const profileAvatar = document.getElementById('profile-avatar');
+        if(clientAvatarHeader) clientAvatarHeader.innerText = state.user.first_name.charAt(0);
+        if(profileAvatar) profileAvatar.innerText = state.user.first_name.charAt(0);
+        
         document.getElementById('profile-name').innerText = state.user.first_name;
         document.getElementById('profile-id').innerText = state.user.id;
 
@@ -99,13 +110,14 @@ function renderApp() {
 }
 
 // ==========================================
-// НАВІГАЦІЯ ТА ВКЛАДКИ
+// НАВІГАЦІЯ ТА ДИНАМІЧНА ШАПКА
 // ==========================================
 function switchTab(role, tabId) {
     document.querySelectorAll(role === 'admin' ? '.admin-tab-content' : '.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById(role === 'admin' ? `admin-tab-${tabId}` : `tab-${tabId}`).classList.remove('hidden-step');
     document.getElementById(`${role}-bottom-nav`).classList.remove('hidden-step');
 
+    // Оновлення кольорів кнопок у нижньому навбарі
     const activeColor = role === 'admin' ? 'text-teal-600' : 'text-blue-500';
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`${role}-nav-${nav}`);
@@ -123,20 +135,24 @@ function switchTab(role, tabId) {
     // ДИНАМІЧНА ШАПКА: змінюємо текст залежно від відкритої вкладки
     if (role === 'client') {
         const title = document.getElementById('client-header-title');
-        if (tabId === 'home') {
-            title.innerHTML = `Привіт, <span class="font-black text-blue-600">${state.user.first_name}</span>,<br><span class="font-extrabold">Готові до манікюру?</span>`;
-        } else if (tabId === 'bookings') {
-            title.innerHTML = `Твої візити,<br><span class="font-extrabold text-blue-600">Історія записів 💅</span>`;
-        } else if (tabId === 'profile') {
-            title.innerHTML = `Мій кабінет,<br><span class="font-extrabold text-blue-600">Налаштування ⚙️</span>`;
+        if (title) {
+            if (tabId === 'home') {
+                title.innerHTML = `Привіт, <span class="font-black text-blue-600">${state.user.first_name}</span>,<br><span class="font-extrabold text-slate-800">Готові до манікюру?</span>`;
+            } else if (tabId === 'bookings') {
+                title.innerHTML = `Твої візити,<br><span class="font-extrabold text-blue-600">Історія записів 💅</span>`;
+            } else if (tabId === 'profile') {
+                title.innerHTML = `Мій кабінет,<br><span class="font-extrabold text-blue-600">Налаштування ⚙️</span>`;
+            }
         }
     } else {
         const title = document.getElementById('admin-header-title');
-        const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        if (tabId === 'home') {
-            title.innerHTML = `Панель: <span class="font-black text-teal-600">${cleanName}</span>,<br><span class="font-extrabold">Ваша статистика 📊</span>`;
-        } else if (tabId === 'bookings') {
-            title.innerHTML = `Розклад: <span class="font-black text-teal-600">${cleanName}</span>,<br><span class="font-extrabold">Керування записами 📅</span>`;
+        if (title) {
+            const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
+            if (tabId === 'home') {
+                title.innerHTML = `Панель: <span class="font-black text-teal-600">${cleanName}</span>,<br><span class="font-extrabold text-slate-800">Ваша статистика 📊</span>`;
+            } else if (tabId === 'bookings') {
+                title.innerHTML = `Розклад: <span class="font-black text-teal-600">${cleanName}</span>,<br><span class="font-extrabold text-slate-800">Керування 📅</span>`;
+            }
         }
     }
 
@@ -167,6 +183,9 @@ function showStep(stepId) {
     }
 }
 
+// ==========================================
+// ПОЛІНГ ТА ВКЛАДКИ ЗАПИСІВ
+// ==========================================
 function startPolling(role, forDashboard = false) {
     stopPolling();
     pollingInterval = setInterval(() => { loadBookings(role, true, forDashboard); }, 15000); 
@@ -194,7 +213,7 @@ function switchBookingTab(filter, role) {
 }
 
 // ==========================================
-// МЕРЕЖЕВІ ЗАПИТИ
+// МЕРЕЖЕВІ ЗАПИТИ (API)
 // ==========================================
 async function loadBookings(role, isSilent = false, forDashboard = false) {
     const containerId = role === 'admin' ? (forDashboard ? null : 'admin-bookings-list') : 'my-bookings-list';
@@ -213,6 +232,7 @@ async function loadBookings(role, isSilent = false, forDashboard = false) {
             renderClientBookings();
         }
     } catch (e) {
+        console.error("Load Bookings Error:", e);
         if (!isSilent && containerId) document.getElementById(containerId).innerHTML = '<div class="text-center py-12 text-red-500 font-medium">Помилка мережі 🌐</div>';
     }
 }
@@ -225,8 +245,9 @@ async function changeBookingStatus(bookingId, newStatus, reason = "") {
         if (result.status === 'success') {
             tg.HapticFeedback.notificationOccurred('success');
             loadBookings(state.isAdmin ? 'admin' : 'client');
-        } else tg.showAlert('Помилка GAS: ' + result.message);
-    } catch (e) { tg.showAlert('Помилка з\'єднання з сервером.');
+        } else tg.showAlert('Помилка сервера: ' + result.message);
+    } catch (e) { 
+        tg.showAlert('Помилка з\'єднання з сервером.');
     } finally { tg.MainButton.hideProgress(); }
 }
 
@@ -255,7 +276,7 @@ async function submitBooking() {
             const msg = state.editingBookingId ? 'Запит на перенесення надіслано!' : 'Ура! Ти записалася на манікюр 🎉';
             state.editingBookingId = null;
             tg.showAlert(msg, () => { switchTab('client', 'bookings'); });
-        } else tg.showAlert('GAS Error: ' + result.message);
+        } else tg.showAlert('Помилка: ' + result.message);
     } catch (e) { tg.showAlert('Помилка мережі при створенні запису.'); } 
     finally { tg.MainButton.hideProgress(); }
 }
@@ -290,7 +311,7 @@ function getStatusData(dbStatus) {
 }
 
 // ==========================================
-// ЛОГІКА МАЙСТРА
+// ЛОГІКА МАЙСТРА (АДМІН)
 // ==========================================
 function renderAdminStats(period) {
     ['day', 'week', 'month'].forEach(p => {
@@ -344,7 +365,7 @@ function renderAdminBookings() {
         const delay = i * 40;
 
         return `
-            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in" style="animation-delay: ${delay}ms;">
+            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in border border-white" style="animation-delay: ${delay}ms;">
                 <div class="flex justify-between items-start mb-4">
                     <div class="w-full pr-3">
                         <div class="font-extrabold text-slate-950 text-lg mb-4 tracking-tight leading-tight">${b.service}</div>
@@ -358,7 +379,7 @@ function renderAdminBookings() {
                 
                 <a href="tg://user?id=${b.clientId}" class="card-convex-sm shadow-convex-sm flex items-center justify-center w-full py-3 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-sm font-bold mt-5 active:scale-95 transition-all">💬 Написати клієнту</a>
                 
-                ${b.cancelReason ? `<div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">Причина: ${b.cancelReason}</div>` : ''}
+                ${b.cancelReason ? `<div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">Причина скасування: ${b.cancelReason}</div>` : ''}
                 
                 ${isPending ? `<div class="flex gap-3 mt-4 pt-4 border-t border-slate-100">
                         <button onclick="changeBookingStatus('${b.id}', 'Выполнено')" class="card-convex-sm flex-1 py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-950/20 active:scale-95 transition-all">Підтвердити</button>
@@ -370,7 +391,7 @@ function renderAdminBookings() {
 }
 
 // ==========================================
-// ЛОГІКА КЛІЄНТА
+// ЛОГІКА КЛІЄНТА (ФЛОУ СТВОРЕННЯ)
 // ==========================================
 function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
@@ -392,7 +413,7 @@ function renderClientBookings() {
         const delay = i * 40;
 
         return `
-            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in" style="animation-delay: ${delay}ms;">
+            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in border border-white" style="animation-delay: ${delay}ms;">
                 <div class="flex justify-between items-start mb-4">
                     <div class="w-full pr-3">
                         <div class="font-extrabold text-slate-950 text-lg mb-4 tracking-tight leading-tight">${b.service}</div>
@@ -430,6 +451,7 @@ function renderClientBookings() {
     }).join('');
 }
 
+// Запуск флоу перенесення дати
 function startReschedule(bookingId) {
     const booking = state.clientBookings.find(b => b.id === bookingId);
     if (!booking) return;
@@ -457,7 +479,7 @@ function startReschedule(bookingId) {
 function renderServices() {
     const list = document.getElementById('services-list');
     list.innerHTML = state.services.map((s, i) => `
-        <div onclick="selectService(${s.id})" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in" style="animation-delay: ${i*40}ms">
+        <div onclick="selectService(${s.id})" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0 pr-2">
                 <div class="shrink-0 w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 text-2xl shadow-inner border border-blue-100">💅</div>
                 <div class="flex-1 min-w-0">
@@ -483,7 +505,7 @@ function renderMasters() {
     list.innerHTML = state.masters.map((m, i) => {
         const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
         return `
-        <div onclick="selectMaster('${m.id}')" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in" style="animation-delay: ${i*40}ms">
+        <div onclick="selectMaster('${m.id}')" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0">
                 <div class="relative shrink-0">
                     <div class="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center font-black text-teal-600 text-2xl shadow-inner border border-teal-100">${cleanName.charAt(0)}</div>
@@ -648,4 +670,3 @@ function confirmCancel() {
     changeBookingStatus(currentCancelBookingId, 'Отменено', reason);
     closeCancelModal();
 }
-function confirmCancelAdmin() { confirmCancel(); }
