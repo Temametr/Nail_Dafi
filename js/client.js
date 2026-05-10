@@ -208,3 +208,93 @@ export function renderClientBookings() {
         `;
     }).join('');
 }
+// ✅ НОВЕ: Динамічний рендер профілю користувача з даними Telegram
+export function renderUserProfile() {
+    const container = document.getElementById('tab-profile');
+    if (!container) return;
+
+    // Беремо об'єкт користувача, який нам передає Telegram
+    const user = state.user || {};
+    
+    // Формуємо ім'я
+    const firstName = user.first_name || 'Гість';
+    const lastName = user.last_name || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+    
+    // Інші дані
+    const username = user.username ? `@${user.username}` : '';
+    const isPremium = !!user.is_premium; // true якщо є преміум
+    const photoUrl = user.photo_url; // Доступно в нових версіях Telegram API
+    const langCode = user.language_code || 'uk';
+
+    // Розпізнаємо мову
+    let langText = 'Українська 🇺🇦';
+    if (langCode.startsWith('ru')) langText = 'Російська';
+    else if (langCode.startsWith('en')) langText = 'English 🇬🇧';
+
+    // Формуємо аватар (Або фото, або перша літера імені)
+    let avatarHTML = '';
+    if (photoUrl) {
+        avatarHTML = `<img src="${photoUrl}" class="w-full h-full rounded-full object-cover">`;
+    } else {
+        const initial = firstName.charAt(0).toUpperCase();
+        avatarHTML = `<div class="w-full h-full rounded-full flex items-center justify-center text-3xl font-black text-blue-500">${initial}</div>`;
+    }
+
+    // Зірочка Premium
+    const premiumBadge = isPremium 
+        ? `<div class="absolute -bottom-1 -right-1 w-7 h-7 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm">
+            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+           </div>` 
+        : '';
+
+    // Малюємо HTML
+    container.innerHTML = `
+        <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-4 text-center">Особисті дані</h3>
+        
+        <div class="card-convex p-5 flex items-center gap-5 mx-1 animate-pop-in">
+            <div class="relative w-20 h-20 shrink-0 bg-blue-50 rounded-full border border-blue-100 shadow-inner">
+                ${avatarHTML}
+                ${premiumBadge}
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="font-extrabold text-slate-950 text-xl tracking-tight truncate">${fullName}</div>
+                ${username ? `<div class="text-xs font-bold text-blue-500 mt-1 truncate">${username}</div>` : ''}
+                <div class="text-[10px] font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg mt-2 inline-block border border-slate-100">Telegram ID: ${user.id}</div>
+            </div>
+        </div>
+
+        <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mt-8 mb-4 text-center">Налаштування</h3>
+        
+        <div class="card-convex p-1 mx-1 space-y-1 animate-pop-in" style="animation-delay: 50ms">
+            <div class="p-4 flex justify-between items-center bg-white rounded-t-[1.75rem] rounded-b-xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center text-sky-500 text-lg">🌐</div>
+                    <span class="font-bold text-slate-700 text-sm">Мова</span>
+                </div>
+                <span class="font-black text-slate-900 text-sm">${langText}</span>
+            </div>
+            
+            <div class="p-4 flex justify-between items-center bg-white rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center text-purple-500 text-lg">⭐</div>
+                    <span class="font-bold text-slate-700 text-sm">Telegram Premium</span>
+                </div>
+                <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${isPremium ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm' : 'bg-slate-100 text-slate-400'}">${isPremium ? 'Активний' : 'Відсутній'}</span>
+            </div>
+
+            <div class="p-4 flex justify-between items-center bg-white rounded-b-[1.75rem] rounded-t-xl" onclick="tg.showAlert('Сповіщення через бота увімкнені!')">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center text-green-500 text-lg">🔔</div>
+                    <span class="font-bold text-slate-700 text-sm">Сповіщення</span>
+                </div>
+                <div class="w-11 h-6 bg-green-400 rounded-full p-0.5 flex justify-end items-center cursor-pointer shadow-inner">
+                    <div class="w-5 h-5 bg-white rounded-full shadow-sm"></div>
+                </div>
+            </div>
+        </div>
+        
+        <p class="text-center text-[10px] font-bold text-slate-400 mt-8 uppercase tracking-widest">NailBar Dafi v1.0</p>
+    `;
+}
+
