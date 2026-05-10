@@ -5,6 +5,7 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
+// УВАГА: Встав сюди свій URL від Google Apps Script
 const API_URL = "https://script.google.com/macros/s/AKfycbxlQQ5e4FzxLUyAX6OSxfKMdjLqU_1nbfTwMpxC_3Tm-Ga_VvnVScIklojzwdoQ-6VBIw/exec";
 
 let state = {
@@ -15,7 +16,7 @@ let state = {
     selectedMaster: null,
     selectedDate: null,
     selectedTime: null,
-    editingBookingId: null,
+    editingBookingId: null, // Зберігає ID при перенесенні запису
     isAdmin: false,
     adminMasterInfo: null,
     clientBookings: [],
@@ -35,14 +36,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     tg.BackButton.onClick(() => {
         if (!document.getElementById('client-screen').classList.contains('hidden-step')) {
-            // Якщо ми у флоу запису (створення нового або перенесення)
             if (!document.getElementById('tab-booking-flow').classList.contains('hidden-step')) {
                 if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
                     showStep('step-master');
                 } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
                     showStep('step-booking');
                 } else if (!document.getElementById('step-booking').classList.contains('hidden-step')) {
-                    // Вихід з флоу запису -> повертаємося у вкладку "Візити"
                     state.editingBookingId = null;
                     switchTab('client', 'bookings');
                 }
@@ -93,9 +92,7 @@ function renderApp() {
         document.getElementById('profile-name').innerText = state.user.first_name;
         document.getElementById('profile-id').innerText = state.user.id;
 
-        // Рендеримо головну вітрину майстрів
         renderHomeMasters();
-        // Рендеримо послуги наперед для прихованого флоу
         renderServices();
         switchTab('client', 'home');
     }
@@ -155,20 +152,15 @@ function switchTab(role, tabId) {
 // ==========================================
 // ФЛОУ СТВОРЕННЯ / ЗМІНИ ЗАПИСУ (КЛІЄНТ)
 // ==========================================
-
-// Запуск з кнопки "Новий візит"
 function startClientBookingFlow() {
     state.editingBookingId = null;
     
-    // Ховаємо всі стандартні вкладки, показуємо флоу
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
     
-    // Оновлюємо шапку
     const title = document.getElementById('client-header-title');
     if (title) title.innerHTML = `Оформлення <span class="text-blue-600">візиту</span> 📝`;
 
-    // Візуально залишаємо кнопку "Візити" активною в навбарі
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`client-nav-${nav}`);
         if(btn) {
@@ -182,7 +174,6 @@ function startClientBookingFlow() {
     tg.BackButton.show();
 }
 
-// Запуск з кнопки "Змінити дату"
 function startReschedule(bookingId) {
     const booking = state.clientBookings.find(b => b.id === bookingId);
     if (!booking) return;
@@ -228,18 +219,20 @@ function renderHomeMasters() {
     const list = document.getElementById('home-masters-list');
     list.innerHTML = state.masters.map((m, i) => {
         const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
+        // Призначаємо фото: 0 індекс = 0222, 1 індекс = 0223
+        const imgSrc = i === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
+        
         return `
         <div class="card-convex p-8 mb-5 flex flex-col items-center text-center animate-pop-in border border-white" style="animation-delay: ${i*50}ms">
-            <div class="w-[100px] h-[100px] bg-rose-50 rounded-[2.5rem] flex items-center justify-center text-5xl mb-5 shadow-inner border border-rose-100">
-                💅
+            <div class="w-[110px] h-[110px] bg-rose-50 rounded-[2.5rem] flex items-center justify-center mb-5 shadow-inner border border-rose-100 overflow-hidden relative">
+                <img src="${imgSrc}" alt="${cleanName}" class="w-full h-full object-cover">
             </div>
             <h3 class="font-black text-slate-900 text-2xl tracking-tight leading-none mb-2">${cleanName}</h3>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl">Топ-майстер</p>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl mt-1">Топ-майстер</p>
         </div>
         `;
     }).join('');
 }
-
 
 // ==========================================
 // ПОЛІНГ ТА ВКЛАДКИ ЗАПИСІВ
@@ -526,21 +519,20 @@ function renderServices() {
     `).join('');
 }
 
-function selectService(id) {
-    state.selectedService = state.services.find(s => s.id === id);
-    renderMasters();
-    showStep('step-master');
-}
-
 function renderMasters() {
     const list = document.getElementById('masters-list');
     list.innerHTML = state.masters.map((m, i) => {
         const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
+        // Вставляємо фото для флоу запису (як в renderHomeMasters)
+        const imgSrc = i === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
+        
         return `
         <div onclick="selectMaster('${m.id}')" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0">
                 <div class="relative shrink-0">
-                    <div class="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center font-black text-teal-600 text-2xl shadow-inner border border-teal-100">${cleanName.charAt(0)}</div>
+                    <div class="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center font-black text-teal-600 text-2xl shadow-inner border border-teal-100 overflow-hidden">
+                        <img src="${imgSrc}" alt="${cleanName}" class="w-full h-full object-cover">
+                    </div>
                     <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full shadow-sm"></div>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -702,4 +694,3 @@ function confirmCancel() {
     changeBookingStatus(currentCancelBookingId, 'Отменено', reason);
     closeCancelModal();
 }
-function confirmCancelAdmin() { confirmCancel(); }
