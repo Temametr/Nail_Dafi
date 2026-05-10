@@ -28,7 +28,6 @@
                     boxShadow: {
                         'convex': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 30px 40px -10px rgba(15, 23, 42, 0.06)',
                         'convex-sm': '0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-                        // НОВА: Глибока тінь для навбара + внутрішній відблиск для об'єму
                         'floating': '0 25px 50px -12px rgba(15, 23, 42, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.8)',
                     }
                 }
@@ -42,22 +41,20 @@
         .card-convex { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 30px 40px -10px rgba(15, 23, 42, 0.06); border-radius: 2rem; }
         .card-convex-sm { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border-radius: 1.5rem; }
 
-        /* ОНОВЛЕНО: Компактна шапка з тінню */
         .ios-header {
             background: linear-gradient(180deg, rgba(230, 240, 250, 0.98) 0%, rgba(240, 244, 249, 0.95) 100%);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border-bottom: 1px solid rgba(255,255,255,0.9);
-            border-radius: 0 0 1.75rem 1.75rem; /* Зменшене скруглення */
-            box-shadow: 0 10px 30px -10px rgba(30, 60, 100, 0.12); /* Чітка тінь */
+            border-radius: 0 0 1.75rem 1.75rem; 
+            box-shadow: 0 10px 30px -10px rgba(30, 60, 100, 0.12); 
         }
 
-        /* ОНОВЛЕНО: Об'ємний навбар з тонкою обводкою */
         .floating-nav { 
             background-color: rgba(255, 255, 255, 0.92); 
             backdrop-filter: blur(15px); 
             -webkit-backdrop-filter: blur(15px); 
-            border: 1px solid rgba(200, 210, 220, 0.5); /* Тонка контрастна обводка */
+            border: 1px solid rgba(200, 210, 220, 0.5); 
             border-radius: 2rem; 
         }
         
@@ -83,11 +80,13 @@
 
         <div id="client-screen" class="hidden-step animate-fade-in-up">
             
-            <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-4 flex justify-between items-center">
+            <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-3 flex justify-between items-center">
                 <div class="absolute top-[-1rem] right-[-1rem] w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
                 
-                <div class="relative z-10 flex-1 min-w-0 pr-4">
-                    <h1 class="text-xl font-extrabold text-slate-900 tracking-tight truncate" id="client-header-title"></h1>
+                <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-4">
+                    <img src="media/fe3010af-51aa-45b3-a20e-6cd526642666.png" alt="Logo" class="w-11 h-11 object-contain drop-shadow-md shrink-0">
+                    
+                    <h1 class="text-[19px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5" id="client-header-title"></h1>
                 </div>
                 
                 <div class="relative z-10 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-sm text-slate-600 shrink-0 border border-white">
@@ -96,16 +95,16 @@
                 </div>
             </header>
 
-            <div id="tab-home" class="tab-content pt-[100px] px-4">
-                <div id="step-booking" class="step-content space-y-4 animate-pop-in">
+            <div id="tab-home" class="tab-content pt-[90px] px-4">
+                <div id="step-booking" class="step-content space-y-4 animate-pop-in mt-2">
                     <h3 class="font-bold text-xs px-2 text-rose-300 uppercase tracking-[0.15em]">Оберіть послугу</h3>
                     <div id="services-list" class="space-y-4 px-1"></div>
                 </div>
-                <div id="step-master" class="step-content hidden-step space-y-4 animate-pop-in">
+                <div id="step-master" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
                     <h3 class="font-bold text-xs px-2 text-rose-300 uppercase tracking-[0.15em]">Оберіть майстра</h3>
                     <div id="masters-list" class="space-y-4 px-1"></div>
                 </div>
-                <div id="step-datetime" class="step-content hidden-step space-y-4 animate-pop-in">
+                <div id="step-datetime" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
                     <h3 class="font-bold text-xs px-2 text-rose-300 uppercase tracking-[0.15em]">Оберіть дату</h3>
                     <div id="date-scroll" class="flex overflow-x-auto gap-3 pb-4 px-1 hide-scrollbar -mx-4 px-5"></div>
                     <h3 class="font-bold text-xs px-2 mt-2 text-rose-300 uppercase tracking-[0.15em]">Вільний час</h3>
@@ -114,16 +113,16 @@
                 </div>
             </div>
 
-            <div id="tab-bookings" class="tab-content hidden-step pt-[100px] px-4">
-                <div class="flex pb-4 gap-2 px-1">
+            <div id="tab-bookings" class="tab-content hidden-step pt-[90px] px-4">
+                <div class="flex pb-4 gap-2 px-1 mt-2">
                     <button onclick="switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">Підтверджені</button>
                     <button onclick="switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
                 </div>
                 <div id="my-bookings-list" class="space-y-5 px-1"></div>
             </div>
 
-            <div id="tab-profile" class="tab-content hidden-step pt-[100px] px-4">
-                <div class="card-convex p-6 flex items-center gap-5 mx-1">
+            <div id="tab-profile" class="tab-content hidden-step pt-[90px] px-4">
+                <div class="card-convex p-6 flex items-center gap-5 mx-1 mt-2">
                     <div class="relative">
                         <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-rose-500 shadow-inner border border-rose-100" id="profile-avatar"></div>
                         <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
@@ -149,11 +148,13 @@
 
         <div id="admin-screen" class="hidden-step animate-fade-in-up">
             
-            <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-4 flex justify-between items-center">
+            <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-3 flex justify-between items-center">
                 <div class="absolute top-[-1rem] right-[-1rem] w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
                 
-                <div class="relative z-10 flex-1 min-w-0 pr-4">
-                    <h1 class="text-xl font-extrabold text-slate-900 tracking-tight truncate" id="admin-header-title"></h1>
+                <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-4">
+                    <img src="media/fe3010af-51aa-45b3-a20e-6cd526642666.png" alt="Logo" class="w-11 h-11 object-contain drop-shadow-md shrink-0">
+                    
+                    <h1 class="text-[19px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5" id="admin-header-title"></h1>
                 </div>
                 
                 <div class="relative z-10 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-sm text-slate-600 shrink-0 border border-white">
@@ -161,8 +162,8 @@
                 </div>
             </header>
 
-            <div id="admin-tab-home" class="admin-tab-content pt-[100px] px-4">
-                <div class="flex gap-2 mb-6 bg-white/40 border border-white/60 p-1.5 rounded-2xl mx-1 backdrop-blur-sm">
+            <div id="admin-tab-home" class="admin-tab-content pt-[90px] px-4">
+                <div class="flex gap-2 mb-6 bg-white/40 border border-white/60 p-1.5 rounded-2xl mx-1 backdrop-blur-sm mt-2">
                     <button onclick="renderAdminStats('day')" id="stat-btn-day" class="flex-1 py-2.5 bg-white shadow-md rounded-xl text-xs font-bold uppercase tracking-wider text-slate-950 transition-all duration-300">Сьогодні</button>
                     <button onclick="renderAdminStats('week')" id="stat-btn-week" class="flex-1 py-2.5 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">Тиждень</button>
                     <button onclick="renderAdminStats('month')" id="stat-btn-month" class="flex-1 py-2.5 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">Місяць</button>
@@ -170,7 +171,7 @@
                 <div class="grid grid-cols-2 gap-4 mb-6 mx-1">
                     <div class="card-convex p-6 flex flex-col justify-center animate-pop-in">
                         <div class="text-4xl font-black text-slate-950 tracking-tighter" id="stat-count">0</div>
-                        <div class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Записів</div>
+                        <div class="text-[11px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Записів</div>
                     </div>
                     <div class="grid grid-rows-2 gap-4">
                         <div class="card-convex p-4 rounded-3xl flex flex-col justify-center animate-pop-in [animation-delay:100ms]">
@@ -185,8 +186,8 @@
                 </div>
             </div>
 
-            <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[100px] px-4">
-                <div class="flex px-1 pb-4 gap-2">
+            <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[90px] px-4">
+                <div class="flex px-1 pb-4 gap-2 mt-2">
                     <button onclick="switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-950/20 transition-all duration-300">Активні</button>
                     <button onclick="switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
                 </div>
