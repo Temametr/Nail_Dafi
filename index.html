@@ -26,10 +26,8 @@
                         }
                     },
                     boxShadow: {
-                        // Чітка випукла тінь для об'єму картки
                         'convex': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 30px 40px -10px rgba(15, 23, 42, 0.06)',
                         'convex-sm': '0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-                        // Сильна тінь для плаваючого навбара
                         'floating': '0 20px 40px -10px rgba(15, 23, 42, 0.15)',
                     }
                 }
@@ -40,53 +38,71 @@
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         
-        /* Глобальні класи для випуклих карток (чисто білі, без прозорості) */
+        /* Глобальні класи для карток */
         .card-convex { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 30px 40px -10px rgba(15, 23, 42, 0.06); border-radius: 2rem; }
         .card-convex-sm { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border-radius: 1.5rem; }
 
-        /* Плаваючий навбар (Floating Dock) */
+        /* Стиль шапки як на фото (Градиент, скруглення, тінь) */
+        .ios-header {
+            background: linear-gradient(180deg, rgba(230, 240, 250, 0.95) 0%, rgba(240, 244, 249, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.7);
+            border-radius: 0 0 2.5rem 2.5rem;
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.06);
+        }
+
         .floating-nav { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15); border-radius: 1.75rem; }
         
         .hidden-step { display: none !important; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Стиль виділеного елемента (дата/час) */
-        .selected-item { background: linear-gradient(135deg, #fb7185, #e11d48) !important; color: white !important; border-color: transparent !important; box-shadow: 0 10px 20px -3px rgba(225, 29, 72, 0.4) !important; transform: translateY(-2px) scale(1.01); transition: all 0.3s ease; }
+        .selected-item { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; border-color: transparent !important; box-shadow: 0 10px 20px -3px rgba(37, 99, 235, 0.4) !important; transform: translateY(-2px) scale(1.01); transition: all 0.3s ease; }
         .tab-content { transition: opacity 0.3s ease; }
     </style>
 </head>
-<body class="bg-rose-50 min-h-screen font-sans antialiased text-slate-800 pb-36 viewport-fit-cover">
+<body class="bg-[#f0f4f9] min-h-screen font-sans antialiased text-slate-800 pb-36 viewport-fit-cover">
 
-    <div id="app" class="max-w-md mx-auto p-4">
+    <div id="app" class="max-w-md mx-auto relative">
         
         <div id="loader" class="flex flex-col items-center justify-center h-[75vh]">
             <div class="relative flex justify-center items-center">
-                <div class="absolute w-20 h-20 border-4 border-rose-100 rounded-full opacity-60"></div>
-                <div class="w-20 h-20 border-4 border-rose-500 rounded-full border-t-transparent animate-spin"></div>
+                <div class="absolute w-20 h-20 border-4 border-blue-100 rounded-full opacity-60"></div>
+                <div class="w-20 h-20 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
             </div>
-            <p class="mt-6 text-rose-300 font-medium tracking-wide">Магія налаштовується...</p>
+            <p class="mt-6 text-blue-400 font-medium tracking-wide">Магія налаштовується...</p>
         </div>
 
         <div id="client-screen" class="hidden-step animate-fade-in-up">
             
-            <div id="tab-home" class="tab-content pt-20">
-                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-rose-50/90 backdrop-blur-sm px-5 py-4">
-                    <h1 class="text-2xl font-extrabold text-slate-950 tracking-tighter">Привіт, <span id="user-name" class="text-rose-500">Гостю</span>! 💅</h1>
-                    <p class="text-slate-600 text-sm font-medium mt-0.5">Твій ідеальний манікюр чекає</p>
-                </header>
+            <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto ios-header px-6 pt-10 pb-8 overflow-hidden">
+                <div class="absolute top-[-2rem] right-[-2rem] w-48 h-48 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
                 
-                <div id="step-booking" class="step-content space-y-4 animate-pop-in mt-4">
+                <div class="relative z-10 flex justify-between items-center mb-6">
+                    <div class="w-14 h-14 bg-white p-1.5 rounded-full shadow-sm">
+                        <div class="w-full h-full bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600 text-xl" id="client-header-avatar"></div>
+                    </div>
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 relative">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <div class="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></div>
+                    </div>
+                </div>
+                <div class="relative z-10">
+                    <h1 class="text-[28px] text-slate-800 leading-[1.15] tracking-tight" id="client-header-title"></h1>
+                </div>
+            </header>
+
+            <div id="tab-home" class="tab-content pt-[240px] px-4">
+                <div id="step-booking" class="step-content space-y-4 animate-pop-in">
                     <h3 class="font-bold text-base px-2 text-slate-500 uppercase tracking-wider">Оберіть послугу</h3>
                     <div id="services-list" class="space-y-4 px-1"></div>
                 </div>
-                
-                <div id="step-master" class="step-content hidden-step space-y-4 animate-pop-in mt-4">
+                <div id="step-master" class="step-content hidden-step space-y-4 animate-pop-in">
                     <h3 class="font-bold text-base px-2 text-slate-500 uppercase tracking-wider">Оберіть майстра</h3>
                     <div id="masters-list" class="space-y-4 px-1"></div>
                 </div>
-                
-                <div id="step-datetime" class="step-content hidden-step space-y-4 animate-pop-in mt-4">
+                <div id="step-datetime" class="step-content hidden-step space-y-4 animate-pop-in">
                     <h3 class="font-bold text-base px-2 text-slate-500 uppercase tracking-wider">Оберіть дату</h3>
                     <div id="date-scroll" class="flex overflow-x-auto gap-3 pb-4 px-1 hide-scrollbar -mx-4 px-5"></div>
                     <h3 class="font-bold text-base px-2 mt-2 text-slate-500 uppercase tracking-wider">Вільний час</h3>
@@ -95,38 +111,28 @@
                 </div>
             </div>
 
-            <div id="tab-bookings" class="tab-content hidden-step pt-32">
-                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-rose-50/95 backdrop-blur-sm">
-                    <div class="px-5 py-4">
-                        <h1 class="text-2xl font-extrabold text-slate-950 tracking-tighter">Твої візити ✨</h1>
-                    </div>
-                    <div class="flex px-4 pb-3 gap-2">
-                        <button onclick="switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-950/20 transition-all duration-300">Підтверджені</button>
-                        <button onclick="switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
-                    </div>
-                </header>
-                <div id="my-bookings-list" class="space-y-5 mt-2 px-1"></div>
+            <div id="tab-bookings" class="tab-content hidden-step pt-[240px] px-4">
+                <div class="flex pb-4 gap-2 px-1">
+                    <button onclick="switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-950/20 transition-all duration-300">Підтверджені</button>
+                    <button onclick="switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-slate-200">Скасовані</button>
+                </div>
+                <div id="my-bookings-list" class="space-y-5 px-1"></div>
             </div>
 
-            <div id="tab-profile" class="tab-content hidden-step pt-20">
-                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-rose-50/90 backdrop-blur-sm px-5 py-4">
-                    <h1 class="text-2xl font-extrabold text-slate-950 tracking-tighter">Мій кабінет 👤</h1>
-                </header>
-                
-                <div class="card-convex p-6 flex items-center gap-5 mt-6 mx-1">
+            <div id="tab-profile" class="tab-content hidden-step pt-[240px] px-4">
+                <div class="card-convex p-6 flex items-center gap-5 mx-1">
                     <div class="relative">
-                        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-rose-500 shadow-inner border border-rose-100" id="profile-avatar"></div>
+                        <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-3xl font-bold text-blue-500 shadow-inner border border-blue-100" id="profile-avatar"></div>
                         <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
                     </div>
                     <div>
                         <div class="font-extrabold text-slate-950 text-xl tracking-tight" id="profile-name"></div>
-                        <div class="text-[11px] font-bold text-slate-500 bg-rose-100 px-3 py-1.5 rounded-lg mt-2 inline-block">ID: <span id="profile-id"></span></div>
+                        <div class="text-[11px] font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg mt-2 inline-block">ID: <span id="profile-id"></span></div>
                     </div>
                 </div>
-                
                 <div class="card-convex p-6 mt-5 space-y-5 mx-1">
                     <div class="flex justify-between items-center text-sm font-bold text-slate-700">
-                        <span class="flex items-center gap-3"><span class="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">🔔</span> Сповіщення</span>
+                        <span class="flex items-center gap-3"><span class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">🔔</span> Сповіщення</span>
                         <span class="text-teal-700 bg-teal-50 px-3 py-1 rounded-full text-xs">Увімкнено</span>
                     </div>
                     <hr class="border-slate-100">
@@ -140,17 +146,28 @@
 
         <div id="admin-screen" class="hidden-step animate-fade-in-up">
             
-            <div id="admin-tab-home" class="admin-tab-content pt-20">
-                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-rose-50/90 backdrop-blur-sm px-5 py-4">
-                    <h1 class="text-xl font-extrabold text-slate-950 truncate tracking-tighter">Панель: <span id="admin-header-name" class="text-teal-600"></span> 📊</h1>
-                </header>
+            <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto ios-header px-6 pt-10 pb-8 overflow-hidden">
+                <div class="absolute top-[-2rem] right-[-2rem] w-48 h-48 bg-teal-500/20 rounded-full blur-3xl pointer-events-none"></div>
                 
-                <div class="flex gap-2 mb-6 bg-white/50 border border-white p-1.5 rounded-2xl mt-4 mx-1">
+                <div class="relative z-10 flex justify-between items-center mb-6">
+                    <div class="w-14 h-14 bg-white p-1.5 rounded-full shadow-sm">
+                        <div class="w-full h-full bg-teal-100 rounded-full flex items-center justify-center font-bold text-teal-600 text-xl" id="admin-header-avatar"></div>
+                    </div>
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 relative">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </div>
+                </div>
+                <div class="relative z-10">
+                    <h1 class="text-[28px] text-slate-800 leading-[1.15] tracking-tight" id="admin-header-title"></h1>
+                </div>
+            </header>
+
+            <div id="admin-tab-home" class="admin-tab-content pt-[240px] px-4">
+                <div class="flex gap-2 mb-6 bg-white/50 border border-white p-1.5 rounded-2xl mx-1">
                     <button onclick="renderAdminStats('day')" id="stat-btn-day" class="flex-1 py-2.5 bg-white shadow-md rounded-xl text-xs font-bold uppercase tracking-wider text-slate-950 transition-all duration-300">Сьогодні</button>
                     <button onclick="renderAdminStats('week')" id="stat-btn-week" class="flex-1 py-2.5 text-slate-500 rounded-xl text-xs font-bold uppercase tracking-wider hover:text-slate-800 transition-all duration-300">Тиждень</button>
                     <button onclick="renderAdminStats('month')" id="stat-btn-month" class="flex-1 py-2.5 text-slate-500 rounded-xl text-xs font-bold uppercase tracking-wider hover:text-slate-800 transition-all duration-300">Місяць</button>
                 </div>
-
                 <div class="grid grid-cols-2 gap-4 mb-6 mx-1">
                     <div class="card-convex p-6 flex flex-col justify-center animate-pop-in">
                         <div class="text-4xl font-black text-slate-950 tracking-tighter" id="stat-count">0</div>
@@ -162,24 +179,19 @@
                             <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Дохід</div>
                         </div>
                         <div class="card-convex p-4 rounded-3xl flex flex-col justify-center animate-pop-in [animation-delay:200ms]">
-                            <div class="text-xl font-black text-rose-500 tracking-tight" id="stat-cancelled">0</div>
+                            <div class="text-xl font-black text-red-500 tracking-tight" id="stat-cancelled">0</div>
                             <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Скасовано</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-32">
-                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-rose-50/95 backdrop-blur-sm">
-                    <div class="px-5 py-4">
-                        <h1 class="text-xl font-extrabold text-slate-950 truncate tracking-tighter">Мій розклад 📅</h1>
-                    </div>
-                    <div class="flex px-4 pb-3 gap-2">
-                        <button onclick="switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-950/20 transition-all duration-300">Активні</button>
-                        <button onclick="switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
-                    </div>
-                </header>
-                <div id="admin-bookings-list" class="space-y-5 mt-2 px-1"></div>
+            <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[240px] px-4">
+                <div class="flex px-1 pb-4 gap-2">
+                    <button onclick="switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-950/20 transition-all duration-300">Активні</button>
+                    <button onclick="switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-slate-200">Скасовані</button>
+                </div>
+                <div id="admin-bookings-list" class="space-y-5 px-1"></div>
             </div>
         </div>
 
@@ -187,7 +199,7 @@
 
     <div id="client-bottom-nav" class="hidden-step fixed bottom-6 left-5 right-5 z-50 max-w-md mx-auto">
         <nav class="floating-nav flex justify-around p-2">
-            <button onclick="switchTab('client', 'home')" id="client-nav-home" class="flex flex-col items-center justify-center p-3 text-rose-500 transition-all duration-300 w-20 rounded-xl hover:bg-rose-50">
+            <button onclick="switchTab('client', 'home')" id="client-nav-home" class="flex flex-col items-center justify-center p-3 text-blue-500 transition-all duration-300 w-20 rounded-xl hover:bg-blue-50">
                 <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3l9-8z"/></svg>
                 <span class="text-[10px] font-bold uppercase tracking-wide">Запис</span>
             </button>
@@ -206,7 +218,7 @@
         <nav class="floating-nav flex justify-around p-2">
             <button onclick="switchTab('admin', 'home')" id="admin-nav-home" class="flex flex-col items-center justify-center p-3 text-teal-600 transition-all duration-300 w-24 rounded-xl hover:bg-teal-50">
                 <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-                <span class="text-[10px] font-bold uppercase tracking-wide">Головна</span>
+                <span class="text-[10px] font-bold uppercase tracking-wide">Дашборд</span>
             </button>
             <button onclick="switchTab('admin', 'bookings')" id="admin-nav-bookings" class="flex flex-col items-center justify-center p-3 text-slate-400 transition-all duration-300 w-24 rounded-xl hover:bg-slate-50">
                 <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
@@ -215,7 +227,7 @@
         </nav>
     </div>
 
-    <div id="cancel-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm hidden items-center justify-center p-5 z-[60] transition-opacity duration-300">
+    <div id="cancel-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-5 z-[60] transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] p-7 w-full max-w-sm space-y-6 shadow-floating animate-pop-in border border-slate-100">
             <div class="text-center space-y-1.5">
                 <div class="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl border border-red-100">⚠️</div>
@@ -223,10 +235,10 @@
                 <p class="text-xs text-slate-500 font-medium">Вкажіть причину для іншої сторони</p>
             </div>
             
-            <textarea id="cancel-reason" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-rose-100 focus:border-rose-300 transition-all h-28 text-sm placeholder:text-slate-400 resize-none" placeholder="Напишіть коментар..."></textarea>
+            <textarea id="cancel-reason" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all h-28 text-sm placeholder:text-slate-400 resize-none" placeholder="Напишіть коментар..."></textarea>
             
             <div class="flex gap-3 pt-2">
-                <button onclick="closeCancelModal()" class="flex-1 py-3.5 rounded-xl bg-rose-50 text-slate-700 font-bold active:scale-95 transition-all">Назад</button>
+                <button onclick="closeCancelModal()" class="flex-1 py-3.5 rounded-xl bg-slate-100 text-slate-700 font-bold active:scale-95 transition-all">Назад</button>
                 <button id="confirm-cancel-btn" onclick="confirmCancel()" class="flex-1 py-3.5 rounded-xl bg-red-500 text-white font-bold active:scale-95 transition-all">Скасувати</button>
             </div>
         </div>
