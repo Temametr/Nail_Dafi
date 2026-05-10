@@ -89,7 +89,6 @@ function renderApp() {
         
         document.getElementById('user-name').innerText = state.user.first_name;
         document.getElementById('profile-avatar').innerText = state.user.first_name.charAt(0);
-        document.getElementById('profile-name').innerText = state.user.first_name;
         document.getElementById('profile-id').innerText = state.user.id;
 
         renderServices();
@@ -111,13 +110,22 @@ function switchTab(role, tabId) {
         if (btn) {
             if (nav === tabId) {
                 btn.classList.remove('text-slate-400');
-                btn.classList.add(activeColor, 'bg-slate-50/50');
+                btn.classList.add(activeColor, 'bg-rose-50'); // Додав легкий фон для активної кнопки
             } else {
-                btn.classList.remove(activeColor, 'bg-slate-50/50');
+                btn.classList.remove(activeColor, 'bg-rose-50');
                 btn.classList.add('text-slate-400');
             }
         }
     });
+
+    if (role === 'admin') {
+        const navAdmin = document.getElementById('admin-bottom-nav');
+        ['home', 'bookings'].forEach(nav => {
+             const btn = document.getElementById(`admin-nav-${nav}`);
+             if (nav === tabId) btn.classList.add('text-teal-600', 'bg-teal-50');
+             else btn.classList.remove('text-teal-600', 'bg-teal-50');
+        });
+    }
 
     tg.BackButton.hide();
     tg.MainButton.hide();
@@ -148,7 +156,7 @@ function showStep(stepId) {
 
 function startPolling(role, forDashboard = false) {
     stopPolling();
-    pollingInterval = setInterval(() => { loadBookings(role, true, forDashboard); }, 10000);
+    pollingInterval = setInterval(() => { loadBookings(role, true, forDashboard); }, 15000); // Трохи рідше поллінг
 }
 
 function stopPolling() {
@@ -159,14 +167,14 @@ function switchBookingTab(filter, role) {
     state.currentBookingFilter = filter;
     const btnActive = document.getElementById(`${role}-subtab-active`);
     const btnCancelled = document.getElementById(`${role}-subtab-cancelled`);
-    const activeColor = role === 'admin' ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' : 'bg-slate-900 text-white shadow-lg shadow-slate-900/20';
     
+    // Нові класи для підвкладок: виглядають як сегмент-контрол
     if (filter === 'active') {
-        btnActive.className = `flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${activeColor}`;
-        btnCancelled.className = "flex-1 py-2.5 text-sm font-bold bg-slate-100 text-slate-500 rounded-xl transition-all duration-300";
+        btnActive.className = `flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300`;
+        btnCancelled.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-slate-200";
     } else {
-        btnCancelled.className = `flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${activeColor}`;
-        btnActive.className = "flex-1 py-2.5 text-sm font-bold bg-slate-100 text-slate-500 rounded-xl transition-all duration-300";
+        btnCancelled.className = `flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300`;
+        btnActive.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-slate-200";
     }
     
     if (role === 'admin') renderAdminBookings();
@@ -178,7 +186,7 @@ function switchBookingTab(filter, role) {
 // ==========================================
 async function loadBookings(role, isSilent = false, forDashboard = false) {
     const containerId = role === 'admin' ? (forDashboard ? null : 'admin-bookings-list') : 'my-bookings-list';
-    if (!isSilent && containerId) document.getElementById(containerId).innerHTML = '<div class="text-center py-10 text-slate-400 font-medium animate-pulse">Оновлення...</div>';
+    if (!isSilent && containerId) document.getElementById(containerId).innerHTML = '<div class="text-center py-12 text-slate-400 font-medium animate-pulse">Оновлюємо записи...</div>';
     
     try {
         const response = await fetch(`${API_URL}?action=getBookings&userId=${state.user.id}&role=${role}`);
@@ -193,7 +201,7 @@ async function loadBookings(role, isSilent = false, forDashboard = false) {
             renderClientBookings();
         }
     } catch (e) {
-        if (!isSilent && containerId) document.getElementById(containerId).innerHTML = '<div class="text-center py-10 text-red-400 font-medium">Помилка мережі.</div>';
+        if (!isSilent && containerId) document.getElementById(containerId).innerHTML = '<div class="text-center py-12 text-red-500 font-medium">Помилка мережі 🌐</div>';
     }
 }
 
@@ -205,8 +213,8 @@ async function changeBookingStatus(bookingId, newStatus, reason = "") {
         if (result.status === 'success') {
             tg.HapticFeedback.notificationOccurred('success');
             loadBookings(state.isAdmin ? 'admin' : 'client');
-        } else tg.showAlert('Помилка: ' + result.message);
-    } catch (e) { tg.showAlert('Помилка з\'єднання.');
+        } else tg.showAlert('Помилка GAS: ' + result.message);
+    } catch (e) { tg.showAlert('Помилка з\'єднання з сервером.');
     } finally { tg.MainButton.hideProgress(); }
 }
 
@@ -232,11 +240,11 @@ async function submitBooking() {
 
         if (result.status === 'success') {
             tg.HapticFeedback.notificationOccurred('success');
-            const msg = state.editingBookingId ? 'Час візиту успішно змінено!' : 'Супер! Ваш запис створено 🎉';
+            const msg = state.editingBookingId ? 'Запит на перенесення надіслано!' : 'Ура! Ти записалася на манікюр 🎉';
             state.editingBookingId = null;
             tg.showAlert(msg, () => { switchTab('client', 'bookings'); });
-        } else tg.showAlert('Помилка: ' + result.message);
-    } catch (e) { tg.showAlert('Помилка підключення.'); } 
+        } else tg.showAlert('GAS Error: ' + result.message);
+    } catch (e) { tg.showAlert('Помилка мережі при створенні запису.'); } 
     finally { tg.MainButton.hideProgress(); }
 }
 
@@ -264,9 +272,10 @@ function formatDisplayTime(timeStr) {
 }
 
 function getStatusData(dbStatus) {
-    if (dbStatus === 'В очереди') return { text: 'Очікує', color: 'text-yellow-600 bg-yellow-100 border-yellow-200' };
-    if (dbStatus === 'Выполнено') return { text: 'Підтверджено', color: 'text-teal-600 bg-teal-100 border-teal-200' };
-    return { text: 'Скасовано', color: 'text-red-600 bg-red-100 border-red-200' };
+    // Яскравіші статуси з чіткою межею
+    if (dbStatus === 'В очереди') return { text: 'Очікує', color: 'text-amber-700 bg-amber-50 border-amber-200' };
+    if (dbStatus === 'Выполнено') return { text: 'Підтверджено', color: 'text-teal-700 bg-teal-50 border-teal-200' };
+    return { text: 'Скасовано', color: 'text-red-700 bg-red-50 border-red-200' };
 }
 
 // ==========================================
@@ -276,9 +285,9 @@ function renderAdminStats(period) {
     ['day', 'week', 'month'].forEach(p => {
         const btn = document.getElementById(`stat-btn-${p}`);
         if (p === period) {
-            btn.classList.remove('text-slate-500'); btn.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
+            btn.classList.remove('text-slate-500'); btn.classList.add('bg-white', 'shadow-md', 'text-slate-950');
         } else {
-            btn.classList.add('text-slate-500'); btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
+            btn.classList.add('text-slate-500'); btn.classList.remove('bg-white', 'shadow-md', 'text-slate-950');
         }
     });
 
@@ -316,32 +325,33 @@ function renderAdminBookings() {
         else return b.status === 'Отменено';
     });
 
-    if (filtered.length === 0) { container.innerHTML = "<div class='text-center py-10 text-slate-400 font-medium'>Записів немає.</div>"; return; }
+    if (filtered.length === 0) { container.innerHTML = "<div class='text-center py-12 text-slate-400 font-medium'>Немає записів у цій категорії.</div>"; return; }
 
     container.innerHTML = filtered.map((b, i) => {
         const isPending = b.status === 'В очереди';
         const statusData = getStatusData(b.status);
-        const delay = i * 50;
+        const delay = i * 40;
 
         return `
-            <div class="glass p-5 rounded-[2rem] mb-4 shadow-xl shadow-slate-200/40 animate-pop-in border border-white" style="animation-delay: ${delay}ms;">
-                <div class="flex justify-between items-start mb-3">
+            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in border border-white" style="animation-delay: ${delay}ms;">
+                <div class="flex justify-between items-start mb-4">
                     <div class="w-full pr-3">
-                        <div class="font-extrabold text-slate-800 text-lg mb-3 tracking-tight">${b.service}</div>
-                        <div class="flex flex-col gap-1.5">
-                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-slate-100 flex justify-center items-center">📅</span> ${b.date} • ${formatDisplayTime(b.time)}</div>
-                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-slate-100 flex justify-center items-center">👤</span> ${b.clientName}</div>
+                        <div class="font-extrabold text-slate-950 text-lg mb-4 tracking-tight leading-tight">${b.service}</div>
+                        <div class="space-y-2">
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500">📅</span> ${b.date} о ${formatDisplayTime(b.time)}</div>
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500">👤</span> ${b.clientName}</div>
                         </div>
                     </div>
-                    <span class="text-[10px] font-bold px-2.5 py-1.5 rounded-xl border ${statusData.color}">${statusData.text}</span>
+                    <span class="text-[10px] font-bold px-3 py-1.5 rounded-full border shrink-0 ${statusData.color}">${statusData.text}</span>
                 </div>
                 
-                <a href="tg://user?id=${b.clientId}" class="flex items-center justify-center w-full py-3 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-2xl text-sm font-bold mt-4 active:scale-95 transition-all">💬 Написати клієнту</a>
+                <a href="tg://user?id=${b.clientId}" class="card-convex-sm shadow-convex-sm flex items-center justify-center w-full py-3 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-sm font-bold mt-5 active:scale-95 transition-all">💬 Написати клієнту</a>
                 
-                ${b.cancelReason ? `<div class="text-xs text-red-500 mt-3 bg-red-50 p-3 rounded-2xl border border-red-100 font-medium">Причина: ${b.cancelReason}</div>` : ''}
-                ${isPending ? `<div class="flex gap-3 mt-3 pt-3 border-t border-slate-100">
-                        <button onclick="changeBookingStatus('${b.id}', 'Выполнено')" class="flex-1 py-3 bg-slate-900 text-white rounded-2xl text-sm font-bold shadow-lg shadow-slate-900/20 active:scale-95 transition-all">Підтвердити</button>
-                        <button onclick="openCancelModal('${b.id}', 'admin')" class="flex-1 py-3 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-2xl text-sm font-bold active:scale-95 transition-all">Скасувати</button>
+                ${b.cancelReason ? `<div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">Причина скасування: ${b.cancelReason}</div>` : ''}
+                
+                ${isPending ? `<div class="flex gap-3 mt-4 pt-4 border-t border-slate-100">
+                        <button onclick="changeBookingStatus('${b.id}', 'Выполнено')" class="card-convex-sm flex-1 py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-950/20 active:scale-95 transition-all">Підтвердити</button>
+                        <button onclick="openCancelModal('${b.id}', 'admin')" class="card-convex-sm flex-1 py-3.5 bg-white text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">Відмовити</button>
                     </div>` : ''}
             </div>
         `;
@@ -358,7 +368,7 @@ function renderClientBookings() {
         else return b.status === 'Отменено';
     });
 
-    if (filtered.length === 0) { container.innerHTML = "<div class='text-center py-10 text-slate-400 font-medium'>У цій категорії записів немає.</div>"; return; }
+    if (filtered.length === 0) { container.innerHTML = "<div class='text-center py-12 text-slate-400 font-medium'>У тебе поки немає записів.</div>"; return; }
 
     container.innerHTML = filtered.map((b, i) => {
         const isConfirmed = b.status === 'Выполнено';
@@ -368,38 +378,38 @@ function renderClientBookings() {
         const masterObj = state.masters.find(m => m.id.toString() === (b.masterId || '').toString());
         let masterName = masterObj ? masterObj.name : 'Майстра не знайдено';
         masterName = masterName.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        const delay = i * 50;
+        const delay = i * 40;
 
         return `
-            <div class="glass p-5 rounded-[2rem] mb-4 shadow-xl shadow-rose-100/40 animate-pop-in border border-white" style="animation-delay: ${delay}ms;">
-                <div class="flex justify-between items-start mb-3">
+            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in border border-white" style="animation-delay: ${delay}ms;">
+                <div class="flex justify-between items-start mb-4">
                     <div class="w-full pr-3">
-                        <div class="font-extrabold text-slate-800 text-lg mb-3 tracking-tight">${b.service}</div>
-                        <div class="flex flex-col gap-1.5">
-                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-slate-100 flex justify-center items-center">📅</span> ${b.date} • ${formatDisplayTime(b.time)}</div>
-                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-rose-50 text-rose-500 flex justify-center items-center">💅</span> ${masterName}</div>
+                        <div class="font-extrabold text-slate-950 text-lg mb-4 tracking-tight leading-tight">${b.service}</div>
+                        <div class="space-y-2">
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500">📅</span> ${b.date} о ${formatDisplayTime(b.time)}</div>
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-rose-50 flex justify-center items-center text-rose-500">💅</span> Майстер: ${masterName}</div>
                         </div>
                     </div>
-                    <span class="text-[10px] font-bold px-2.5 py-1.5 rounded-xl border ${statusData.color}">${statusData.text}</span>
+                    <span class="text-[10px] font-bold px-3 py-1.5 rounded-full border shrink-0 ${statusData.color}">${statusData.text}</span>
                 </div>
-                ${b.cancelReason ? `<div class="text-xs text-red-500 mt-3 bg-red-50 p-3 rounded-2xl border border-red-100 font-medium">Причина: ${b.cancelReason}</div>` : ''}
+                ${b.cancelReason ? `<div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">Коментар майстра: ${b.cancelReason}</div>` : ''}
                 
                 ${(isPending || isConfirmed) ? `
-                    <div class="mt-4 pt-4 border-t border-slate-100 space-y-3">
+                    <div class="mt-4 pt-4 border-t border-slate-100 space-y-3.5">
                         ${isConfirmed ? `
-                            <button onclick="tg.showAlert('Тут буде відкриватися чат з майстром 💬')" class="w-full py-3 bg-slate-900 text-white rounded-2xl text-sm font-bold shadow-lg shadow-slate-900/20 active:scale-95 transition-all">
-                                Написати майстру
+                            <button onclick="tg.showAlert('Ця функція скоро з\\'явиться! Поки пишіть у приватні повідомлення 💬')" class="card-convex-sm flex items-center justify-center w-full py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all">
+                                Написати майстру 💬
                             </button>
                             <div class="flex gap-3">
-                                <button onclick="startReschedule('${b.id}')" class="flex-1 py-3 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-2xl text-sm font-bold active:scale-95 transition-all">
+                                <button onclick="startReschedule('${b.id}')" class="card-convex-sm flex-1 py-3 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">
                                     Перенести
                                 </button>
-                                <button onclick="openCancelModal('${b.id}', 'client')" class="flex-1 py-3 bg-red-50 hover:bg-red-100 text-red-500 rounded-2xl text-sm font-bold active:scale-95 transition-all">
+                                <button onclick="openCancelModal('${b.id}', 'client')" class="card-convex-sm flex-1 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm font-bold active:scale-95 transition-all border border-red-100">
                                     Скасувати
                                 </button>
                             </div>
                         ` : `
-                            <button onclick="openCancelModal('${b.id}', 'client')" class="w-full py-3 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-2xl text-sm font-bold active:scale-95 transition-all">
+                            <button onclick="openCancelModal('${b.id}', 'client')" class="card-convex-sm w-full py-3.5 bg-white text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">
                                 Скасувати візит
                             </button>
                         `}
@@ -422,8 +432,8 @@ function startReschedule(bookingId) {
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`client-nav-${nav}`);
         if(btn) {
-            if (nav === 'home') { btn.classList.remove('text-slate-400'); btn.classList.add('text-rose-500', 'bg-slate-50/50'); }
-            else { btn.classList.remove('text-rose-500', 'bg-slate-50/50'); btn.classList.add('text-slate-400'); }
+            if (nav === 'home') { btn.classList.remove('text-slate-400'); btn.classList.add('text-rose-500', 'bg-rose-50'); }
+            else { btn.classList.remove('text-rose-500', 'bg-rose-50'); btn.classList.add('text-slate-400'); }
         }
     });
 
@@ -436,16 +446,16 @@ function startReschedule(bookingId) {
 function renderServices() {
     const list = document.getElementById('services-list');
     list.innerHTML = state.services.map((s, i) => `
-        <div onclick="selectService(${s.id})" class="glass p-5 rounded-[2rem] mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-lg shadow-rose-100/30 animate-pop-in" style="animation-delay: ${i*50}ms">
+        <div onclick="selectService(${s.id})" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0 pr-2">
-                <div class="shrink-0 w-14 h-14 bg-gradient-to-br from-rose-100 to-rose-50 rounded-2xl flex items-center justify-center text-rose-500 text-2xl shadow-inner border border-white">💅</div>
+                <div class="shrink-0 w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 text-2xl shadow-inner border border-rose-100">💅</div>
                 <div class="flex-1 min-w-0">
-                    <div class="font-extrabold text-slate-800 text-lg leading-tight truncate">${s.name}</div>
-                    <div class="text-xs font-semibold text-slate-500 mt-1 flex items-center gap-1"><span class="w-4 h-4 bg-slate-100 rounded-full flex items-center justify-center">🕒</span> ${s.duration} хв</div>
+                    <div class="font-extrabold text-slate-950 text-lg leading-tight break-words tracking-tight">${s.name}</div>
+                    <div class="text-xs font-semibold text-slate-500 mt-1 flex items-center gap-1.5"><span class="w-4 h-4 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">🕒</span> ${s.duration} хв</div>
                 </div>
             </div>
             <div class="flex flex-col items-end shrink-0">
-                <div class="text-slate-900 font-black text-xl whitespace-nowrap">${s.price} ₴</div>
+                <div class="text-slate-950 font-black text-xl whitespace-nowrap tracking-tight">${s.price} ₴</div>
             </div>
         </div>
     `).join('');
@@ -462,18 +472,18 @@ function renderMasters() {
     list.innerHTML = state.masters.map((m, i) => {
         const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
         return `
-        <div onclick="selectMaster('${m.id}')" class="glass p-5 rounded-[2rem] mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-lg shadow-teal-100/30 animate-pop-in" style="animation-delay: ${i*50}ms">
+        <div onclick="selectMaster('${m.id}')" class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all duration-300 cursor-pointer shadow-convex animate-pop-in border border-white" style="animation-delay: ${i*40}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0">
                 <div class="relative shrink-0">
-                    <div class="w-16 h-16 bg-gradient-to-br from-teal-100 to-teal-50 rounded-full flex items-center justify-center font-black text-teal-600 text-2xl shadow-inner border-2 border-white">${cleanName.charAt(0)}</div>
-                    <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 border-[3px] border-white rounded-full shadow-sm"></div>
+                    <div class="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center font-black text-teal-600 text-2xl shadow-inner border border-teal-100">${cleanName.charAt(0)}</div>
+                    <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full shadow-sm"></div>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <div class="font-extrabold text-slate-800 text-lg truncate">${cleanName}</div>
+                    <div class="font-extrabold text-slate-950 text-lg truncate tracking-tight">${cleanName}</div>
                     <div class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">Графік: ${m.workHours}</div>
                 </div>
             </div>
-            <div class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 shrink-0">
+            <div class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 shrink-0 border border-slate-100">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </div>
         </div>
@@ -508,9 +518,10 @@ function renderCalendar() {
         const dayNum = d.getDate();
 
         if (isWorkingDay) {
-            datesHTML += `<button onclick="selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-[4.5rem] h-[5.5rem] rounded-[1.5rem] flex flex-col items-center justify-center transition-all duration-300 bg-white shadow-lg shadow-slate-200/50 active:scale-90 border-2 border-transparent"><span class="text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wide">${dayName}</span><span class="text-2xl font-black text-slate-800">${dayNum}</span></button>`;
+            // Використовуємо card-convex-sm
+            datesHTML += `<button onclick="selectDate('${dateStr}', this)" class="date-btn flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center transition-all duration-300 shadow-convex-sm active:scale-90 border-2 border-white"><span class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black text-slate-950 tracking-tighter">${dayNum}</span></button>`;
         } else {
-            datesHTML += `<button disabled class="flex-shrink-0 w-[4.5rem] h-[5.5rem] rounded-[1.5rem] flex flex-col items-center justify-center bg-slate-100/50 text-slate-400 opacity-40 cursor-not-allowed"><span class="text-[10px] font-bold mb-1 uppercase tracking-wide">${dayName}</span><span class="text-2xl font-black">${dayNum}</span></button>`;
+            datesHTML += `<button disabled class="flex-shrink-0 w-[4.5rem] h-[5.5rem] card-convex-sm flex flex-col items-center justify-center bg-slate-100 text-slate-400 opacity-50 cursor-not-allowed border border-slate-200"><span class="text-[10px] font-bold mb-1.5 uppercase tracking-wide">${dayName}</span><span class="text-3xl font-black tracking-tighter">${dayNum}</span></button>`;
         }
     }
     container.innerHTML = datesHTML;
@@ -520,17 +531,17 @@ async function selectDate(dateStr, btnElement) {
     state.selectedDate = dateStr; state.selectedTime = null; tg.MainButton.hide();
     
     document.querySelectorAll('.date-btn').forEach(btn => {
-        btn.classList.remove('selected-item', 'shadow-rose-200/50', 'scale-105');
-        btn.classList.add('bg-white', 'text-slate-700', 'shadow-slate-200/50');
+        btn.classList.remove('selected-item', 'shadow-rose-300');
+        btn.classList.add('bg-white', 'text-slate-700', 'shadow-convex-sm', 'border-white');
         const d = btn.querySelector('span:first-child'); const n = btn.querySelector('span:last-child');
         if(d) d.classList.replace('text-rose-100', 'text-slate-400');
-        if(n) n.classList.replace('text-white', 'text-slate-800');
+        if(n) n.classList.replace('text-white', 'text-slate-950');
     });
     
-    btnElement.classList.remove('bg-white', 'text-slate-700', 'shadow-slate-200/50');
-    btnElement.classList.add('selected-item', 'shadow-rose-200/50', 'scale-105');
+    btnElement.classList.remove('bg-white', 'text-slate-700', 'shadow-convex-sm', 'border-white');
+    btnElement.classList.add('selected-item', 'shadow-rose-300'); // Тінь під колір виділення
     btnElement.querySelector('span:first-child').classList.replace('text-slate-400', 'text-rose-100');
-    btnElement.querySelector('span:last-child').classList.replace('text-slate-800', 'text-white');
+    btnElement.querySelector('span:last-child').classList.replace('text-slate-950', 'text-white');
 
     const timeLoader = document.getElementById('time-loader');
     document.getElementById('time-slots').innerHTML = ''; timeLoader.classList.remove('hidden');
@@ -567,29 +578,30 @@ function renderTimeSlots(occupiedSlots) {
         }
 
         if (!isAvailable) {
-            timeHTML += `<button disabled class="py-4 rounded-[1.25rem] bg-slate-100/50 text-slate-400 line-through text-sm font-bold cursor-not-allowed">${time}</button>`;
+            timeHTML += `<button disabled class="py-4 rounded-xl bg-slate-100 text-slate-400 line-through text-sm font-bold cursor-not-allowed border border-slate-200">${time}</button>`;
         } else {
             availableSlotsCount++;
-            timeHTML += `<button onclick="selectTime('${time}', this)" class="time-btn py-4 rounded-[1.25rem] bg-white text-slate-800 text-sm font-black active:scale-90 transition-all duration-300 shadow-lg shadow-slate-200/50 border-2 border-transparent animate-pop-in" style="animation-delay: ${i*30}ms">${time}</button>`;
+            // Використовуємо card-convex-sm
+            timeHTML += `<button onclick="selectTime('${time}', this)" class="time-btn card-convex-sm shadow-convex-sm py-4 bg-white text-slate-950 text-sm font-black active:scale-90 transition-all duration-300 border-2 border-white animate-pop-in" style="animation-delay: ${i*20}ms">${time}</button>`;
         }
     });
 
-    if (availableSlotsCount === 0) container.innerHTML = '<div class="col-span-3 text-center text-slate-500 py-6 font-medium">На обрану дату немає вільного часу 😔</div>';
+    if (availableSlotsCount === 0) container.innerHTML = '<div class="col-span-3 text-center text-slate-500 py-6 font-medium bg-white rounded-2xl border border-slate-100 shadow-convex-sm">На жаль, на цю дату вільного часу немає 😔</div>';
     else container.innerHTML = timeHTML;
 }
 
 function selectTime(time, btnElement) {
     state.selectedTime = time;
     document.querySelectorAll('.time-btn').forEach(btn => {
-        btn.classList.remove('selected-item', 'shadow-rose-200/50', 'scale-105');
-        btn.classList.add('bg-white', 'text-slate-800');
+        btn.classList.remove('selected-item', 'shadow-rose-300');
+        btn.classList.add('bg-white', 'text-slate-950', 'shadow-convex-sm', 'border-white');
     });
     
-    btnElement.classList.remove('bg-white', 'text-slate-800');
-    btnElement.classList.add('selected-item', 'shadow-rose-200/50', 'scale-105');
+    btnElement.classList.remove('bg-white', 'text-slate-950', 'shadow-convex-sm', 'border-white');
+    btnElement.classList.add('selected-item', 'shadow-rose-300');
     
-    if (state.editingBookingId) tg.MainButton.text = `Перенести на ${time}`;
-    else tg.MainButton.text = `Записатися на ${time}`;
+    if (state.editingBookingId) tg.MainButton.text = `Перенести візит на ${time}`;
+    else tg.MainButton.text = `Підтвердити запис на ${time}`;
     
     tg.MainButton.show(); tg.MainButton.onClick(submitBooking);
 }
@@ -603,10 +615,10 @@ function openCancelModal(bookingId, role) {
     const title = document.getElementById('cancel-modal-title');
     const input = document.getElementById('cancel-reason');
     if (role === 'client') {
-        title.innerText = 'Скасувати запис?';
-        input.placeholder = 'Будь ласка, вкажіть причину для майстра...';
+        title.innerText = 'Скасувати?';
+        input.placeholder = 'Напишіть причину скасування для майстра...';
     } else {
-        title.innerText = 'Скасувати запис?';
+        title.innerText = 'Скасувати?';
         input.placeholder = 'Напишіть клієнту, чому візит скасовано...';
     }
     document.getElementById('cancel-modal').classList.remove('hidden'); 
@@ -623,7 +635,7 @@ function closeCancelModal() {
 
 function confirmCancel() {
     const reason = document.getElementById('cancel-reason').value.trim();
-    if (!reason) return tg.showAlert("Будь ласка, вкажіть причину скасування.");
+    if (!reason) return tg.showAlert("Будь ласка, вкажіть причину для іншої сторони.");
     changeBookingStatus(currentCancelBookingId, 'Отменено', reason);
     closeCancelModal();
 }
