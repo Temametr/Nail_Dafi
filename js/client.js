@@ -150,7 +150,10 @@ export function renderTimeSlots(occupiedSlots) {
 
 export function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
-    const filtered = state.clientBookings.filter(b => state.currentBookingFilter === 'active' ? (b.status === 'В очереди' || b.status === 'Выполнено') : b.status === 'Отменено');
+    const filtered = state.clientBookings.filter(b => {
+        if (state.currentBookingFilter === 'active') return b.status === 'В очереди' || b.status === 'Выполнено';
+        else return b.status === 'Отменено';
+    });
     
     if (filtered.length === 0) { 
         container.innerHTML = "<div class='text-center py-12 text-slate-400 font-medium'>У тебе поки немає записів.</div>"; 
