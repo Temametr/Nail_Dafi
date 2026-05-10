@@ -1,10 +1,9 @@
-// js/app.js
 import { state, tg, modalState, polling } from './state.js';
 import { fetchInitialData, fetchBookings, updateBookingStatusAPI, submitBookingAPI, fetchOccupiedSlotsAPI } from './api.js';
 import { renderHomeMasters, renderServices, renderMasters, renderCalendar, renderClientBookings } from './client.js';
 import { renderAdminStats, renderAdminBookings } from './admin.js';
 
-// ПРИВЯЗЫВАЕМ ФУНКЦИИ К ОКНУ (Чтобы работали onclick в HTML)
+// ПРИВ'ЯЗУЄМО ФУНКЦІЇ ДО ВІКНА (Щоб працювали onclick у HTML)
 window.appAPI = {
     switchTab, switchBookingTab, startClientBookingFlow, startReschedule,
     selectService, selectMaster, selectDate, selectTime,
@@ -12,7 +11,7 @@ window.appAPI = {
     renderAdminStats
 };
 
-// ИНИЦИАЛИЗАЦИЯ
+// ІНІЦІАЛІЗАЦІЯ
 window.addEventListener('DOMContentLoaded', async () => {
     tg.MainButton.color = "#3b82f6";
     tg.BackButton.onClick(handleBack);
@@ -29,7 +28,7 @@ async function loadInitialData() {
             state.isAdmin = true;
             state.adminMasterInfo = masterData;
         }
-    } catch (e) { tg.showAlert("Ошибка загрузки данных."); }
+    } catch (e) { tg.showAlert("Помилка завантаження даних."); }
 }
 
 async function loadApp() {
@@ -48,11 +47,27 @@ async function loadApp() {
     }
 }
 
+// ✅ ОНОВЛЕНО: Виправлена логіка кнопки "Назад"
 function handleBack() {
     if (!document.getElementById('tab-booking-flow').classList.contains('hidden-step')) {
-        if (!document.getElementById('step-datetime').classList.contains('hidden-step')) showStep('step-master');
-        else if (!document.getElementById('step-master').classList.contains('hidden-step')) showStep('step-booking');
-        else { state.editingBookingId = null; switchTab('client', 'bookings'); }
+        
+        // 1. Якщо ми ПЕРЕНОСИМО запис (редагування) -> одразу йдемо назад у візити
+        if (state.editingBookingId) {
+            state.editingBookingId = null;
+            switchTab('client', 'bookings');
+            return;
+        }
+
+        // 2. Якщо це НОВИЙ запис -> крокуємо покроково назад
+        if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
+            showStep('step-master');
+        } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
+            showStep('step-booking');
+        } else { 
+            // Якщо ми на першому кроці створення -> повертаємось у візити
+            state.editingBookingId = null; 
+            switchTab('client', 'bookings'); 
+        }
     }
 }
 
@@ -95,17 +110,31 @@ function updateHeaderTitle(role, tabId) {
     const title = document.getElementById(role === 'client' ? 'client-header-title' : 'admin-header-title');
     if (!title) return;
     if (role === 'client') {
-        if (tabId === 'home') title.innerHTML = `Привет, <span class="text-blue-600">${state.user.first_name}</span> 👋`;
-        else if (tabId === 'bookings') title.innerHTML = `Твои визиты 💅`;
-        else if (tabId === 'profile') title.innerHTML = `Мой кабинет ⚙️`;
+        if (tabId === 'home') title.innerHTML = `Привіт, <span class="text-blue-600">${state.user.first_name}</span> 👋`;
+        else if (tabId === 'bookings') title.innerHTML = `Твої візити 💅`;
+        else if (tabId === 'profile') title.innerHTML = `Мій кабінет ⚙️`;
     } else {
         const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
         if (tabId === 'home') title.innerHTML = `Панель: <span class="text-teal-600">${cleanName}</span> 📊`;
-        else title.innerHTML = `Расписание 📅`;
+        else title.innerHTML = `Розклад 📅`;
     }
 }
 
+// ✅ ОНОВЛЕНО: Візуальне відображення завантаження (Спінер)
 async function loadBookings(role, isSilent = false, forDashboard = false) {
+    const containerId = role === 'admin' ? (forDashboard ? null : 'admin-bookings-list') : 'my-bookings-list';
+    
+    if (!isSilent && containerId) {
+        // Динамічний колір спінера: синій для клієнта, бірюзовий для майстра
+        const spinnerColor = role === 'admin' ? 'border-t-teal-500' : 'border-t-blue-500';
+        document.getElementById(containerId).innerHTML = `
+            <div class="flex flex-col items-center justify-center py-16 animate-pulse">
+                <div class="w-12 h-12 border-4 border-slate-100 rounded-full ${spinnerColor} animate-spin mb-4 shadow-sm"></div>
+                <p class="text-slate-400 font-medium text-sm">Завантажуємо дані...</p>
+            </div>
+        `;
+    }
+
     try {
         const data = await fetchBookings(role);
         if (role === 'admin') {
@@ -116,7 +145,12 @@ async function loadBookings(role, isSilent = false, forDashboard = false) {
             state.clientBookings = data.bookings || [];
             renderClientBookings();
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e); 
+        if (!isSilent && containerId) {
+            document.getElementById(containerId).innerHTML = '<div class="text-center py-12 text-red-500 font-medium">Помилка мережі 🌐</div>';
+        }
+    }
 }
 
 function startPolling(role, forDashboard = false) {
@@ -128,12 +162,12 @@ function stopPolling() {
     if (polling.interval) clearInterval(polling.interval);
 }
 
-// ФЛОУ ЗАПИСИ
+// ФЛОУ ЗАПИСУ
 function startClientBookingFlow() {
     state.editingBookingId = null;
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
-    document.getElementById('client-header-title').innerHTML = `Новый <span class="text-blue-600">визит</span> 📝`;
+    document.getElementById('client-header-title').innerHTML = `Новий <span class="text-blue-600">візит</span> 📝`;
     renderServices();
     showStep('step-booking');
     tg.BackButton.show();
@@ -147,7 +181,7 @@ function startReschedule(bookingId) {
     state.selectedMaster = state.masters.find(m => m.id.toString() === booking.masterId.toString());
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
-    document.getElementById('client-header-title').innerHTML = `Смена <span class="text-blue-600">даты</span> 📅`;
+    document.getElementById('client-header-title').innerHTML = `Зміна <span class="text-blue-600">дати</span> 📅`;
     renderCalendar();
     showStep('step-datetime');
     tg.BackButton.show();
@@ -176,8 +210,19 @@ function selectMaster(id) {
 
 async function selectDate(dateStr, btnElement) {
     state.selectedDate = dateStr;
-    document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('selected-item'));
-    btnElement.classList.add('selected-item');
+    document.querySelectorAll('.date-btn').forEach(btn => {
+        btn.classList.remove('selected-item', 'shadow-blue-300');
+        btn.classList.add('bg-white', 'text-slate-700', 'shadow-convex-sm');
+        const d = btn.querySelector('span:first-child'); const n = btn.querySelector('span:last-child');
+        if(d) d.classList.replace('text-blue-100', 'text-slate-400');
+        if(n) n.classList.replace('text-white', 'text-slate-950');
+    });
+    
+    btnElement.classList.remove('bg-white', 'text-slate-700', 'shadow-convex-sm');
+    btnElement.classList.add('selected-item', 'shadow-blue-300');
+    btnElement.querySelector('span:first-child').classList.replace('text-slate-400', 'text-blue-100');
+    btnElement.querySelector('span:last-child').classList.replace('text-slate-950', 'text-white');
+
     document.getElementById('time-slots').innerHTML = '';
     document.getElementById('time-loader').classList.remove('hidden');
     try {
@@ -192,25 +237,39 @@ function renderTimeSlots(occupiedSlots) {
     const now = new Date();
     const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
     const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
     const reqSlots = Math.ceil(state.selectedService.duration / 60);
 
-    container.innerHTML = slots.map((time, i) => {
+    let availableSlotsCount = 0;
+    let timeHTML = slots.map((time, i) => {
         let isAvail = true;
         const startH = parseInt(time.split(':')[0]);
         for (let j = 0; j < reqSlots; j++) {
             const h = startH + j;
             if (h >= 20 || occupiedSlots.includes(`${h.toString().padStart(2, '0')}:00`)) isAvail = false;
-            if (state.selectedDate === todayStr && h <= currentHour) isAvail = false;
+            if (state.selectedDate === todayStr && j === 0 && (startH < currentHour || (startH === currentHour && 0 <= currentMinute))) isAvail = false;
         }
-        return isAvail ? `<button onclick="window.appAPI.selectTime('${time}', this)" class="time-btn card-convex-sm shadow-convex-sm py-4 bg-white text-slate-950 text-sm font-black active:scale-90 transition-all duration-300 animate-pop-in" style="animation-delay: ${i*20}ms">${time}</button>` : `<button disabled class="py-4 rounded-xl bg-slate-100 text-slate-300 line-through text-xs font-bold border border-slate-200">${time}</button>`;
+        if (isAvail) availableSlotsCount++;
+        return isAvail 
+            ? `<button onclick="window.appAPI.selectTime('${time}', this)" class="time-btn card-convex-sm shadow-convex-sm py-4 bg-white text-slate-950 text-sm font-black active:scale-90 transition-all duration-300 animate-pop-in" style="animation-delay: ${i*20}ms">${time}</button>` 
+            : `<button disabled class="py-4 rounded-xl bg-slate-100 text-slate-400 line-through text-sm font-bold cursor-not-allowed border border-slate-200">${time}</button>`;
     }).join('');
+
+    if (availableSlotsCount === 0) container.innerHTML = '<div class="col-span-3 text-center text-slate-500 py-6 font-medium bg-white rounded-2xl border border-slate-100 shadow-convex-sm">На жаль, на цю дату вільного часу немає 😔</div>';
+    else container.innerHTML = timeHTML;
 }
 
 function selectTime(time, btnElement) {
     state.selectedTime = time;
-    document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('selected-item'));
-    btnElement.classList.add('selected-item');
-    tg.MainButton.text = state.editingBookingId ? `Перенести на ${time}` : `Записаться на ${time}`;
+    document.querySelectorAll('.time-btn').forEach(btn => {
+        btn.classList.remove('selected-item', 'shadow-blue-300');
+        btn.classList.add('bg-white', 'text-slate-950', 'shadow-convex-sm');
+    });
+    
+    btnElement.classList.remove('bg-white', 'text-slate-950', 'shadow-convex-sm');
+    btnElement.classList.add('selected-item', 'shadow-blue-300');
+    
+    tg.MainButton.text = state.editingBookingId ? `Перенести на ${time}` : `Записатися на ${time}`;
     tg.MainButton.show();
     tg.MainButton.onClick(async () => {
         tg.MainButton.showProgress();
@@ -222,8 +281,8 @@ function selectTime(time, btnElement) {
         });
         if (res.status === 'success') {
             tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert("Успешно!", () => switchTab('client', 'bookings'));
-        } else tg.showAlert(res.message);
+            tg.showAlert(state.editingBookingId ? "Запит на перенесення надіслано!" : "Ура! Ти записалася на манікюр 🎉", () => switchTab('client', 'bookings'));
+        } else tg.showAlert('Помилка: ' + res.message);
         tg.MainButton.hideProgress();
     });
 }
@@ -232,34 +291,48 @@ function selectTime(time, btnElement) {
 function openCancelModal(bookingId, role) {
     modalState.currentCancelBookingId = bookingId;
     modalState.currentCancelRole = role;
+    const title = document.getElementById('cancel-modal-title');
+    const input = document.getElementById('cancel-reason');
+    if (role === 'client') {
+        title.innerText = 'Скасувати?';
+        input.placeholder = 'Напишіть причину скасування для майстра...';
+    } else {
+        title.innerText = 'Скасувати?';
+        input.placeholder = 'Напишіть клієнту, чому візит скасовано...';
+    }
     document.getElementById('cancel-modal').classList.remove('hidden');
     document.getElementById('cancel-modal').classList.add('flex');
 }
+
 function closeCancelModal() {
     document.getElementById('cancel-modal').classList.add('hidden');
+    document.getElementById('cancel-modal').classList.remove('flex');
     document.getElementById('cancel-reason').value = '';
 }
+
 async function confirmCancel() {
     const reason = document.getElementById('cancel-reason').value.trim();
-    if (!reason) return tg.showAlert("Укажите причину");
+    if (!reason) return tg.showAlert("Будь ласка, вкажіть причину для іншої сторони.");
     const res = await updateBookingStatusAPI(modalState.currentCancelBookingId, 'Отменено', reason);
     if (res.status === 'success') loadBookings(state.isAdmin ? 'admin' : 'client');
     closeCancelModal();
 }
+
 async function changeBookingStatus(id, status) {
     const res = await updateBookingStatusAPI(id, status);
     if (res.status === 'success') loadBookings('admin');
 }
+
 function switchBookingTab(filter, role) {
     state.currentBookingFilter = filter;
     const btnA = document.getElementById(`${role}-subtab-active`);
     const btnC = document.getElementById(`${role}-subtab-cancelled`);
     if (filter === 'active') {
-        btnA.className = "flex-1 py-3 text-xs font-bold uppercase bg-slate-950 text-white rounded-xl shadow-lg transition-all";
-        btnC.className = "flex-1 py-3 text-xs font-bold uppercase bg-white text-slate-500 rounded-xl border border-rose-100 transition-all";
+        btnA.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300";
+        btnC.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100";
     } else {
-        btnC.className = "flex-1 py-3 text-xs font-bold uppercase bg-slate-950 text-white rounded-xl shadow-lg transition-all";
-        btnA.className = "flex-1 py-3 text-xs font-bold uppercase bg-white text-slate-500 rounded-xl border border-rose-100 transition-all";
+        btnC.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300";
+        btnA.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100";
     }
     role === 'admin' ? renderAdminBookings() : renderClientBookings();
 }
