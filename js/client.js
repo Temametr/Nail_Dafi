@@ -59,10 +59,12 @@ export function renderMasters() {
 export function renderCalendar() {
     const container = document.getElementById('date-scroll');
     container.innerHTML = '';
+    // ✅ ПРАВКА: Чистимо слоти при кожному рендері календаря
+    const timeSlotsContainer = document.getElementById('time-slots');
+    if (timeSlotsContainer) timeSlotsContainer.innerHTML = '';
+
     const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const monthsToShow = [new Date(currentYear, currentMonth, 1), new Date(currentYear, currentMonth + 1, 1)];
+    const monthsToShow = [new Date(now.getFullYear(), now.getMonth(), 1), new Date(now.getFullYear(), now.getMonth() + 1, 1)];
     const monthNames = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
     const dayLabels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
     let fullHTML = '';
@@ -71,7 +73,7 @@ export function renderCalendar() {
         fullHTML += `<div class="col-span-7 text-center text-[11px] font-black text-slate-800 mt-4 mb-2 uppercase tracking-[0.2em] bg-white/50 py-2 rounded-xl border border-white/60 shadow-sm">${monthNames[firstOfMonth.getMonth()]} ${firstOfMonth.getFullYear()}</div>`;
         dayLabels.forEach(label => fullHTML += `<div class="text-[9px] font-bold text-rose-300 text-center pb-2 uppercase">${label}</div>`);
 
-        let firstDayIdx = firstOfMonth.getDay(); // 0=Sun, 1=Mon...
+        let firstDayIdx = firstOfMonth.getDay(); 
         let offset = firstDayIdx === 0 ? 6 : firstDayIdx - 1;
         for (let i = 0; i < offset; i++) fullHTML += `<div class="w-full aspect-square"></div>`;
 
@@ -79,7 +81,7 @@ export function renderCalendar() {
         for (let day = 1; day <= lastDayOfMonth; day++) {
             const d = new Date(firstOfMonth.getFullYear(), firstOfMonth.getMonth(), day);
             const dateStr = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-            const dayOfWeek = d.getDay(); // 1=Mon, 2=Tue... 0=Sun
+            const dayOfWeek = d.getDay(); 
 
             const isPast = d < new Date().setHours(0,0,0,0);
             const isWorking = dayOfWeek !== 1 && state.selectedMaster.workDays.includes(dayOfWeek);
@@ -109,7 +111,7 @@ export function renderTimeSlots(occupiedSlots) {
     let availableCount = 0;
     container.innerHTML = slots.map((time, i) => {
         let isAvail = true;
-        if (i + reqBlocks > slots.length + 1) isAvail = false; // Не встигаємо до 20:00
+        if (i + reqBlocks > slots.length + 1) isAvail = false; 
         else {
             for (let j = 0; j < reqBlocks; j++) {
                 if (occupiedSlots.includes(slots[i + j])) { isAvail = false; break; }
