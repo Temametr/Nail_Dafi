@@ -13,6 +13,20 @@ window.appAPI = {
 window.addEventListener('DOMContentLoaded', async () => {
     tg.MainButton.color = "#3b82f6";
     tg.BackButton.onClick(handleBack);
+    await loadApp();
+});
+
+async function loadInitialData() {
+    try {
+        const data = await fetchInitialData();
+        state.services = data.services;
+        state.masters = data.masters;
+        const masterData = state.masters.find(m => m.id.toString() === state.user.id.toString());
+        if (masterData) { state.isAdmin = true; state.adminMasterInfo = masterData; }
+    } catch (e) { tg.showAlert("Помилка мережі"); }
+}
+
+async function loadApp() {
     await loadInitialData();
     document.getElementById('loader').classList.add('hidden');
     if (state.isAdmin) {
@@ -26,30 +40,42 @@ window.addEventListener('DOMContentLoaded', async () => {
         renderServices();
         switchTab('client', 'home');
     }
-});
-
-async function loadInitialData() {
-    try {
-        const data = await fetchInitialData();
-        state.services = data.services;
-        state.masters = data.masters;
-        const masterData = state.masters.find(m => m.id.toString() === state.user.id.toString());
-        if (masterData) { state.isAdmin = true; state.adminMasterInfo = masterData; }
-    } catch (e) { tg.showAlert("Помилка мережі"); }
 }
 
+// ✅ ПРАВКА: Повне скидання при виході з календаря
 function handleBack() {
-    if (!document.getElementById('master-profile-modal').classList.contains('hidden')) { closeMasterProfile(); return; }
+    if (!document.getElementById('master-profile-modal').classList.contains('hidden')) { 
+        closeMasterProfile(); 
+        return; 
+    }
+
     if (!document.getElementById('tab-booking-flow').classList.contains('hidden-step')) {
-        if (state.editingBookingId) { state.editingBookingId = null; switchTab('client', 'bookings'); return; }
+        if (state.editingBookingId) { 
+            state.editingBookingId = null; 
+            switchTab('client', 'bookings'); 
+            return; 
+        }
+
         if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
-            if (state.viewedMasterId) showStep('step-booking'); else showStep('step-master');
-        } else if (!document.getElementById('step-master').classList.contains('hidden-step')) showStep('step-booking');
-        else {
+            resetDateTimeSelection(); // Очищуємо старий вибір
+            if (state.viewedMasterId) showStep('step-booking'); 
+            else showStep('step-master');
+        } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
+            showStep('step-booking');
+        } else {
             if (state.viewedMasterId) { switchTab('client', 'home'); openMasterProfile(state.viewedMasterId); } 
             else switchTab('client', 'bookings');
         }
     }
+}
+
+// ✅ ПРАВКА: Очищення дати та часу
+function resetDateTimeSelection() {
+    state.selectedDate = null;
+    state.selectedTime = null;
+    const timeContainer = document.getElementById('time-slots');
+    if (timeContainer) timeContainer.innerHTML = '';
+    tg.MainButton.hide();
 }
 
 function switchTab(role, tabId) {
@@ -103,6 +129,7 @@ async function loadBookings(role, silent = false, dash = false) {
 
 function startClientBookingFlow() {
     state.editingBookingId = null; state.selectedMaster = null; state.viewedMasterId = null;
+    resetDateTimeSelection();
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
     renderServices();
@@ -135,6 +162,7 @@ function selectService(id) {
 }
 
 function selectMaster(id) {
+    resetDateTimeSelection(); // Скидаємо старі дати при виборі нового майстра
     state.selectedMaster = state.masters.find(m => m.id.toString() === id.toString());
     renderCalendar();
     showStep('step-datetime');
@@ -142,10 +170,14 @@ function selectMaster(id) {
 
 async function selectDate(date, btn) {
     state.selectedDate = date;
+    state.selectedTime = null; // Обов'язково скидаємо час
+    tg.MainButton.hide();
+    
     document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected-item'));
     btn.classList.add('selected-item');
     document.getElementById('time-loader').classList.remove('hidden');
     document.getElementById('time-slots').innerHTML = '';
+    
     const d = await fetchOccupiedSlotsAPI(date, state.selectedMaster.id, state.editingBookingId);
     renderTimeSlots(d.occupiedSlots || []);
     document.getElementById('time-loader').classList.add('hidden');
@@ -160,7 +192,10 @@ function selectTime(t, btn) {
     tg.MainButton.onClick(async () => {
         tg.MainButton.showProgress();
         const r = await submitBookingAPI({ action: state.editingBookingId ? 'rescheduleBooking' : 'createBooking', date: state.selectedDate, time: state.selectedTime, masterId: state.selectedMaster.id, clientId: state.user.id.toString(), clientName: state.user.first_name, service: state.selectedService.name, bookingId: state.editingBookingId });
-        if (r.status === 'success') tg.showAlert("Готово!", () => switchTab('client', 'bookings'));
+        if (r.status === 'success') {
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert("Готово!", () => switchTab('client', 'bookings'));
+        }
         else tg.showAlert(r.message);
         tg.MainButton.hideProgress();
     });
@@ -186,8 +221,10 @@ function closeMasterProfile() {
 
 function bookFromProfile() {
     state.selectedMaster = state.masters.find(x => x.id.toString() === state.viewedMasterId.toString());
+    resetDateTimeSelection(); // Чистимо старий вибір
     document.getElementById('master-profile-modal').classList.add('hidden');
-    document.getElementById('tab-home').classList.add('hidden-step');
+    document.getElementById('master-profile-modal').classList.remove('flex');
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
     renderServices();
     showStep('step-booking');
