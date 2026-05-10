@@ -25,13 +25,11 @@
                             '100%': { opacity: '1', transform: 'scale(1)' },
                         }
                     },
-                    borderRadius: {
-                        '4xl': '2rem',
-                    },
                     boxShadow: {
-                        // НОВА: Чітка випукла тінь (дифузна + тонована підкладка)
+                        // Чітка випукла тінь для об'єму картки
                         'convex': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 30px 40px -10px rgba(15, 23, 42, 0.06)',
                         'convex-sm': '0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        // Сильна тінь для плаваючого навбара
                         'floating': '0 20px 40px -10px rgba(15, 23, 42, 0.15)',
                     }
                 }
@@ -42,38 +40,38 @@
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         
-        /* Глобальний клас для ка карток: чисто білий, без прозорості, з чіткою тінню */
+        /* Глобальні класи для випуклих карток (чисто білі, без прозорості) */
         .card-convex { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 30px 40px -10px rgba(15, 23, 42, 0.06); border-radius: 2rem; }
         .card-convex-sm { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border-radius: 1.5rem; }
 
-        /* Плаваючий навбар: щільніший, з сильнішою тінню */
+        /* Плаваючий навбар (Floating Dock) */
         .floating-nav { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15); border-radius: 1.75rem; }
         
         .hidden-step { display: none !important; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Стиль виділення */
-        .selected-item { background: linear-gradient(135deg, #fb7185, #e11d48) !important; color: white !important; border-color: transparent !important; box-shadow: 0 10px 20px -3px rgba(225, 29, 72, 0.4) !important; transform: translateY(-2px) scale(1.01); }
+        /* Стиль виділеного елемента (дата/час) */
+        .selected-item { background: linear-gradient(135deg, #fb7185, #e11d48) !important; color: white !important; border-color: transparent !important; box-shadow: 0 10px 20px -3px rgba(225, 29, 72, 0.4) !important; transform: translateY(-2px) scale(1.01); transition: all 0.3s ease; }
         .tab-content { transition: opacity 0.3s ease; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans antialiased text-slate-800 pb-36 viewport-fit-cover">
+<body class="bg-rose-50 min-h-screen font-sans antialiased text-slate-800 pb-36 viewport-fit-cover">
 
     <div id="app" class="max-w-md mx-auto p-4">
         
         <div id="loader" class="flex flex-col items-center justify-center h-[75vh]">
             <div class="relative flex justify-center items-center">
-                <div class="absolute w-20 h-20 border-4 border-rose-100 rounded-full"></div>
+                <div class="absolute w-20 h-20 border-4 border-rose-100 rounded-full opacity-60"></div>
                 <div class="w-20 h-20 border-4 border-rose-500 rounded-full border-t-transparent animate-spin"></div>
             </div>
-            <p class="mt-6 text-slate-400 font-medium tracking-wide">Магія налаштовується...</p>
+            <p class="mt-6 text-rose-300 font-medium tracking-wide">Магія налаштовується...</p>
         </div>
 
         <div id="client-screen" class="hidden-step animate-fade-in-up">
             
             <div id="tab-home" class="tab-content pt-20">
-                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-slate-100/90 backdrop-blur-sm px-5 py-4">
+                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-rose-50/90 backdrop-blur-sm px-5 py-4">
                     <h1 class="text-2xl font-extrabold text-slate-950 tracking-tighter">Привіт, <span id="user-name" class="text-rose-500">Гостю</span>! 💅</h1>
                     <p class="text-slate-600 text-sm font-medium mt-0.5">Твій ідеальний манікюр чекає</p>
                 </header>
@@ -98,31 +96,31 @@
             </div>
 
             <div id="tab-bookings" class="tab-content hidden-step pt-32">
-                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-slate-100/95 backdrop-blur-sm">
+                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-rose-50/95 backdrop-blur-sm">
                     <div class="px-5 py-4">
                         <h1 class="text-2xl font-extrabold text-slate-950 tracking-tighter">Твої візити ✨</h1>
                     </div>
                     <div class="flex px-4 pb-3 gap-2">
                         <button onclick="switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-950/20 transition-all duration-300">Підтверджені</button>
-                        <button onclick="switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-slate-200">Скасовані</button>
+                        <button onclick="switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
                     </div>
                 </header>
                 <div id="my-bookings-list" class="space-y-5 mt-2 px-1"></div>
             </div>
 
             <div id="tab-profile" class="tab-content hidden-step pt-20">
-                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-slate-100/90 backdrop-blur-sm px-5 py-4">
+                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-rose-50/90 backdrop-blur-sm px-5 py-4">
                     <h1 class="text-2xl font-extrabold text-slate-950 tracking-tighter">Мій кабінет 👤</h1>
                 </header>
                 
                 <div class="card-convex p-6 flex items-center gap-5 mt-6 mx-1">
                     <div class="relative">
-                        <div class="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center text-3xl font-bold text-rose-500 shadow-inner border border-rose-100" id="profile-avatar"></div>
+                        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-rose-500 shadow-inner border border-rose-100" id="profile-avatar"></div>
                         <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
                     </div>
                     <div>
                         <div class="font-extrabold text-slate-950 text-xl tracking-tight" id="profile-name"></div>
-                        <div class="text-[11px] font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg mt-2 inline-block">ID: <span id="profile-id"></span></div>
+                        <div class="text-[11px] font-bold text-slate-500 bg-rose-100 px-3 py-1.5 rounded-lg mt-2 inline-block">ID: <span id="profile-id"></span></div>
                     </div>
                 </div>
                 
@@ -143,7 +141,7 @@
         <div id="admin-screen" class="hidden-step animate-fade-in-up">
             
             <div id="admin-tab-home" class="admin-tab-content pt-20">
-                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-slate-100/90 backdrop-blur-sm px-5 py-4">
+                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-rose-50/90 backdrop-blur-sm px-5 py-4">
                     <h1 class="text-xl font-extrabold text-slate-950 truncate tracking-tighter">Панель: <span id="admin-header-name" class="text-teal-600"></span> 📊</h1>
                 </header>
                 
@@ -172,13 +170,13 @@
             </div>
 
             <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-32">
-                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-slate-100/95 backdrop-blur-sm">
+                <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto bg-rose-50/95 backdrop-blur-sm">
                     <div class="px-5 py-4">
                         <h1 class="text-xl font-extrabold text-slate-950 truncate tracking-tighter">Мій розклад 📅</h1>
                     </div>
                     <div class="flex px-4 pb-3 gap-2">
-                        <button onclick="switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-900/20 transition-all duration-300">Активні</button>
-                        <button onclick="switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-slate-200">Скасовані</button>
+                        <button onclick="switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-950/20 transition-all duration-300">Активні</button>
+                        <button onclick="switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
                     </div>
                 </header>
                 <div id="admin-bookings-list" class="space-y-5 mt-2 px-1"></div>
@@ -228,7 +226,7 @@
             <textarea id="cancel-reason" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-rose-100 focus:border-rose-300 transition-all h-28 text-sm placeholder:text-slate-400 resize-none" placeholder="Напишіть коментар..."></textarea>
             
             <div class="flex gap-3 pt-2">
-                <button onclick="closeCancelModal()" class="flex-1 py-3.5 rounded-xl bg-slate-100 text-slate-700 font-bold active:scale-95 transition-all">Назад</button>
+                <button onclick="closeCancelModal()" class="flex-1 py-3.5 rounded-xl bg-rose-50 text-slate-700 font-bold active:scale-95 transition-all">Назад</button>
                 <button id="confirm-cancel-btn" onclick="confirmCancel()" class="flex-1 py-3.5 rounded-xl bg-red-500 text-white font-bold active:scale-95 transition-all">Скасувати</button>
             </div>
         </div>
