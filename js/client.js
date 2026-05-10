@@ -59,7 +59,6 @@ export function renderMasters() {
 export function renderCalendar() {
     const container = document.getElementById('date-scroll');
     container.innerHTML = '';
-    // ✅ ПРАВКА: Чистимо слоти при кожному рендері календаря
     const timeSlotsContainer = document.getElementById('time-slots');
     if (timeSlotsContainer) timeSlotsContainer.innerHTML = '';
 
@@ -85,9 +84,9 @@ export function renderCalendar() {
 
             const isPast = d < new Date().setHours(0,0,0,0);
             const isWorking = dayOfWeek !== 1 && state.selectedMaster.workDays.includes(dayOfWeek);
-            const canBook = !isPast && isWorking;
+            const isTooLateToday = (dateStr === new Date().toISOString().split('T')[0] && now.getHours() >= 19);
 
-            if (canBook) {
+            if (!isPast && isWorking && !isTooLateToday) {
                 fullHTML += `<button onclick="window.appAPI.selectDate('${dateStr}', this)" class="date-btn w-full aspect-square rounded-xl bg-white text-slate-950 flex items-center justify-center transition-all shadow-sm border border-slate-100 active:scale-90"><span class="text-[15px] font-black">${day}</span></button>`;
             } else {
                 fullHTML += `<div class="w-full aspect-square rounded-xl flex items-center justify-center text-slate-300 opacity-40"><span class="text-[15px] font-bold">${day}</span></div>`;
@@ -97,32 +96,55 @@ export function renderCalendar() {
     container.innerHTML = fullHTML;
 }
 
+// ✅ ВИПРАВЛЕНО: Жорстка перевірка закінчення послуги до 20:00
 export function renderTimeSlots(occupiedSlots) {
     const container = document.getElementById('time-slots');
+    
+    // Створюємо масив усіх можливих точок початку (кожні 30 хв з 10:00 до 19:30)
     const slots = [];
-    for (let h = 10; h <= 19; h++) { slots.push(`${h}:00`, `${h}:30`); }
+    for (let h = 10; h <= 19; h++) {
+        slots.push(`${h}:00`);
+        slots.push(`${h}:30`);
+    }
 
     const now = new Date();
     const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
     const currentHour = now.getHours();
     const currentMin = now.getMinutes();
+    
+    // Скільки 30-хвилинних блоків займає послуга
     const reqBlocks = Math.ceil(state.selectedService.duration / 30);
 
     let availableCount = 0;
     container.innerHTML = slots.map((time, i) => {
         let isAvail = true;
-        if (i + reqBlocks > slots.length + 1) isAvail = false; 
-        else {
+        
+        // 1. ПЕРЕВІРКА НА 20:00:
+        // i + reqBlocks — це індекс моменту завершення. 
+        // В масиві slots 20 елементів (від 0 до 19). 20-й індекс — це віртуальні 20:00.
+        if (i + reqBlocks > slots.length) {
+            isAvail = false; 
+        } else {
+            // 2. ПЕРЕВІРКА НА ЗАЙНЯТІСТЬ:
+            // Перевіряємо кожні 30 хв протягом тривалості послуги
             for (let j = 0; j < reqBlocks; j++) {
-                if (occupiedSlots.includes(slots[i + j])) { isAvail = false; break; }
+                if (occupiedSlots.includes(slots[i + j])) {
+                    isAvail = false;
+                    break;
+                }
             }
         }
+
+        // 3. ПЕРЕВІРКА НА МИНУЛИЙ ЧАС (якщо запис на сьогодні)
         if (isAvail && state.selectedDate === todayStr) {
             const [h, m] = time.split(':').map(Number);
-            if (h < currentHour || (h === currentHour && m <= currentMin)) isAvail = false;
+            if (h < currentHour || (h === currentHour && m <= currentMin)) {
+                isAvail = false;
+            }
         }
 
         if (isAvail) availableCount++;
+        
         return isAvail 
             ? `<button onclick="window.appAPI.selectTime('${time}', this)" class="time-btn card-convex-sm shadow-convex-sm py-3.5 bg-white text-slate-950 text-[13px] font-black active:scale-90 transition-all duration-300 animate-pop-in" style="animation-delay: ${i*10}ms">${time}</button>` 
             : `<button disabled class="py-3.5 rounded-xl bg-slate-100 text-slate-300 line-through text-[13px] font-bold cursor-not-allowed border border-slate-200">${time}</button>`;
