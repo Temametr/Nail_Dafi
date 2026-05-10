@@ -5,49 +5,41 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
-// УВАГА: Встав сюди свій URL від Google Apps Script
 const API_URL = "https://script.google.com/macros/s/AKfycbxlQQ5e4FzxLUyAX6OSxfKMdjLqU_1nbfTwMpxC_3Tm-Ga_VvnVScIklojzwdoQ-6VBIw/exec";
 
 let state = {
     user: tg.initDataUnsafe?.user || { id: "12345", first_name: "Тестовий Користувач" },
     services: [],
     masters: [],
-    
     selectedService: null,
     selectedMaster: null,
     selectedDate: null,
     selectedTime: null,
-    
-    editingBookingId: null, // Додано для перенесення запису
-
+    editingBookingId: null,
     isAdmin: false,
     adminMasterInfo: null,
-    
-    clientBookings: [], 
+    clientBookings: [],
     adminBookings: [],
     currentBookingFilter: 'active'
 };
 
 let currentCancelBookingId = null;
-let currentCancelRole = null; 
-let pollingInterval = null; 
+let currentCancelRole = null;
+let pollingInterval = null;
 
 // ==========================================
-// ІНІЦІАЛІЗАЦІЯ ТА КНОПКА НАЗАД
+// ІНІЦІАЛІЗАЦІЯ
 // ==========================================
 window.addEventListener('DOMContentLoaded', async () => {
-    tg.MainButton.color = "#f43f5e"; 
-    
+    tg.MainButton.color = "#f43f5e";
+
     tg.BackButton.onClick(() => {
         if (!document.getElementById('client-screen').classList.contains('hidden-step')) {
-            
-            // Якщо ми були в режимі редагування (Зміна дати) і тиснемо Назад
             if (state.editingBookingId && !document.getElementById('step-datetime').classList.contains('hidden-step')) {
                 state.editingBookingId = null;
                 switchTab('client', 'bookings');
                 return;
             }
-
             if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
                 showStep('step-master');
             } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
@@ -90,11 +82,11 @@ function renderApp() {
         document.getElementById('admin-header-name-2').innerText = cleanName;
         document.getElementById('admin-header-name-3').innerText = cleanName;
         
-        tg.MainButton.color = "#14b8a6"; 
+        tg.MainButton.color = "#14b8a6";
         switchTab('admin', 'home');
     } else {
         document.getElementById('client-screen').classList.remove('hidden-step');
-        document.getElementById('client-bottom-nav').classList.remove('hidden-step'); 
+        document.getElementById('client-bottom-nav').classList.remove('hidden-step');
         
         document.getElementById('user-name').innerText = state.user.first_name;
         document.getElementById('profile-avatar').innerText = state.user.first_name.charAt(0);
@@ -102,20 +94,22 @@ function renderApp() {
         document.getElementById('profile-id').innerText = `ID: ${state.user.id}`;
 
         renderServices();
-        switchTab('client', 'home'); 
+        switchTab('client', 'home');
     }
 }
 
+// ==========================================
+// НАВІГАЦІЯ ТА ВКЛАДКИ
+// ==========================================
 function switchTab(role, tabId) {
     document.querySelectorAll(role === 'admin' ? '.admin-tab-content' : '.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById(role === 'admin' ? `admin-tab-${tabId}` : `tab-${tabId}`).classList.remove('hidden-step');
-    
     document.getElementById(`${role}-bottom-nav`).classList.remove('hidden-step');
 
     const activeColor = role === 'admin' ? 'text-teal-600' : 'text-rose-500';
     ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`${role}-nav-${nav}`);
-        if(btn) {
+        if (btn) {
             if (nav === tabId) {
                 btn.classList.remove('text-slate-400');
                 btn.classList.add(activeColor);
@@ -129,20 +123,33 @@ function switchTab(role, tabId) {
     tg.BackButton.hide();
     tg.MainButton.hide();
     stopPolling();
-    state.editingBookingId = null; // Скидаємо режим редагування
+    state.editingBookingId = null;
 
     if (role === 'client') {
-        if (tabId === 'home') showStep('step-booking'); 
+        if (tabId === 'home') showStep('step-booking');
         else if (tabId === 'bookings') { loadBookings('client'); startPolling('client'); }
     } else {
-        if (tabId === 'home') { loadBookings('admin', false, true); startPolling('admin', true); } 
+        if (tabId === 'home') { loadBookings('admin', false, true); startPolling('admin', true); }
         else if (tabId === 'bookings') { loadBookings('admin'); startPolling('admin'); }
     }
 }
 
+function showStep(stepId) {
+    document.querySelectorAll('.step-content').forEach(s => s.classList.add('hidden-step'));
+    document.getElementById(stepId).classList.remove('hidden-step');
+
+    if (stepId === 'step-booking') {
+        tg.BackButton.hide();
+        tg.MainButton.hide();
+        state.selectedService = null; state.selectedMaster = null; state.selectedDate = null; state.selectedTime = null;
+    } else {
+        tg.BackButton.show();
+    }
+}
+
 function startPolling(role, forDashboard = false) {
-    stopPolling(); 
-    pollingInterval = setInterval(() => { loadBookings(role, true, forDashboard); }, 10000); 
+    stopPolling();
+    pollingInterval = setInterval(() => { loadBookings(role, true, forDashboard); }, 10000);
 }
 
 function stopPolling() {
@@ -164,9 +171,12 @@ function switchBookingTab(filter, role) {
     }
     
     if (role === 'admin') renderAdminBookings();
-    else renderClientBookings(); 
+    else renderClientBookings();
 }
 
+// ==========================================
+// МЕРЕЖЕВІ ЗАПИТИ
+// ==========================================
 async function loadBookings(role, isSilent = false, forDashboard = false) {
     const containerId = role === 'admin' ? (forDashboard ? null : 'admin-bookings-list') : 'my-bookings-list';
     if (!isSilent && containerId) document.getElementById(containerId).innerHTML = '<div class="text-center py-4 text-slate-500 animate-pulse">Завантаження...</div>';
@@ -177,7 +187,7 @@ async function loadBookings(role, isSilent = false, forDashboard = false) {
         
         if (role === 'admin') {
             state.adminBookings = data.bookings || [];
-            if (forDashboard) renderAdminStats('day'); 
+            if (forDashboard) renderAdminStats('day');
             else renderAdminBookings();
         } else {
             state.clientBookings = data.bookings || [];
@@ -194,13 +204,46 @@ async function changeBookingStatus(bookingId, newStatus, reason = "") {
         const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStatus', bookingId, newStatus, reason }) });
         const result = await response.json();
         if (result.status === 'success') {
-            tg.HapticFeedback.notificationOccurred('success'); 
-            loadBookings(state.isAdmin ? 'admin' : 'client'); 
+            tg.HapticFeedback.notificationOccurred('success');
+            loadBookings(state.isAdmin ? 'admin' : 'client');
         } else tg.showAlert('Помилка: ' + result.message);
     } catch (e) { tg.showAlert('Помилка з\'єднання.');
     } finally { tg.MainButton.hideProgress(); }
 }
 
+async function submitBooking() {
+    tg.MainButton.showProgress();
+    const action = state.editingBookingId ? 'rescheduleBooking' : 'createBooking';
+    
+    const bookingData = {
+        action: action, 
+        date: state.selectedDate, 
+        time: state.selectedTime,
+        masterId: state.selectedMaster.id, 
+        clientId: state.user.id.toString(), 
+        clientName: state.user.first_name,
+        service: state.selectedService.name, 
+        comment: "",
+        bookingId: state.editingBookingId
+    };
+
+    try {
+        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(bookingData) });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            tg.HapticFeedback.notificationOccurred('success');
+            const msg = state.editingBookingId ? 'Час візиту успішно змінено! Запис очікує підтвердження майстром.' : 'Супер! Ваш запис успішно створено 🎉';
+            state.editingBookingId = null;
+            tg.showAlert(msg, () => { switchTab('client', 'bookings'); });
+        } else tg.showAlert('Помилка: ' + result.message);
+    } catch (e) { tg.showAlert('Помилка підключення.'); } 
+    finally { tg.MainButton.hideProgress(); }
+}
+
+// ==========================================
+// ХЕЛПЕРИ ДАТ І СТАТУСІВ
+// ==========================================
 function parseSafeDate(dateStr) {
     if (!dateStr) return new Date(0);
     const str = String(dateStr);
@@ -228,7 +271,7 @@ function getStatusData(dbStatus) {
 }
 
 // ==========================================
-// ЛОГІКА МАЙСТРА (АДМІНА)
+// ЛОГІКА МАЙСТРА
 // ==========================================
 function renderAdminStats(period) {
     ['day', 'week', 'month'].forEach(p => {
@@ -306,11 +349,9 @@ function renderAdminBookings() {
     }).join('');
 }
 
-
 // ==========================================
-// ЛОГІКА КЛІЄНТА - ВІЗИТИ ТА СТВОРЕННЯ
+// ЛОГІКА КЛІЄНТА
 // ==========================================
-
 function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
     const filtered = state.clientBookings.filter(b => {
@@ -369,7 +410,6 @@ function renderClientBookings() {
     }).join('');
 }
 
-// НОВИЙ ФЛОУ: Перенесення запису
 function startReschedule(bookingId) {
     const booking = state.clientBookings.find(b => b.id === bookingId);
     if (!booking) return;
@@ -378,7 +418,6 @@ function startReschedule(bookingId) {
     state.selectedService = state.services.find(s => s.name === booking.service);
     state.selectedMaster = state.masters.find(m => m.id.toString() === booking.masterId.toString());
 
-    // Перемикаємось на головну, але відразу відкриваємо календар
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-home').classList.remove('hidden-step');
     ['home', 'bookings', 'profile'].forEach(nav => {
@@ -392,20 +431,7 @@ function startReschedule(bookingId) {
     stopPolling();
     renderCalendar();
     showStep('step-datetime');
-    tg.BackButton.show(); // Щоб можна було скасувати зміну дати
-}
-
-function showStep(stepId) {
-    document.querySelectorAll('.step-content').forEach(s => s.classList.add('hidden-step'));
-    document.getElementById(stepId).classList.remove('hidden-step');
-
-    if (stepId === 'step-booking') {
-        tg.BackButton.hide();
-        tg.MainButton.hide();
-        state.selectedService = null; state.selectedMaster = null; state.selectedDate = null; state.selectedTime = null;
-    } else {
-        tg.BackButton.show();
-    }
+    tg.BackButton.show(); 
 }
 
 function renderServices() {
@@ -513,7 +539,6 @@ async function selectDate(dateStr, btnElement) {
     document.getElementById('time-slots').innerHTML = ''; timeLoader.classList.remove('hidden');
 
     try {
-        // ДОДАНО: Передача ignoreBookingId, щоб старий запис не заважав самому собі при зміні дати
         const ignoreParam = state.editingBookingId ? `&ignoreBookingId=${state.editingBookingId}` : '';
         const response = await fetch(`${API_URL}?action=getOccupiedSlots&date=${dateStr}&masterId=${state.selectedMaster.id}${ignoreParam}`);
         const data = await response.json();
@@ -566,7 +591,6 @@ function selectTime(time, btnElement) {
     btnElement.classList.remove('bg-white/80', 'text-slate-700');
     btnElement.classList.add('selected-item', 'shadow-md');
     
-    // Змінюємо текст кнопки, якщо це редагування
     if (state.editingBookingId) {
         tg.MainButton.text = `Підтвердити зміну на ${time}`;
     } else {
@@ -577,49 +601,14 @@ function selectTime(time, btnElement) {
     tg.MainButton.onClick(submitBooking);
 }
 
-async function submitBooking() {
-    tg.MainButton.showProgress();
-    
-    // Визначаємо дію: створення чи зміна
-    const action = state.editingBookingId ? 'rescheduleBooking' : 'createBooking';
-    
-    const bookingData = {
-        action: action, 
-        date: state.selectedDate, 
-        time: state.selectedTime,
-        masterId: state.selectedMaster.id, 
-        clientId: state.user.id.toString(), 
-        clientName: state.user.first_name,
-        service: state.selectedService.name, 
-        comment: "",
-        bookingId: state.editingBookingId // Буде передано, якщо ми переносимо запис
-    };
-
-    try {
-        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(bookingData) });
-        const result = await response.json();
-
-        if (result.status === 'success') {
-            tg.HapticFeedback.notificationOccurred('success');
-            const msg = state.editingBookingId ? 'Час візиту успішно змінено! Запис очікує підтвердження майстром.' : 'Супер! Ваш запис успішно створено 🎉';
-            state.editingBookingId = null; // Очищуємо режим редагування
-            
-            tg.showAlert(msg, () => { switchTab('client', 'bookings'); });
-        } else tg.showAlert('Помилка: ' + result.message);
-    } catch (e) { tg.showAlert('Помилка підключення.'); } 
-    finally { tg.MainButton.hideProgress(); }
-}
-
 // ==========================================
-// УНІВЕРСАЛЬНЕ МОДАЛЬНЕ ВІКНО СКАСУВАННЯ
+// МОДАЛЬНЕ ВІКНО СКАСУВАННЯ
 // ==========================================
 function openCancelModal(bookingId, role) {
     currentCancelBookingId = bookingId;
     currentCancelRole = role;
-    
     const title = document.getElementById('cancel-modal-title');
     const input = document.getElementById('cancel-reason');
-    
     if (role === 'client') {
         title.innerText = 'Чому ви скасовуєте запис?';
         input.placeholder = 'Напишіть коментар для майстра...';
@@ -627,7 +616,6 @@ function openCancelModal(bookingId, role) {
         title.innerText = 'Причина скасування';
         input.placeholder = 'Напишіть клієнту, чому не виходить прийняти...';
     }
-    
     document.getElementById('cancel-modal').classList.remove('hidden'); 
     document.getElementById('cancel-modal').classList.add('flex');
 }
@@ -643,9 +631,7 @@ function closeCancelModal() {
 function confirmCancel() {
     const reason = document.getElementById('cancel-reason').value.trim();
     if (!reason) return tg.showAlert("Будь ласка, вкажіть причину.");
-    
     changeBookingStatus(currentCancelBookingId, 'Отменено', reason);
     closeCancelModal();
 }
-// Для зворотної сумісності (старий обробник в HTML)
 function confirmCancelAdmin() { confirmCancel(); }
