@@ -1,6 +1,6 @@
 import { state, tg, modalState, polling } from './state.js';
 import { fetchInitialData, fetchBookings, updateBookingStatusAPI, submitBookingAPI, fetchOccupiedSlotsAPI } from './api.js';
-import { renderHomeMasters, renderServices, renderMasters, renderCalendar, renderClientBookings } from './client.js';
+import { renderHomeMasters, renderServices, renderMasters, renderCalendar, renderClientBookings, renderTimeSlots } from './client.js';
 import { renderAdminStats, renderAdminBookings } from './admin.js';
 
 window.appAPI = {
@@ -167,7 +167,6 @@ function stopPolling() {
     if (polling.interval) clearInterval(polling.interval);
 }
 
-// ФЛОУ ЗАПИСУ
 function startClientBookingFlow() {
     state.editingBookingId = null;
     state.selectedMaster = null;
@@ -225,7 +224,6 @@ function showStep(stepId) {
 
 function selectService(id) {
     state.selectedService = state.services.find(s => s.id.toString() === id.toString());
-    
     if (state.selectedMaster) {
         renderCalendar();
         showStep('step-datetime');
@@ -262,34 +260,6 @@ async function selectDate(dateStr, btnElement) {
         const data = await fetchOccupiedSlotsAPI(dateStr, state.selectedMaster.id, state.editingBookingId);
         renderTimeSlots(data.occupiedSlots || []);
     } finally { document.getElementById('time-loader').classList.add('hidden'); }
-}
-
-function renderTimeSlots(occupiedSlots) {
-    const container = document.getElementById('time-slots');
-    const slots = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
-    const now = new Date();
-    const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const reqSlots = Math.ceil(state.selectedService.duration / 60);
-
-    let availableSlotsCount = 0;
-    let timeHTML = slots.map((time, i) => {
-        let isAvail = true;
-        const startH = parseInt(time.split(':')[0]);
-        for (let j = 0; j < reqSlots; j++) {
-            const h = startH + j;
-            if (h >= 20 || occupiedSlots.includes(`${h.toString().padStart(2, '0')}:00`)) isAvail = false;
-            if (state.selectedDate === todayStr && j === 0 && (startH < currentHour || (startH === currentHour && 0 <= currentMinute))) isAvail = false;
-        }
-        if (isAvail) availableSlotsCount++;
-        return isAvail 
-            ? `<button onclick="window.appAPI.selectTime('${time}', this)" class="time-btn card-convex-sm shadow-convex-sm py-4 bg-white text-slate-950 text-sm font-black active:scale-90 transition-all duration-300 animate-pop-in" style="animation-delay: ${i*20}ms">${time}</button>` 
-            : `<button disabled class="py-4 rounded-xl bg-slate-100 text-slate-400 line-through text-sm font-bold cursor-not-allowed border border-slate-200">${time}</button>`;
-    }).join('');
-
-    if (availableSlotsCount === 0) container.innerHTML = '<div class="col-span-3 text-center text-slate-500 py-6 font-medium bg-white rounded-2xl border border-slate-100 shadow-convex-sm">На жаль, на цю дату вільного часу немає 😔</div>';
-    else container.innerHTML = timeHTML;
 }
 
 function selectTime(time, btnElement) {
@@ -425,27 +395,4 @@ function switchBookingTab(filter, role) {
         btnA.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100";
     }
     role === 'admin' ? renderAdminBookings() : renderClientBookings();
-}
-
-// ✅ ОНОВЛЕНО: Вітрина на головній (додано object-top)
-function renderHomeMasters() {
-    const list = document.getElementById('home-masters-list');
-    const reversedMasters = [...state.masters].reverse();
-    
-    list.innerHTML = reversedMasters.map((m, i) => {
-        const cleanName = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-        const originalIndex = state.masters.indexOf(m);
-        const imgSrc = originalIndex === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
-        
-        return `
-        <div onclick="window.appAPI.openMasterProfile('${m.id}')" class="cursor-pointer relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-convex animate-pop-in border-2 border-white/60" style="animation-delay: ${i*50}ms">
-            <img src="${imgSrc}" alt="${cleanName}" class="absolute inset-0 w-full h-full object-cover object-top">
-            <div class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-rose-950/60 via-rose-900/20 to-transparent"></div>
-            <div class="absolute bottom-2.5 left-2.5 right-2.5 bg-white/85 backdrop-blur-md rounded-2xl p-2.5 shadow-lg border border-white/60 text-center flex flex-col justify-center items-center">
-                <h3 class="font-black text-slate-900 text-sm tracking-tight leading-none mb-1 truncate w-full">${cleanName}</h3>
-                <p class="text-[8px] font-bold text-rose-500 uppercase tracking-widest">Топ-майстер</p>
-            </div>
-        </div>
-        `;
-    }).join('');
 }
