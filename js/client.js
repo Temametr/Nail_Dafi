@@ -59,11 +59,15 @@ export function renderMasters() {
 export function renderCalendar() {
     const container = document.getElementById('date-scroll');
     container.innerHTML = '';
+    
     const timeSlotsContainer = document.getElementById('time-slots');
     if (timeSlotsContainer) timeSlotsContainer.innerHTML = '';
 
     const now = new Date();
-    const monthsToShow = [new Date(now.getFullYear(), now.getMonth(), 1), new Date(now.getFullYear(), now.getMonth() + 1, 1)];
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const monthsToShow = [new Date(currentYear, currentMonth, 1), new Date(currentYear, currentMonth + 1, 1)];
+    
     const monthNames = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
     const dayLabels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
     let fullHTML = '';
@@ -96,11 +100,9 @@ export function renderCalendar() {
     container.innerHTML = fullHTML;
 }
 
-// ✅ ВИПРАВЛЕНО: Жорстка перевірка закінчення послуги до 20:00
 export function renderTimeSlots(occupiedSlots) {
     const container = document.getElementById('time-slots');
     
-    // Створюємо масив усіх можливих точок початку (кожні 30 хв з 10:00 до 19:30)
     const slots = [];
     for (let h = 10; h <= 19; h++) {
         slots.push(`${h}:00`);
@@ -112,21 +114,15 @@ export function renderTimeSlots(occupiedSlots) {
     const currentHour = now.getHours();
     const currentMin = now.getMinutes();
     
-    // Скільки 30-хвилинних блоків займає послуга
     const reqBlocks = Math.ceil(state.selectedService.duration / 30);
 
     let availableCount = 0;
     container.innerHTML = slots.map((time, i) => {
         let isAvail = true;
         
-        // 1. ПЕРЕВІРКА НА 20:00:
-        // i + reqBlocks — це індекс моменту завершення. 
-        // В масиві slots 20 елементів (від 0 до 19). 20-й індекс — це віртуальні 20:00.
         if (i + reqBlocks > slots.length) {
             isAvail = false; 
         } else {
-            // 2. ПЕРЕВІРКА НА ЗАЙНЯТІСТЬ:
-            // Перевіряємо кожні 30 хв протягом тривалості послуги
             for (let j = 0; j < reqBlocks; j++) {
                 if (occupiedSlots.includes(slots[i + j])) {
                     isAvail = false;
@@ -135,7 +131,6 @@ export function renderTimeSlots(occupiedSlots) {
             }
         }
 
-        // 3. ПЕРЕВІРКА НА МИНУЛИЙ ЧАС (якщо запис на сьогодні)
         if (isAvail && state.selectedDate === todayStr) {
             const [h, m] = time.split(':').map(Number);
             if (h < currentHour || (h === currentHour && m <= currentMin)) {
@@ -156,28 +151,57 @@ export function renderTimeSlots(occupiedSlots) {
 export function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
     const filtered = state.clientBookings.filter(b => state.currentBookingFilter === 'active' ? (b.status === 'В очереди' || b.status === 'Выполнено') : b.status === 'Отменено');
-    if (filtered.length === 0) { container.innerHTML = "<div class='text-center py-12 text-slate-400 font-medium'>У тебе поки немає записів.</div>"; return; }
-    container.innerHTML = filtered.map(b => {
+    
+    if (filtered.length === 0) { 
+        container.innerHTML = "<div class='text-center py-12 text-slate-400 font-medium'>У тебе поки немає записів.</div>"; 
+        return; 
+    }
+
+    container.innerHTML = filtered.map((b, i) => {
         const isConfirmed = b.status === 'Выполнено';
         const isPending = b.status === 'В очереди';
         const statusData = getStatusData(b.status);
-        const m = state.masters.find(ma => ma.id.toString() === (b.masterId || '').toString());
+        
+        const masterObj = state.masters.find(m => m.id.toString() === (b.masterId || '').toString());
+        let masterName = masterObj ? masterObj.name : 'Майстра не знайдено';
+        masterName = masterName.replace(/^(Майстер|Мастер)\s+/i, '').trim();
+        const delay = i * 40;
+
         return `
-        <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in border border-white">
-            <div class="flex justify-between items-start mb-4">
-                <div class="w-full pr-3">
-                    <div class="font-extrabold text-slate-950 text-lg leading-tight mb-3">${b.service}</div>
-                    <div class="space-y-2 text-sm font-semibold text-slate-600">
-                        <div>📅 ${b.date} о ${formatDisplayTime(b.time)}</div>
-                        <div>💅 Майстер: ${(m ? m.name : 'Мастер').replace(/^(Майстер|Мастер)\s+/i, '')}</div>
+            <div class="card-convex p-5 mb-5 shadow-convex animate-pop-in border border-white" style="animation-delay: ${delay}ms;">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-full pr-3">
+                        <div class="font-extrabold text-slate-950 text-lg mb-4 tracking-tight leading-tight">${b.service}</div>
+                        <div class="space-y-2">
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500 text-[10px]">📅</span> ${b.date} о ${formatDisplayTime(b.time)}</div>
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5"><span class="w-7 h-7 rounded-full bg-rose-50 flex justify-center items-center text-rose-500 text-[10px]">💅</span> Майстер: ${masterName}</div>
+                        </div>
                     </div>
+                    <span class="text-[10px] font-bold px-3 py-1.5 rounded-full border shrink-0 ${statusData.color}">${statusData.text}</span>
                 </div>
-                <span class="text-[10px] font-bold px-3 py-1.5 rounded-full border shrink-0 ${statusData.color}">${statusData.text}</span>
+                ${b.cancelReason ? `<div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">Коментар: ${b.cancelReason}</div>` : ''}
+                
+                ${(isPending || isConfirmed) ? `
+                    <div class="mt-4 pt-4 border-t border-slate-100 space-y-3.5">
+                        ${isConfirmed ? `
+                            <button onclick="tg.showAlert('Ця функція скоро з\\'явиться! Поки пишіть у приватні повідомлення 💬')" class="card-convex-sm flex items-center justify-center w-full py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all">
+                                Написати майстру 💬
+                            </button>
+                            <div class="flex gap-3">
+                                <button onclick="window.appAPI.startReschedule('${b.id}')" class="card-convex-sm flex-1 py-3 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">
+                                    Перенести
+                                </button>
+                                <button onclick="window.appAPI.openCancelModal('${b.id}', 'client')" class="card-convex-sm flex-1 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm font-bold active:scale-95 transition-all border border-red-100">
+                                    Скасувати
+                                </button>
+                            </div>
+                        ` : `
+                            <button onclick="window.appAPI.openCancelModal('${b.id}', 'client')" class="card-convex-sm w-full py-3.5 bg-white text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">
+                                Скасувати візит
+                            </button>
+                        `}
+                    </div>` : ''}
             </div>
-            ${(isPending || isConfirmed) ? `<div class="mt-4 pt-4 border-t border-slate-100 flex gap-3">
-                <button onclick="window.appAPI.startReschedule('${b.id}')" class="flex-1 py-3 bg-white text-slate-700 rounded-xl text-xs font-bold border border-slate-200">Перенести</button>
-                <button onclick="window.appAPI.openCancelModal('${b.id}', 'client')" class="flex-1 py-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100">Скасувати</button>
-            </div>` : ''}
-        </div>`;
+        `;
     }).join('');
 }
