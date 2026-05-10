@@ -30,7 +30,8 @@
 
     <style>
         body { -webkit-tap-highlight-color: transparent; }
-        .card-convex { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04); border-radius: 2rem; }
+        .card-convex { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 30px 40px -10px rgba(15, 23, 42, 0.06); border-radius: 2rem; }
+        .card-convex-sm { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border-radius: 1.5rem; }
         .ios-header { background: linear-gradient(180deg, rgba(230, 240, 250, 0.98) 0%, rgba(240, 244, 249, 0.95) 100%); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.9); border-radius: 0 0 1.75rem 1.75rem; box-shadow: 0 10px 30px -10px rgba(30, 60, 100, 0.12); }
         .floating-nav { background-color: rgba(255, 255, 255, 0.92); backdrop-filter: blur(15px); border: 1px solid rgba(200, 210, 220, 0.5); border-radius: 2rem; }
         .hidden-step { display: none !important; }
@@ -70,22 +71,53 @@
 
                 <div class="mt-6 px-1">
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-3 text-center">Про нас</h3>
-                    <div class="card-convex p-6 text-center animate-pop-in">
+                    <div class="card-convex p-6 text-center animate-pop-in" style="animation-delay: 50ms">
                         <div class="text-3xl mb-3">🌸</div>
                         <p class="text-[13px] font-medium text-slate-600 leading-relaxed">
-                            Вітаємо у найзатишнішому манікюрному острівці на Салтівці! ✨ Ми створюємо не лише ідеальний манікюр, а й чудовий настрій.
+                            Вітаємо у найзатишнішому манікюрному острівці на Салтівці! Ми створили цей простір з любов'ю до деталей, щоб ви могли відволіктися від метушні та насолодитися моментом турботи про себе.
+                            <br><br>
+                            Наші дівчата — справжні феї манікюру з багаторічним досвідом. Вони не лише роблять бездоганне покриття, але й створюють неймовірно теплу атмосферу.
                         </p>
                     </div>
                 </div>
 
-                <div class="mt-8 space-y-4 px-1 pb-6 text-center">
-                   <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-4">Контакти</h3>
-                   <div class="card-convex p-5 flex items-center gap-4 text-left">
+                <div class="mt-8 space-y-4 px-1 pb-6">
+                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-4 text-center">Контакти</h3>
+                    
+                    <div class="card-convex p-5 flex items-center gap-4 animate-pop-in" style="animation-delay: 100ms">
                         <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0 border border-rose-100 text-xl">📍</div>
                         <div>
                             <h4 class="text-sm font-extrabold text-slate-900">Адреса</h4>
-                            <p class="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">ТРЦ «Дафі», м. Харків</p>
+                            <p class="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">
+                                ТРЦ «Дафі», Україна, 61168,<br>м. Харків, вул. Нескорених, 9<br>
+                                <span class="text-[10px] text-slate-400">(раніше — вул. Героїв Праці, 9)</span><br>
+                                <span class="font-extrabold text-slate-700 mt-1 inline-block">Перший поверх</span>
+                            </p>
                         </div>
+                    </div>
+
+                    <div class="card-convex p-5 flex items-center gap-4 animate-pop-in" style="animation-delay: 150ms">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100 text-xl">🕒</div>
+                        <div>
+                            <h4 class="text-sm font-extrabold text-slate-900">Графік роботи</h4>
+                            <p class="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">
+                                Понеділок: <span class="font-extrabold text-rose-500">Вихідний</span><br>
+                                Інші дні: <span class="font-extrabold text-slate-800">10:00 - 20:00</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="tel:+380957772818" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center animate-pop-in active:scale-95 transition-all" style="animation-delay: 200ms">
+                            <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center border border-green-100 text-lg">📞</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Телефон</div>
+                            <div class="text-xs font-extrabold text-slate-900 mt-0.5">095 777 28 18</div>
+                        </a>
+                        <a href="https://instagram.com/nailbar.dafi" target="_blank" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center animate-pop-in active:scale-95 transition-all" style="animation-delay: 250ms">
+                            <div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center border border-pink-100 text-lg">📸</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Instagram</div>
+                            <div class="text-xs font-extrabold text-slate-900 mt-0.5">nailbar.dafi</div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -95,17 +127,14 @@
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">Оберіть послугу</h3>
                     <div id="services-list" class="space-y-4 px-1"></div>
                 </div>
-                
                 <div id="step-master" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">Оберіть майстра</h3>
                     <div id="masters-list" class="space-y-4 px-1"></div>
                 </div>
-                
                 <div id="step-date" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">Оберіть дату</h3>
                     <div id="date-scroll" class="grid grid-cols-7 gap-1.5 pb-4 px-1"></div>
                 </div>
-                
                 <div id="step-time" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]" id="time-step-title">Оберіть час</h3>
                     <div id="time-loader" class="hidden text-center text-sm font-medium text-rose-300 py-6">Аналізуємо графік...</div>
@@ -114,22 +143,66 @@
             </div>
 
             <div id="tab-bookings" class="tab-content hidden-step pt-[110px] px-4">
-                <button onclick="window.appAPI.startClientBookingFlow()" class="w-full mb-6 py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg active:scale-95 transition-all">СТВОРИТИ НОВИЙ ВІЗИТ</button>
-                <div class="flex pb-4 gap-2">
-                    <button onclick="window.appAPI.switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase bg-slate-950 text-white rounded-xl shadow-lg transition-all">Підтверджені</button>
-                    <button onclick="window.appAPI.switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase bg-white text-slate-500 rounded-xl border border-rose-100 transition-all">Скасовані</button>
+                <div class="mb-5 px-1 mt-2">
+                    <button onclick="window.appAPI.startClientBookingFlow()" class="w-full py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">СТВОРИТИ НОВИЙ ВІЗИТ</button>
+                </div>
+                <div class="flex pb-4 gap-2 px-1 mt-2">
+                    <button onclick="window.appAPI.switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">Підтверджені</button>
+                    <button onclick="window.appAPI.switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
                 </div>
                 <div id="my-bookings-list" class="space-y-5 px-1"></div>
             </div>
 
             <div id="tab-profile" class="tab-content hidden-step pt-[110px] px-4">
-                <div class="card-convex p-6 flex items-center gap-5">
-                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-rose-500" id="profile-avatar"></div>
+                <div class="card-convex p-6 flex items-center gap-5 mx-1 mt-2">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-rose-500 shadow-inner border border-rose-100" id="profile-avatar"></div>
                     <div>
-                        <div class="font-extrabold text-slate-950 text-xl" id="profile-name"></div>
-                        <div class="text-[11px] font-bold text-slate-500">ID: <span id="profile-id"></span></div>
+                        <div class="font-extrabold text-slate-950 text-xl tracking-tight" id="profile-name"></div>
+                        <div class="text-[11px] font-bold text-slate-500 bg-rose-50 px-3 py-1.5 rounded-lg mt-2 inline-block border border-rose-100">ID: <span id="profile-id"></span></div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div id="admin-screen" class="hidden-step animate-fade-in-up">
+            <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-5 flex justify-between items-center">
+                <div class="absolute top-[-1rem] right-[-1rem] w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-4">
+                    <img src="media/fe3010af-51aa-45b3-a20e-6cd526642666.png" alt="Logo" class="w-14 h-14 object-contain drop-shadow-md shrink-0">
+                    <h1 class="text-[19px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5" id="admin-header-title"></h1>
+                </div>
+            </header>
+
+            <div id="admin-tab-home" class="admin-tab-content pt-[110px] px-4">
+                <div class="flex gap-2 mb-6 bg-white/40 border border-white/60 p-1.5 rounded-2xl mx-1 backdrop-blur-sm mt-2">
+                    <button onclick="window.appAPI.renderAdminStats('day')" id="stat-btn-day" class="flex-1 py-2.5 bg-white shadow-md rounded-xl text-xs font-bold uppercase tracking-wider text-slate-950 transition-all">Сьогодні</button>
+                    <button onclick="window.appAPI.renderAdminStats('week')" id="stat-btn-week" class="flex-1 py-2.5 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">Тиждень</button>
+                    <button onclick="window.appAPI.renderAdminStats('month')" id="stat-btn-month" class="flex-1 py-2.5 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">Місяць</button>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-6 mx-1">
+                    <div class="card-convex p-6 flex flex-col justify-center animate-pop-in">
+                        <div class="text-4xl font-black text-slate-950 tracking-tighter" id="stat-count">0</div>
+                        <div class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Записів</div>
+                    </div>
+                    <div class="grid grid-rows-2 gap-4">
+                        <div class="card-convex p-4 rounded-3xl flex flex-col justify-center animate-pop-in [animation-delay:100ms]">
+                            <div class="text-xl font-black text-teal-600" id="stat-revenue">0 ₴</div>
+                            <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Дохід</div>
+                        </div>
+                        <div class="card-convex p-4 rounded-3xl flex flex-col justify-center animate-pop-in [animation-delay:200ms]">
+                            <div class="text-xl font-black text-red-500" id="stat-cancelled">0</div>
+                            <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Скасовано</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[110px] px-4">
+                <div class="flex px-1 pb-4 gap-2 mt-2">
+                    <button onclick="window.appAPI.switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase bg-slate-950 text-white rounded-xl shadow-lg transition-all">Активні</button>
+                    <button onclick="window.appAPI.switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase bg-white text-slate-500 rounded-xl border border-rose-100 transition-all">Скасовані</button>
+                </div>
+                <div id="admin-bookings-list" class="space-y-5 px-1"></div>
             </div>
         </div>
 
@@ -150,6 +223,19 @@
             </nav>
         </div>
 
+        <div id="admin-bottom-nav" class="hidden-step fixed bottom-6 left-5 right-5 z-50 max-w-md mx-auto">
+            <nav class="floating-nav shadow-floating flex justify-around p-2">
+                <button onclick="window.appAPI.switchTab('admin', 'home')" id="admin-nav-home" class="flex flex-col items-center justify-center p-3 text-teal-600 w-24 rounded-xl">
+                    <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    <span class="text-[10px] font-bold uppercase">Дашборд</span>
+                </button>
+                <button onclick="window.appAPI.switchTab('admin', 'bookings')" id="admin-nav-bookings" class="flex flex-col items-center justify-center p-3 text-slate-400 w-24 rounded-xl">
+                    <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    <span class="text-[10px] font-bold uppercase">Записи</span>
+                </button>
+            </nav>
+        </div>
+
         <div id="master-profile-modal" class="fixed inset-0 bg-rose-50 z-[80] hidden flex-col w-full max-w-md mx-auto h-[100dvh] overflow-hidden">
             <button onclick="window.appAPI.closeMasterProfile()" class="absolute top-6 left-5 z-20 w-11 h-11 bg-white/70 backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 border border-white shadow-md active:scale-90 transition-all">
                 <svg class="w-6 h-6 pr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
@@ -160,11 +246,11 @@
                     <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-rose-50 via-rose-50/80 to-transparent"></div>
                 </div>
                 <div class="px-6 -mt-10 relative z-10">
-                    <h2 id="mp-name" class="text-3xl font-black text-slate-900 tracking-tight"></h2>
+                    <h2 id="mp-name" class="text-3xl font-black text-slate-900 tracking-tight leading-none"></h2>
                     <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-2 mb-6">Топ-майстер</p>
                     
                     <a id="mp-phone-link" href="#" class="card-convex p-4 mb-5 flex items-center gap-4 active:scale-95 transition-all">
-                        <div class="w-10 h-10 rounded-2xl bg-green-50 flex items-center justify-center border border-green-100 shrink-0">📞</div>
+                        <div class="w-10 h-10 rounded-2xl bg-green-50 flex items-center justify-center border border-green-100 shrink-0 text-lg">📞</div>
                         <div>
                             <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Телефон</div>
                             <div id="mp-phone" class="text-sm font-extrabold text-slate-900 mt-0.5"></div>
@@ -172,7 +258,7 @@
                     </a>
 
                     <div class="card-convex p-5">
-                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Про майстра</h4>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-2">Про майстра</h4>
                         <p id="mp-description" class="text-sm font-medium text-slate-600 leading-relaxed"></p>
                     </div>
                 </div>
@@ -192,12 +278,6 @@
                 </div>
             </div>
         </div>
-
-        <div id="admin-screen" class="hidden-step animate-fade-in-up">
-            <div id="admin-tab-home" class="admin-tab-content pt-[110px] px-4"></div>
-            <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[110px] px-4"><div id="admin-bookings-list"></div></div>
-        </div>
-        <div id="admin-bottom-nav" class="hidden-step fixed bottom-6 left-5 right-5 z-50 max-w-md mx-auto"></div>
 
     </div>
 
