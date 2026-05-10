@@ -224,6 +224,7 @@ function showStep(stepId) {
 
 function selectService(id) {
     state.selectedService = state.services.find(s => s.id.toString() === id.toString());
+    
     if (state.selectedMaster) {
         renderCalendar();
         showStep('step-datetime');
@@ -239,20 +240,14 @@ function selectMaster(id) {
     showStep('step-datetime');
 }
 
+// ✅ ОНОВЛЕНО: Спрощена логіка виділення дати (CSS робить усе сам)
 async function selectDate(dateStr, btnElement) {
     state.selectedDate = dateStr;
-    document.querySelectorAll('.date-btn').forEach(btn => {
-        btn.classList.remove('selected-item', 'shadow-blue-300');
-        btn.classList.add('bg-white', 'text-slate-700', 'shadow-convex-sm');
-        const d = btn.querySelector('span:first-child'); const n = btn.querySelector('span:last-child');
-        if(d) d.classList.replace('text-blue-100', 'text-slate-400');
-        if(n) n.classList.replace('text-white', 'text-slate-950');
-    });
     
-    btnElement.classList.remove('bg-white', 'text-slate-700', 'shadow-convex-sm');
-    btnElement.classList.add('selected-item', 'shadow-blue-300');
-    btnElement.querySelector('span:first-child').classList.replace('text-slate-400', 'text-blue-100');
-    btnElement.querySelector('span:last-child').classList.replace('text-slate-950', 'text-white');
+    document.querySelectorAll('.date-btn').forEach(btn => {
+        btn.classList.remove('selected-item', 'shadow-blue-300', 'border-transparent');
+    });
+    btnElement.classList.add('selected-item', 'shadow-blue-300', 'border-transparent');
 
     document.getElementById('time-slots').innerHTML = '';
     document.getElementById('time-loader').classList.remove('hidden');
