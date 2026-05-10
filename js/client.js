@@ -66,7 +66,7 @@ export function renderMasters() {
     `}).join('');
 }
 
-// ✅ ОНОВЛЕНО: Сітка дат на 30 днів
+// ✅ ОНОВЛЕНО: Календар до кінця наступного місяця + квадратні блоки дат без сміття
 export function renderCalendar() {
     const container = document.getElementById('date-scroll');
     container.innerHTML = ''; document.getElementById('time-slots').innerHTML = ''; 
@@ -79,18 +79,26 @@ export function renderCalendar() {
     let currentMonth = -1;
     
     const monthNames = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
-    const shortMonths = ['січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
-    const dayNames = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']; // Вторник -> Вт
+    const dayNames = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
-    // Генеруємо 30 днів
-    for (let i = 0; i < 30; i++) {
-        const d = new Date(now); d.setDate(now.getDate() + i);
+    // Рахуємо останній день НАСТУПНОГО місяця
+    // now.getMonth() + 2 (це місяць через один), а 0 - це останній день попереднього (тобто наступного від зараз)
+    const endOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+
+    let i = 0;
+    while (true) {
+        const d = new Date(now); 
+        d.setDate(now.getDate() + i);
+        
+        // Зупиняємо цикл, якщо вийшли за межі наступного місяця
+        if (d > endOfNextMonth) break;
+
         const month = d.getMonth();
         const dayOfWeek = d.getDay(); 
         
         // Розділювач місяців
         if (month !== currentMonth) {
-            datesHTML += `<div class="col-span-6 text-center text-xs font-black text-slate-800 mt-4 mb-2 uppercase tracking-widest bg-slate-200/50 py-1.5 rounded-xl">${monthNames[month]}</div>`;
+            datesHTML += `<div class="col-span-6 text-center text-xs font-black text-slate-800 mt-4 mb-2 uppercase tracking-widest bg-slate-200/50 py-1.5 rounded-xl shadow-inner">${monthNames[month]}</div>`;
             currentMonth = month;
         }
 
@@ -100,33 +108,33 @@ export function renderCalendar() {
         const dateStr = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0]; 
         const dayName = dayNames[dayOfWeek];
         const dayNum = d.getDate();
-        const shortMonth = shortMonths[month];
 
+        // Квадратний блок (aspect-square) тільки з днем тижня і числом
         if (isWorkingDay) {
-            datesHTML += `<button onclick="window.appAPI.selectDate('${dateStr}', this)" class="date-btn w-full aspect-[1/1.1] rounded-2xl bg-white text-slate-950 flex flex-col items-center justify-center transition-all duration-300 shadow-convex-sm border border-slate-100 active:scale-90">
-                <span class="text-[9px] font-bold opacity-50 mb-0.5 uppercase">${dayName}</span>
+            datesHTML += `<button onclick="window.appAPI.selectDate('${dateStr}', this)" class="date-btn w-full aspect-square rounded-2xl bg-white text-slate-950 flex flex-col items-center justify-center transition-all duration-300 shadow-convex-sm border border-slate-100 active:scale-90">
+                <span class="text-[10px] font-bold opacity-50 mb-1 uppercase">${dayName}</span>
                 <span class="text-[22px] font-black leading-none">${dayNum}</span>
-                <span class="text-[8px] font-bold opacity-50 mt-1 uppercase">${shortMonth}</span>
             </button>`;
         } else {
-            datesHTML += `<button disabled class="w-full aspect-[1/1.1] rounded-2xl bg-slate-50/50 text-slate-400 flex flex-col items-center justify-center opacity-50 cursor-not-allowed">
-                <span class="text-[9px] font-bold opacity-50 mb-0.5 uppercase">${dayName}</span>
+            datesHTML += `<button disabled class="w-full aspect-square rounded-2xl bg-slate-50/50 text-slate-400 flex flex-col items-center justify-center opacity-50 cursor-not-allowed">
+                <span class="text-[10px] font-bold opacity-50 mb-1 uppercase">${dayName}</span>
                 <span class="text-[22px] font-black leading-none">${dayNum}</span>
-                <span class="text-[8px] font-bold opacity-50 mt-1 uppercase">${shortMonth}</span>
             </button>`;
         }
+        i++;
     }
     container.innerHTML = datesHTML;
 }
 
-// ✅ ОНОВЛЕНО: 30-хвилинні інтервали та перевірка на закінчення до 20:00
 export function renderTimeSlots(occupiedSlots) {
     const container = document.getElementById('time-slots');
     
     const slots = [];
     for (let h = 10; h <= 19; h++) {
         slots.push(`${h}:00`);
-        slots.push(`${h}:30`);
+        if (h !== 19 || true) { // Додаємо 19:30, щоб дозволити останні короткі записи
+            slots.push(`${h}:30`);
+        }
     }
 
     const now = new Date();
