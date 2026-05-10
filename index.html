@@ -73,19 +73,37 @@
                     <div class="card-convex p-6 text-center animate-pop-in">
                         <div class="text-3xl mb-3">🌸</div>
                         <p class="text-[13px] font-medium text-slate-600 leading-relaxed">
-                            Вітаємо у найзатишнішому манікюрному острівці на Салтівці! ✨
+                            Вітаємо у найзатишнішому манікюрному острівці на Салтівці! Ми створили цей простір з любов'ю до деталей, щоб ви могли відволіктися від метушні.
+                            <br><br>
+                            Наші дівчата — справжні феї з багаторічним досвідом, які створюють не лише манікюр, а й настрій. ✨
                         </p>
                     </div>
                 </div>
 
-                <div class="mt-8 space-y-4 px-1 pb-6 text-center">
-                   <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-4">Контакти</h3>
-                   <div class="card-convex p-5 flex items-center gap-4 text-left">
-                        <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0 border border-rose-100 text-xl">📍</div>
+                <div class="mt-8 space-y-4 px-1 pb-6">
+                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-4 text-center">Контакти</h3>
+                    <div class="card-convex p-5 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0 border border-rose-100">📍</div>
                         <div>
                             <h4 class="text-sm font-extrabold text-slate-900">Адреса</h4>
-                            <p class="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">ТРЦ «Дафі», м. Харків</p>
+                            <p class="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">
+                                ТРЦ «Дафі», Україна, м. Харків,<br>вул. Нескорених, 9<br>
+                                <span class="text-[10px] text-slate-400">(раніше — вул. Героїв Праці, 9)</span><br>
+                                <span class="font-extrabold text-slate-700 mt-1 inline-block text-xs">Перший поверх</span>
+                            </p>
                         </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="tel:+380957772818" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center active:scale-95 transition-all">
+                            <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center border border-green-100 text-lg">📞</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">Телефон</div>
+                            <div class="text-xs font-extrabold text-slate-900">095 777 28 18</div>
+                        </a>
+                        <a href="https://instagram.com/nailbar.dafi" target="_blank" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center active:scale-95 transition-all">
+                            <div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center border border-pink-100 text-lg">📸</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">Instagram</div>
+                            <div class="text-xs font-extrabold text-slate-900">nailbar.dafi</div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -99,28 +117,30 @@
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">Оберіть майстра</h3>
                     <div id="masters-list" class="space-y-4 px-1"></div>
                 </div>
-                <div id="step-date" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
+                <div id="step-datetime" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">Оберіть дату</h3>
                     <div id="date-scroll" class="grid grid-cols-7 gap-1.5 pb-4 px-1"></div>
-                </div>
-                <div id="step-time" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
-                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]" id="time-step-title">Оберіть час</h3>
+                    <h3 class="font-bold text-xs px-2 mt-2 text-rose-400 uppercase tracking-[0.15em]">Вільний час</h3>
                     <div id="time-loader" class="hidden text-center text-sm font-medium text-rose-300 py-6">Аналізуємо графік...</div>
                     <div id="time-slots" class="grid grid-cols-4 gap-2 px-1"></div>
                 </div>
             </div>
 
             <div id="tab-bookings" class="tab-content hidden-step pt-[110px] px-4">
-                <button onclick="window.appAPI.startClientBookingFlow()" class="w-full mb-6 py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg active:scale-95 transition-all">СТВОРИТИ НОВИЙ ВІЗИТ</button>
+                <button onclick="window.appAPI.startClientBookingFlow()" class="w-full mb-6 py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">СТВОРИТИ НОВИЙ ВІЗИТ</button>
+                <div class="flex pb-4 gap-2">
+                    <button onclick="window.appAPI.switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase bg-slate-950 text-white rounded-xl shadow-lg transition-all">Підтверджені</button>
+                    <button onclick="window.appAPI.switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase bg-white text-slate-500 rounded-xl border border-rose-100 transition-all">Скасовані</button>
+                </div>
                 <div id="my-bookings-list" class="space-y-5 px-1"></div>
             </div>
 
             <div id="tab-profile" class="tab-content hidden-step pt-[110px] px-4">
                 <div class="card-convex p-6 flex items-center gap-5">
-                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-rose-500" id="profile-avatar"></div>
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-rose-500 shadow-inner border border-rose-100" id="profile-avatar"></div>
                     <div>
-                        <div class="font-extrabold text-slate-950 text-xl" id="profile-name"></div>
-                        <div class="text-[11px] font-bold text-slate-500">ID: <span id="profile-id"></span></div>
+                        <div class="font-extrabold text-slate-950 text-xl tracking-tight" id="profile-name"></div>
+                        <div class="text-[11px] font-bold text-slate-500 bg-rose-50 px-3 py-1 rounded-lg mt-2 inline-block border border-rose-100">ID: <span id="profile-id"></span></div>
                     </div>
                 </div>
             </div>
@@ -162,7 +182,18 @@
                 </div>
             </div>
             <div class="absolute bottom-0 left-0 right-0 p-5 bg-white/80 backdrop-blur-xl border-t border-slate-100 pb-8 z-20">
-                <button onclick="window.appAPI.bookFromProfile()" class="w-full py-4 bg-blue-500 text-white rounded-2xl text-sm font-black shadow-lg active:scale-95 transition-all">ЗАПИСАТИСЯ ДО МАЙСТРА</button>
+                <button onclick="window.appAPI.bookFromProfile()" class="w-full py-4 bg-blue-500 text-white rounded-2xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">ЗАПИСАТИСЯ ДО МАЙСТРА</button>
+            </div>
+        </div>
+
+        <div id="cancel-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-5 z-[90]">
+            <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-sm space-y-6 shadow-floating animate-pop-in">
+                <h3 class="font-black text-xl text-center text-slate-900" id="cancel-modal-title">Скасувати?</h3>
+                <textarea id="cancel-reason" class="w-full p-4 bg-rose-50 border border-rose-100 rounded-2xl outline-none h-32 text-sm placeholder:text-slate-400 resize-none font-medium" placeholder="Напишіть причину..."></textarea>
+                <div class="flex gap-3">
+                    <button onclick="window.appAPI.closeCancelModal()" class="flex-1 py-4 rounded-2xl bg-slate-50 text-slate-600 font-bold active:scale-95 text-sm">Назад</button>
+                    <button onclick="window.appAPI.confirmCancel()" class="flex-1 py-4 rounded-2xl bg-red-500 text-white font-bold shadow-lg active:scale-95 text-sm">Скасувати</button>
+                </div>
             </div>
         </div>
 
