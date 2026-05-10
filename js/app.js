@@ -8,7 +8,8 @@ window.appAPI = {
     switchTab, switchBookingTab, startClientBookingFlow, startReschedule,
     selectService, selectMaster, selectDate, selectTime,
     changeBookingStatus, openCancelModal, closeCancelModal, confirmCancel,
-    renderAdminStats
+    renderAdminStats,
+    openMasterProfile, closeMasterProfile, bookFromProfile
 };
 
 // ІНІЦІАЛІЗАЦІЯ
@@ -47,24 +48,18 @@ async function loadApp() {
     }
 }
 
-// ✅ ОНОВЛЕНО: Виправлена логіка кнопки "Назад"
 function handleBack() {
     if (!document.getElementById('tab-booking-flow').classList.contains('hidden-step')) {
-        
-        // 1. Якщо ми ПЕРЕНОСИМО запис (редагування) -> одразу йдемо назад у візити
         if (state.editingBookingId) {
             state.editingBookingId = null;
             switchTab('client', 'bookings');
             return;
         }
-
-        // 2. Якщо це НОВИЙ запис -> крокуємо покроково назад
         if (!document.getElementById('step-datetime').classList.contains('hidden-step')) {
             showStep('step-master');
         } else if (!document.getElementById('step-master').classList.contains('hidden-step')) {
             showStep('step-booking');
         } else { 
-            // Якщо ми на першому кроці створення -> повертаємось у візити
             state.editingBookingId = null; 
             switchTab('client', 'bookings'); 
         }
@@ -120,12 +115,9 @@ function updateHeaderTitle(role, tabId) {
     }
 }
 
-// ✅ ОНОВЛЕНО: Візуальне відображення завантаження (Спінер)
 async function loadBookings(role, isSilent = false, forDashboard = false) {
     const containerId = role === 'admin' ? (forDashboard ? null : 'admin-bookings-list') : 'my-bookings-list';
-    
     if (!isSilent && containerId) {
-        // Динамічний колір спінера: синій для клієнта, бірюзовий для майстра
         const spinnerColor = role === 'admin' ? 'border-t-teal-500' : 'border-t-blue-500';
         document.getElementById(containerId).innerHTML = `
             <div class="flex flex-col items-center justify-center py-16 animate-pulse">
@@ -146,7 +138,6 @@ async function loadBookings(role, isSilent = false, forDashboard = false) {
             renderClientBookings();
         }
     } catch (e) { 
-        console.error(e); 
         if (!isSilent && containerId) {
             document.getElementById(containerId).innerHTML = '<div class="text-center py-12 text-red-500 font-medium">Помилка мережі 🌐</div>';
         }
@@ -287,7 +278,38 @@ function selectTime(time, btnElement) {
     });
 }
 
-// МОДАЛКИ
+// МОДАЛКИ ПРОФІЛЮ ТА СКАСУВАННЯ
+function openMasterProfile(id) {
+    const master = state.masters.find(m => m.id.toString() === id.toString());
+    if (!master) return;
+    
+    const originalIndex = state.masters.indexOf(master);
+    const imgSrc = originalIndex === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
+    
+    document.getElementById('mp-image').src = imgSrc;
+    document.getElementById('mp-name').innerText = master.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
+    
+    const phone = master.phone || "Не вказано";
+    document.getElementById('mp-phone').innerText = phone;
+    document.getElementById('mp-phone-link').href = master.phone ? `tel:${master.phone.replace(/[^0-9+]/g, '')}` : "#";
+    
+    // Використовуємо поле about, яке ми додали у таблиці
+    document.getElementById('mp-description').innerText = master.about || "Найкращий майстер нашого салону! Опис скоро з'явиться...";
+    
+    document.getElementById('master-profile-modal').classList.remove('hidden');
+    document.getElementById('master-profile-modal').classList.add('flex');
+}
+
+function closeMasterProfile() {
+    document.getElementById('master-profile-modal').classList.add('hidden');
+    document.getElementById('master-profile-modal').classList.remove('flex');
+}
+
+function bookFromProfile() {
+    closeMasterProfile();
+    startClientBookingFlow();
+}
+
 function openCancelModal(bookingId, role) {
     modalState.currentCancelBookingId = bookingId;
     modalState.currentCancelRole = role;
