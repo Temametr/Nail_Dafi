@@ -28,7 +28,8 @@
                     boxShadow: {
                         'convex': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 30px 40px -10px rgba(15, 23, 42, 0.06)',
                         'convex-sm': '0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-                        'floating': '0 20px 40px -10px rgba(15, 23, 42, 0.15)',
+                        // НОВА: Глибока тінь для навбара + внутрішній відблиск для об'єму
+                        'floating': '0 25px 50px -12px rgba(15, 23, 42, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.8)',
                     }
                 }
             }
@@ -41,23 +42,30 @@
         .card-convex { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 30px 40px -10px rgba(15, 23, 42, 0.06); border-radius: 2rem; }
         .card-convex-sm { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border-radius: 1.5rem; }
 
-        /* Стиль шапки: Блакитний градієнт з iOS */
+        /* ОНОВЛЕНО: Компактна шапка з тінню */
         .ios-header {
-            background: linear-gradient(180deg, rgba(230, 240, 250, 0.98) 0%, rgba(240, 244, 249, 0.98) 100%);
+            background: linear-gradient(180deg, rgba(230, 240, 250, 0.98) 0%, rgba(240, 244, 249, 0.95) 100%);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border-bottom: 1px solid rgba(255,255,255,0.8);
-            border-radius: 0 0 2.5rem 2.5rem;
-            box-shadow: 0 15px 30px -10px rgba(30, 60, 100, 0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.9);
+            border-radius: 0 0 1.75rem 1.75rem; /* Зменшене скруглення */
+            box-shadow: 0 10px 30px -10px rgba(30, 60, 100, 0.12); /* Чітка тінь */
         }
 
-        .floating-nav { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15); border-radius: 1.75rem; }
+        /* ОНОВЛЕНО: Об'ємний навбар з тонкою обводкою */
+        .floating-nav { 
+            background-color: rgba(255, 255, 255, 0.92); 
+            backdrop-filter: blur(15px); 
+            -webkit-backdrop-filter: blur(15px); 
+            border: 1px solid rgba(200, 210, 220, 0.5); /* Тонка контрастна обводка */
+            border-radius: 2rem; 
+        }
         
         .hidden-step { display: none !important; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .selected-item { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; border-color: transparent !important; box-shadow: 0 10px 20px -3px rgba(37, 99, 235, 0.4) !important; transform: translateY(-2px) scale(1.01); transition: all 0.3s ease; }
+        .selected-item { background: linear-gradient(135deg, #fb7185, #e11d48) !important; color: white !important; border-color: transparent !important; box-shadow: 0 10px 20px -3px rgba(225, 29, 72, 0.4) !important; transform: translateY(-2px) scale(1.01); transition: all 0.3s ease; }
         .tab-content { transition: opacity 0.3s ease; }
     </style>
 </head>
@@ -75,24 +83,20 @@
 
         <div id="client-screen" class="hidden-step animate-fade-in-up">
             
-            <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto ios-header px-6 pt-10 pb-8 overflow-hidden">
-                <div class="absolute top-[-2rem] right-[-2rem] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-4 flex justify-between items-center">
+                <div class="absolute top-[-1rem] right-[-1rem] w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
                 
-                <div class="relative z-10 flex justify-between items-center mb-6">
-                    <div class="w-14 h-14 bg-white p-1.5 rounded-full shadow-sm">
-                        <div class="w-full h-full bg-blue-50 rounded-full flex items-center justify-center font-bold text-blue-600 text-xl" id="client-header-avatar"></div>
-                    </div>
-                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700 relative">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                        <div class="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></div>
-                    </div>
+                <div class="relative z-10 flex-1 min-w-0 pr-4">
+                    <h1 class="text-xl font-extrabold text-slate-900 tracking-tight truncate" id="client-header-title"></h1>
                 </div>
-                <div class="relative z-10">
-                    <h1 class="text-[28px] text-slate-800 leading-[1.15] font-medium tracking-tight" id="client-header-title"></h1>
+                
+                <div class="relative z-10 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-sm text-slate-600 shrink-0 border border-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <div class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
                 </div>
             </header>
 
-            <div id="tab-home" class="tab-content pt-[240px] px-4">
+            <div id="tab-home" class="tab-content pt-[100px] px-4">
                 <div id="step-booking" class="step-content space-y-4 animate-pop-in">
                     <h3 class="font-bold text-xs px-2 text-rose-300 uppercase tracking-[0.15em]">Оберіть послугу</h3>
                     <div id="services-list" class="space-y-4 px-1"></div>
@@ -110,7 +114,7 @@
                 </div>
             </div>
 
-            <div id="tab-bookings" class="tab-content hidden-step pt-[240px] px-4">
+            <div id="tab-bookings" class="tab-content hidden-step pt-[100px] px-4">
                 <div class="flex pb-4 gap-2 px-1">
                     <button onclick="switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">Підтверджені</button>
                     <button onclick="switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
@@ -118,10 +122,10 @@
                 <div id="my-bookings-list" class="space-y-5 px-1"></div>
             </div>
 
-            <div id="tab-profile" class="tab-content hidden-step pt-[240px] px-4">
+            <div id="tab-profile" class="tab-content hidden-step pt-[100px] px-4">
                 <div class="card-convex p-6 flex items-center gap-5 mx-1">
                     <div class="relative">
-                        <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-3xl font-bold text-blue-500 shadow-inner border border-blue-100" id="profile-avatar"></div>
+                        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-rose-500 shadow-inner border border-rose-100" id="profile-avatar"></div>
                         <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
                     </div>
                     <div>
@@ -145,23 +149,19 @@
 
         <div id="admin-screen" class="hidden-step animate-fade-in-up">
             
-            <header class="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto ios-header px-6 pt-10 pb-8 overflow-hidden">
-                <div class="absolute top-[-2rem] right-[-2rem] w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-4 flex justify-between items-center">
+                <div class="absolute top-[-1rem] right-[-1rem] w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
                 
-                <div class="relative z-10 flex justify-between items-center mb-6">
-                    <div class="w-14 h-14 bg-white p-1.5 rounded-full shadow-sm">
-                        <div class="w-full h-full bg-teal-50 rounded-full flex items-center justify-center font-bold text-teal-600 text-xl" id="admin-header-avatar"></div>
-                    </div>
-                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-700">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    </div>
+                <div class="relative z-10 flex-1 min-w-0 pr-4">
+                    <h1 class="text-xl font-extrabold text-slate-900 tracking-tight truncate" id="admin-header-title"></h1>
                 </div>
-                <div class="relative z-10">
-                    <h1 class="text-[28px] text-slate-800 leading-[1.15] font-medium tracking-tight" id="admin-header-title"></h1>
+                
+                <div class="relative z-10 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-sm text-slate-600 shrink-0 border border-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 </div>
             </header>
 
-            <div id="admin-tab-home" class="admin-tab-content pt-[240px] px-4">
+            <div id="admin-tab-home" class="admin-tab-content pt-[100px] px-4">
                 <div class="flex gap-2 mb-6 bg-white/40 border border-white/60 p-1.5 rounded-2xl mx-1 backdrop-blur-sm">
                     <button onclick="renderAdminStats('day')" id="stat-btn-day" class="flex-1 py-2.5 bg-white shadow-md rounded-xl text-xs font-bold uppercase tracking-wider text-slate-950 transition-all duration-300">Сьогодні</button>
                     <button onclick="renderAdminStats('week')" id="stat-btn-week" class="flex-1 py-2.5 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">Тиждень</button>
@@ -185,7 +185,7 @@
                 </div>
             </div>
 
-            <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[240px] px-4">
+            <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[100px] px-4">
                 <div class="flex px-1 pb-4 gap-2">
                     <button onclick="switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-950/20 transition-all duration-300">Активні</button>
                     <button onclick="switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
@@ -197,10 +197,10 @@
     </div>
 
     <div id="client-bottom-nav" class="hidden-step fixed bottom-6 left-5 right-5 z-50 max-w-md mx-auto">
-        <nav class="floating-nav flex justify-around p-2">
+        <nav class="floating-nav shadow-floating flex justify-around p-2">
             <button onclick="switchTab('client', 'home')" id="client-nav-home" class="flex flex-col items-center justify-center p-3 text-blue-500 transition-all duration-300 w-20 rounded-xl hover:bg-blue-50">
                 <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3l9-8z"/></svg>
-                <span class="text-[10px] font-bold uppercase tracking-wide text-blue-600">Запис</span>
+                <span class="text-[10px] font-bold uppercase tracking-wide">Запис</span>
             </button>
             <button onclick="switchTab('client', 'bookings')" id="client-nav-bookings" class="flex flex-col items-center justify-center p-3 text-slate-400 transition-all duration-300 w-20 rounded-xl hover:bg-rose-50/50">
                 <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg>
@@ -214,7 +214,7 @@
     </div>
 
     <div id="admin-bottom-nav" class="hidden-step fixed bottom-6 left-5 right-5 z-50 max-w-md mx-auto">
-        <nav class="floating-nav flex justify-around p-2">
+        <nav class="floating-nav shadow-floating flex justify-around p-2">
             <button onclick="switchTab('admin', 'home')" id="admin-nav-home" class="flex flex-col items-center justify-center p-3 text-teal-600 transition-all duration-300 w-24 rounded-xl hover:bg-teal-50">
                 <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
                 <span class="text-[10px] font-bold uppercase tracking-wide">Дашборд</span>
