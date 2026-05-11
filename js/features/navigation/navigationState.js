@@ -10,7 +10,7 @@ export function setActiveNav(role, tabId) {
         : 'text-blue-500';
 
     ['home', 'bookings', 'messages', 'profile'].forEach(nav => {
-        const btn = getById((`${role}-nav-${nav}`);
+        const btn = getById(`${role}-nav-${nav}`);
 
         if (!btn) return;
 
@@ -25,7 +25,7 @@ export function setActiveNav(role, tabId) {
 }
 
 export function updateHeaderTitle(role, tabId) {
-    const title = getById((
+    const title = getById(
         role === 'client'
             ? 'client-header-title'
             : 'admin-header-title'
