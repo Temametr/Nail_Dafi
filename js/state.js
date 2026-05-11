@@ -1,23 +1,57 @@
-// js/state.js
-
 export const tg = window.Telegram.WebApp;
 
-export const API_URL = "https://script.google.com/macros/s/AKfycbxlQQ5e4FzxLUyAX6OSxfKMdjLqU_1nbfTwMpxC_3Tm-Ga_VvnVScIklojzwdoQ-6VBIw/exec";
+export const API_URL =
+    "https://script.google.com/macros/s/AKfycbxlQQ5e4FzxLUyAX6OSxfKMdjLqU_1nbfTwMpxC_3Tm-Ga_VvnVScIklojzwdoQ-6VBIw/exec";
+
+const fallbackUser = {
+    id: "",
+    first_name: "Гість"
+};
+
+function getTelegramUser() {
+    try {
+        if (
+            tg &&
+            tg.initDataUnsafe &&
+            tg.initDataUnsafe.user
+        ) {
+            return tg.initDataUnsafe.user;
+        }
+    } catch (e) {
+        console.error('Telegram user init error:', e);
+    }
+
+    return fallbackUser;
+}
 
 export const state = {
-    user: tg.initDataUnsafe?.user || { id: "12345", first_name: "Тестовий Користувач" },
+    user: getTelegramUser(),
+
     services: [],
     masters: [],
+
     selectedService: null,
     selectedMaster: null,
+
     selectedDate: null,
     selectedTime: null,
+
+    viewedMasterId: null,
+
     editingBookingId: null,
+
     isAdmin: false,
     adminMasterInfo: null,
+
     clientBookings: [],
     adminBookings: [],
-    currentBookingFilter: 'active'
+
+    currentBookingFilter: 'active',
+
+    ui: {
+        loading: false,
+        bookingSubmitting: false
+    }
 };
 
 export const modalState = {
@@ -28,3 +62,26 @@ export const modalState = {
 export const polling = {
     interval: null
 };
+
+export function resetBookingState() {
+    state.selectedService = null;
+    state.selectedMaster = null;
+
+    state.selectedDate = null;
+    state.selectedTime = null;
+
+    state.editingBookingId = null;
+}
+
+export function resetDateSelectionState() {
+    state.selectedDate = null;
+    state.selectedTime = null;
+}
+
+export function setLoading(value) {
+    state.ui.loading = Boolean(value);
+}
+
+export function setBookingSubmitting(value) {
+    state.ui.bookingSubmitting = Boolean(value);
+}
