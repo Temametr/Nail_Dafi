@@ -63,6 +63,11 @@ import {
     stopPolling
 } from './core/polling/pollingManager.js';
 
+import {
+    renderLoading,
+    renderError
+} from './core/ui/loadingManager.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -280,17 +285,12 @@ async function loadBookings(role, silent = false, dash = false) {
         : 'my-bookings-list';
 
     if (!silent && contId) {
-        const spinnerColor = role === 'admin'
+    renderLoading(contId, {
+        color: role === 'admin'
             ? 'border-t-teal-500'
-            : 'border-t-blue-500';
-
-        setHtml(contId, `
-            <div class="flex flex-col items-center justify-center py-16 animate-pulse">
-                <div class="w-12 h-12 border-4 border-slate-100 rounded-full ${spinnerColor} animate-spin mb-4 shadow-sm"></div>
-                <p class="text-slate-400 font-medium text-sm">Завантажуємо дані...</p>
-            </div>
-        `);
-    }
+            : 'border-t-blue-500'
+    });
+}
 
     try {
         const data = await fetchBookings(role);
@@ -309,10 +309,7 @@ async function loadBookings(role, silent = false, dash = false) {
         console.error('Помилка завантаження записів:', error);
 
         if (!silent && contId) {
-            setHtml(
-                contId,
-                '<div class="text-center py-12 text-red-500 font-medium">Помилка мережі 🌐</div>'
-            );
+            renderError(contId);
         }
     }
 }
