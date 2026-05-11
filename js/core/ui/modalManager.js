@@ -1,5 +1,9 @@
+import {
+    getById
+} from './dom.js';
+
 export function showModal(id) {
-    const modal = document.getElementById(id);
+    const modal = getById(id);
 
     if (!modal) return;
 
@@ -8,7 +12,7 @@ export function showModal(id) {
 }
 
 export function hideModal(id) {
-    const modal = document.getElementById(id);
+    const modal = getById(id);
 
     if (!modal) return;
 
@@ -17,7 +21,7 @@ export function hideModal(id) {
 }
 
 export function setInputValue(id, value = '') {
-    const input = document.getElementById(id);
+    const input = getById(id);
 
     if (!input) return;
 
@@ -25,7 +29,7 @@ export function setInputValue(id, value = '') {
 }
 
 export function setText(id, text = '') {
-    const element = document.getElementById(id);
+    const element = getById(id);
 
     if (!element) return;
 
@@ -33,7 +37,7 @@ export function setText(id, text = '') {
 }
 
 export function setHtml(id, html = '') {
-    const element = document.getElementById(id);
+    const element = getById(id);
 
     if (!element) return;
 
@@ -41,7 +45,7 @@ export function setHtml(id, html = '') {
 }
 
 export function setPlaceholder(id, text = '') {
-    const input = document.getElementById(id);
+    const input = getById(id);
 
     if (!input) return;
 
@@ -49,7 +53,7 @@ export function setPlaceholder(id, text = '') {
 }
 
 export function getInputValue(id) {
-    const input = document.getElementById(id);
+    const input = getById(id);
 
     if (!input) return '';
 
