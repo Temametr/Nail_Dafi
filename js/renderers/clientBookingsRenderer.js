@@ -85,8 +85,8 @@ export function renderClientBookings() {
                                 ${
                                     isConfirmed
                                         ? `
-                                           <button
-    onclick="window.appAPI.openChatFromBooking('${booking.id}')"
+                                          <button
+    onclick="window.Telegram.WebApp.showAlert('Чат скоро буде доступний 💬')"
     class="card-convex-sm flex items-center justify-center w-full py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all"
 >
     Написати майстру 💬
