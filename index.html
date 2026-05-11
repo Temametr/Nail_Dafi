@@ -204,10 +204,23 @@
             </div>
 
             <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
-                <div class="flex px-1 pb-4 gap-2 mt-2">
-                    <button onclick="window.appAPI.switchBookingTab('active', 'admin')" id="admin-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase bg-slate-950 text-white rounded-xl shadow-lg transition-all">Активні</button>
-                    <button onclick="window.appAPI.switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase bg-white text-slate-500 rounded-xl border border-rose-100 transition-all">Скасовані</button>
-                </div>
+                <div id="admin-booking-tabs" class="flex px-1 pb-4 gap-2 mt-2 overflow-x-auto hide-scrollbar">
+    <button onclick="window.appAPI.switchBookingTab('pending', 'admin')" id="admin-subtab-pending" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-amber-100">
+        Очікування
+    </button>
+
+    <button onclick="window.appAPI.switchBookingTab('confirmed', 'admin')" id="admin-subtab-confirmed" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">
+        Підтверджені
+    </button>
+
+    <button onclick="window.appAPI.switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">
+        Скасовані
+    </button>
+
+    <button onclick="window.appAPI.switchBookingTab('done', 'admin')" id="admin-subtab-done" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-emerald-100">
+        Виконані
+    </button>
+</div>
                 <div id="admin-bookings-list" class="space-y-5 px-1"></div>
             </div>
         </div>
