@@ -276,12 +276,26 @@ function confirmCancel() {
 
 function changeBookingStatus(id, status) {
 
+    const booking = state.adminBookings.find(
+        item => String(item.id) === String(id)
+    );
+
+    if (booking) {
+        booking.status = status;
+    }
+
+    switchBookingTab(
+        state.currentBookingFilter,
+        'admin'
+    );
+
+    renderAdminStats('day');
+
     return changeBookingStatusAction(
         id,
         status,
         () => {
-
-            loadBookings('admin');
+            loadBookings('admin', true);
         }
     );
 }
