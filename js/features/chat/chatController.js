@@ -29,6 +29,8 @@ export async function loadChats(role) {
 
         const response = await fetchChats(role);
 
+        console.log('getChats response:', response);
+
         if (response.status !== 'success') {
             throw new Error(
                 response.message || 'Chat load error'
@@ -42,67 +44,44 @@ export async function loadChats(role) {
 
         chatState.chats = [];
 
-        tg.showAlert(
-            'Не вдалося завантажити чати. Перевір Apps Script deployment і лист Chats.'
-        );
-
     } finally {
         chatState.isLoadingChats = false;
         renderChatsList();
     }
 }
 
-export async function openChat(
-    chatId,
-    role
-) {
+export async function openChat(chatId, role) {
     try {
-
-        chatState.activeChatId =
-            chatId;
-
-        chatState.isLoadingMessages =
-            true;
+        chatState.activeChatId = chatId;
+        chatState.isLoadingMessages = true;
 
         renderChatThread();
 
-        const response =
-            await fetchMessages(chatId);
+        const response = await fetchMessages(chatId);
 
         if (response.status !== 'success') {
             throw new Error(
-                response.message ||
-                'Messages load error'
+                response.message || 'Messages load error'
             );
         }
 
-        chatState.activeMessages =
-            response.messages || [];
+        chatState.activeMessages = response.messages || [];
 
-        renderChatThread();
-
-        await markChatRead(
-            chatId,
-            role
-        );
-
+        await markChatRead(chatId, role);
         await refreshUnread(role);
 
     } catch (error) {
+        console.error('openChat error:', error);
 
-        console.error(
-            'openChat error:',
-            error
-        );
+        chatState.activeMessages = [];
 
         tg.showAlert(
             'Не вдалося відкрити чат'
         );
 
     } finally {
-
-        chatState.isLoadingMessages =
-            false;
+        chatState.isLoadingMessages = false;
+        renderChatThread();
     }
 }
 
@@ -380,23 +359,14 @@ export function stopChatsPolling() {
 
 function switchToMessagesTab() {
     document
-        .querySelectorAll(
-            '.tab-content'
-        )
+        .querySelectorAll('.tab-content, .admin-tab-content')
         .forEach(el => {
-            el.classList.add(
-                'hidden-step'
-            );
+            el.classList.add('hidden-step');
         });
 
-    const messagesTab =
-        document.getElementById(
-            'tab-messages'
-        );
+    const messagesTab = document.getElementById('tab-messages');
 
     if (messagesTab) {
-        messagesTab.classList.remove(
-            'hidden-step'
-        );
+        messagesTab.classList.remove('hidden-step');
     }
 }
