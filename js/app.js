@@ -1,4 +1,5 @@
 import { state, tg, modalState, polling } from './state.js';
+
 import {
     fetchInitialData,
     fetchBookings,
@@ -6,6 +7,7 @@ import {
     submitBookingAPI,
     fetchOccupiedSlotsAPI
 } from './api.js';
+
 import {
     renderHomeMasters,
     renderServices,
@@ -16,7 +18,26 @@ import {
     renderUserProfile,
     renderMessagesTab
 } from './client.js';
+
 import { renderAdminStats, renderAdminBookings } from './admin.js';
+
+import {
+    showMainButton,
+    hideMainButton,
+    enableMainButton,
+    disableMainButton,
+    showMainButtonProgress,
+    hideMainButtonProgress,
+    setMainButtonHandler
+} from './core/telegram/mainButton.js';
+
+import {
+    showBackButton,
+    hideBackButton,
+    setBackButtonHandler
+} from './core/telegram/backButton.js';
+
+import { notifySuccess } from './core/telegram/haptic.js';
 
 window.appAPI = {
     switchTab,
@@ -44,7 +65,7 @@ let lastDateRequestId = 0;
 
 window.addEventListener('DOMContentLoaded', async () => {
     tg.MainButton.color = '#3b82f6';
-    tg.BackButton.onClick(handleBack);
+    setBackButtonHandler(handleBack);
     await loadApp();
 });
 
@@ -110,7 +131,7 @@ function handleBack() {
 
         if (!document.getElementById('step-time').classList.contains('hidden-step')) {
             state.selectedTime = null;
-            tg.MainButton.hide();
+            hideMainButton();
             showStep('step-date');
         } else if (!document.getElementById('step-date').classList.contains('hidden-step')) {
             resetDateTimeSelection();
@@ -141,7 +162,7 @@ function resetDateTimeSelection() {
     const timeSlotsContainer = document.getElementById('time-slots');
     if (timeSlotsContainer) timeSlotsContainer.innerHTML = '';
 
-    tg.MainButton.hide();
+    hideMainButton();
 }
 
 function switchTab(role, tabId) {
@@ -171,8 +192,8 @@ function switchTab(role, tabId) {
     });
 
     updateHeaderTitle(role, tabId);
-    tg.BackButton.hide();
-    tg.MainButton.hide();
+    hideBackButton();
+    hideMainButton();
     stopPolling();
 
     state.editingBookingId = null;
@@ -310,7 +331,7 @@ function startClientBookingFlow() {
 
     renderServices();
     showStep('step-booking');
-    tg.BackButton.show();
+    showBackButton();
 }
 
 function startReschedule(id) {
@@ -349,7 +370,7 @@ function startReschedule(id) {
 
     renderCalendar();
     showStep('step-date');
-    tg.BackButton.show();
+    showBackButton();
 }
 
 function showStep(sId) {
@@ -358,7 +379,7 @@ function showStep(sId) {
     const target = document.getElementById(sId);
     if (target) target.classList.remove('hidden-step');
 
-    if (sId === 'step-booking') tg.MainButton.hide();
+    if (sId === 'step-booking') hideMainButton();
 }
 
 function selectService(id) {
@@ -399,7 +420,7 @@ async function selectDate(date, btn) {
 
     state.selectedDate = date;
     state.selectedTime = null;
-    tg.MainButton.hide();
+    hideMainButton();
 
     document.querySelectorAll('.date-btn').forEach(b =>
         b.classList.remove('selected-item', 'shadow-blue-300', 'border-transparent')
@@ -462,22 +483,18 @@ function selectTime(t, btn) {
 
     btn.classList.add('selected-item', 'shadow-blue-300', 'border-transparent');
 
-    tg.MainButton.text = state.editingBookingId
+    const buttonText = state.editingBookingId
         ? `Перенести на ${t}`
         : `Записатися на ${t}`;
 
-    tg.MainButton.show();
+    showMainButton(buttonText);
 
-    if (currentSubmitHandler) {
-        tg.MainButton.offClick(currentSubmitHandler);
-    }
-
-    currentSubmitHandler = async () => {
+    currentSubmitHandler = setMainButtonHandler(async () => {
         if (isSubmittingBooking) return;
 
         isSubmittingBooking = true;
-        tg.MainButton.disable();
-        tg.MainButton.showProgress();
+        disableMainButton();
+        showMainButtonProgress();
 
         try {
             const clientName = state.user && state.user.first_name
@@ -504,7 +521,7 @@ function selectTime(t, btn) {
             });
 
             if (r.status === 'success') {
-                tg.HapticFeedback.notificationOccurred('success');
+                notifySuccess();
 
                 tg.showAlert(
                     state.editingBookingId
@@ -519,13 +536,11 @@ function selectTime(t, btn) {
             console.error('Помилка створення запису:', error);
             tg.showAlert(error.message || 'Не вдалося створити запис.');
         } finally {
-            tg.MainButton.hideProgress();
-            tg.MainButton.enable();
+            hideMainButtonProgress();
+            enableMainButton();
             isSubmittingBooking = false;
         }
-    };
-
-    tg.MainButton.onClick(currentSubmitHandler);
+    }, currentSubmitHandler);
 }
 
 function openMasterProfile(id) {
@@ -556,7 +571,7 @@ function openMasterProfile(id) {
         document.getElementById('master-profile-modal').classList.remove('hidden');
         document.getElementById('master-profile-modal').classList.add('flex');
 
-        tg.BackButton.show();
+        showBackButton();
     } catch (e) {
         console.error('Помилка профілю майстра:', e);
     }
@@ -567,7 +582,7 @@ function closeMasterProfile() {
     document.getElementById('master-profile-modal').classList.remove('flex');
 
     state.viewedMasterId = null;
-    tg.BackButton.hide();
+    hideBackButton();
 }
 
 function bookFromProfile() {
@@ -603,7 +618,7 @@ function bookFromProfile() {
 
     renderServices();
     showStep('step-booking');
-    tg.BackButton.show();
+    showBackButton();
 }
 
 function openMap() {
