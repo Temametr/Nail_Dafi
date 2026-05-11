@@ -1,12 +1,13 @@
-import { state, tg } from './state.js';
-import { formatDisplayTime, getStatusData } from './utils.js';
+import { state } from './state.js';
 
 import { renderServices } from './renderers/servicesRenderer.js';
 import { renderClientBookings } from './renderers/clientBookingsRenderer.js';
+
 import {
     renderHomeMasters,
     renderMasters
 } from './renderers/mastersRenderer.js';
+
 import {
     renderCalendar,
     renderTimeSlots
@@ -21,20 +22,15 @@ export {
     renderTimeSlots
 };
 
-
 export function renderUserProfile() {
     const container = document.getElementById('tab-profile');
 
     if (!container) return;
 
     const user = state.user || {};
-
     const firstName = user.first_name || '';
     const lastName = user.last_name || '';
-
-    const fullName =
-        `${firstName} ${lastName}`.trim() || 'Гість';
-
+    const fullName = `${firstName} ${lastName}`.trim() || 'Гість';
     const initial = fullName.charAt(0).toUpperCase();
 
     container.innerHTML = `
@@ -52,11 +48,7 @@ export function renderUserProfile() {
 
                 ${
                     user.is_premium
-                        ? `
-                        <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm text-[12px]">
-                            ⭐
-                        </div>
-                    `
+                        ? `<div class="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm text-[12px]">⭐</div>`
                         : ''
                 }
             </div>
@@ -67,11 +59,7 @@ export function renderUserProfile() {
 
             ${
                 user.username
-                    ? `
-                    <div class="text-sm font-bold text-blue-500 mb-3">
-                        @${user.username}
-                    </div>
-                `
+                    ? `<div class="text-sm font-bold text-blue-500 mb-3">@${user.username}</div>`
                     : ''
             }
 
