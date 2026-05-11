@@ -1,6 +1,7 @@
 export const chatState = {
     chats: [],
     activeChatId: null,
+    activeBooking: null,
     activeMessages: [],
     unreadTotal: 0,
     unreadByChat: {},
@@ -11,5 +12,6 @@ export const chatState = {
 
 export function resetActiveChat() {
     chatState.activeChatId = null;
+    chatState.activeBooking = null;
     chatState.activeMessages = [];
 }
