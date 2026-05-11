@@ -72,6 +72,17 @@ import {
 
 import { APP_CONFIG } from './config/appConfig.js';
 
+import {
+    loadChats,
+    openChat,
+    openChatFromBooking,
+    submitChatMessage,
+    refreshUnread,
+    closeActiveChat,
+    startChatsPolling,
+    stopChatsPolling
+} from './features/chat/chatController.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -95,6 +106,11 @@ window.appAPI = {
     openMasterProfile,
     closeMasterProfile,
     bookFromProfile,
+    
+    openChat,
+    openChatFromBooking,
+    submitChatMessage,
+    closeActiveChat,
 
     openMap
 };
@@ -109,6 +125,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
 
     await loadApp();
+    
+    await refreshUnread(
+    state.isAdmin
+        ? 'admin'
+        : 'client'
+);
+
+startChatsPolling();
 });
 
 async function loadApp() {
