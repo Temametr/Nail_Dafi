@@ -1,6 +1,6 @@
 import { state } from '../../state.js';
 
-import { fetchBookings } from '../../api.js';
+import { fetchBookings } from '../../api/bookingsApi.js';
 
 import {
     renderClientBookings
