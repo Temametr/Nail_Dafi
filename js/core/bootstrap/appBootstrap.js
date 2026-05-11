@@ -1,6 +1,6 @@
 import { state } from '../../state.js';
 
-import { fetchInitialData } from '../../api.js';
+import { fetchInitialData } from '../../api/bootstrapApi.js';
 
 import {
     renderHomeMasters,
