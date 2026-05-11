@@ -74,28 +74,3 @@ export function renderUserProfile() {
     `;
 }
 
-export function renderMessagesTab() {
-    const container = document.getElementById('tab-messages');
-
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="flex flex-col items-center justify-center py-20 px-6 text-center animate-fade-in-up">
-            <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner border border-blue-100">
-                💬
-            </div>
-
-            <h2 class="text-2xl font-black text-slate-900 mb-3 tracking-tight">
-                Розділ чатів
-            </h2>
-
-            <p class="text-slate-500 font-medium leading-relaxed mb-8">
-                Ми працюємо над тим, щоб ви могли спілкуватися з майстрами прямо в додатку!
-            </p>
-
-            <div class="inline-block px-6 py-3 bg-blue-500/10 text-blue-600 rounded-2xl font-black text-xs uppercase tracking-widest">
-                Незабаром з'явиться
-            </div>
-        </div>
-    `;
-}
