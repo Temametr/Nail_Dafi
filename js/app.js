@@ -86,6 +86,10 @@ import {
     changeBookingStatusAction
 } from './features/admin/adminActions.js';
 
+import {
+    loadBookings
+} from './features/bookings/bookingsLoader.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -295,41 +299,6 @@ function switchTab(role, tabId) {
         startPollingManager(() => loadBookings('admin', true));
     }
 }
-}
-
-async function loadBookings(role, silent = false, dash = false) {
-    const contId = role === 'admin'
-        ? dash ? null : 'admin-bookings-list'
-        : 'my-bookings-list';
-
-    if (!silent && contId) {
-    renderLoading(contId, {
-        color: role === 'admin'
-            ? 'border-t-teal-500'
-            : 'border-t-blue-500'
-    });
-}
-
-    try {
-        const data = await fetchBookings(role);
-
-        if (role === 'admin') {
-            state.adminBookings = data.bookings || [];
-
-            dash
-                ? renderAdminStats('day')
-                : renderAdminBookings();
-        } else {
-            state.clientBookings = data.bookings || [];
-            renderClientBookings();
-        }
-    } catch (error) {
-        logError('Помилка завантаження записів', error);
-
-        if (!silent && contId) {
-            renderError(contId);
-        }
-    }
 }
 
 function openMap() {
