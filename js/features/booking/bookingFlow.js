@@ -1,4 +1,5 @@
 import { state, tg } from '../../state.js';
+import { APP_CONFIG } from '../../config/appConfig.js';
 
 import {
     fetchOccupiedSlotsAPI,
@@ -143,7 +144,9 @@ export function startReschedule(id) {
         state.selectedService = {
             id: `legacy-service-${booking.id}`,
             name: booking.service || 'Послуга',
-            duration: Number(booking.duration) || 60,
+            duration:
+    Number(booking.duration) ||
+    APP_CONFIG.booking.defaultDuration,
             price: booking.price || ''
         };
 
