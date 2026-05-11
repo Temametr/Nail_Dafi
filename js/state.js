@@ -46,7 +46,7 @@ export const state = {
     clientBookings: [],
     adminBookings: [],
 
-    currentBookingFilter: 'active',
+    currentBookingFilter: 'confirmed',
 
     ui: {
         loading: false,
