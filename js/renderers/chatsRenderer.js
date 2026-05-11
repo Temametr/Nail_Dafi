@@ -98,7 +98,6 @@ export function renderChatsList() {
                 ${chats.map(renderChatCard).join('')}
             </div>
 
-            <div id="chat-thread-container"></div>
 
         </div>
     `;
@@ -228,9 +227,9 @@ function renderChatCard(chat) {
 
 export function renderChatThread() {
     const container =
-        document.getElementById(
-            'chat-thread-container'
-        );
+    document.getElementById(
+        'global-chat-root'
+    );
 
     if (!container) return;
 
@@ -491,9 +490,9 @@ function renderMessageBubble(message) {
 
 export function renderChatEmpty() {
     const container =
-        document.getElementById(
-            'chat-thread-container'
-        );
+    document.getElementById(
+        'global-chat-root'
+    );
 
     if (!container) return;
 
