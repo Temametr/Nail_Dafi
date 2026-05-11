@@ -6,6 +6,11 @@ export const APP_CONFIG = {
     booking: {
         defaultDuration: 60
     },
+    
+    cache: {
+    initDataKey: 'nail_dafi_init_data',
+    initDataTtlMs: 5 * 60 * 1000
+},
 
     map: {
         lat: 50.027388,
