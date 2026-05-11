@@ -43,8 +43,19 @@ export function renderAdminStats(period) {
 export function renderAdminBookings() {
     const container = document.getElementById('admin-bookings-list');
     const filtered = state.adminBookings.filter(b => {
-        if (state.currentBookingFilter === 'active') return b.status === 'В очереди' || b.status === 'Выполнено';
-        else return b.status === 'Отменено';
+        if (state.currentBookingFilter === 'pending') {
+    return b.status === 'В очереди';
+}
+
+if (state.currentBookingFilter === 'confirmed') {
+    return b.status === 'Подтверждено';
+}
+
+if (state.currentBookingFilter === 'done') {
+    return b.status === 'Выполнено';
+}
+
+return b.status === 'Отменено';
     });
 
     if (filtered.length === 0) { 
@@ -54,6 +65,7 @@ export function renderAdminBookings() {
 
     container.innerHTML = filtered.map((b, i) => {
         const isPending = b.status === 'В очереди';
+        const isConfirmed = b.status === 'Подтверждено';
         const statusData = getStatusData(b.status);
         const delay = i * 40;
 
@@ -77,12 +89,14 @@ export function renderAdminBookings() {
 </button>
                 ${b.cancelReason ? `<div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">Причина: ${b.cancelReason}</div>` : ''}
                 ${isPending ? `<div class="flex gap-3 mt-4 pt-4 border-t border-slate-100">
-                    <button onclick="window.appAPI.changeBookingStatus('${b.id}', 'Подтверждено')" class="card-convex-sm flex-1 py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all">Принять</button>
-                    <button onclick="window.appAPI.openCancelModal('${b.id}', 'admin')" class="card-convex-sm flex-1 py-3.5 bg-white text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">Отказать</button>
-                    <button onclick="window.appAPI.changeBookingStatus('${b.id}', 'Выполнено')" class="card-convex-sm flex-1 py-3.5 bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all">
-    Виконано
-</button>
-                </div>` : ''}
+    <button onclick="window.appAPI.changeBookingStatus('${b.id}', 'Подтверждено')" class="card-convex-sm flex-1 py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all">Прийняти</button>
+    <button onclick="window.appAPI.openCancelModal('${b.id}', 'admin')" class="card-convex-sm flex-1 py-3.5 bg-white text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200">Відмовити</button>
+</div>` : ''}
+
+${isConfirmed ? `<div class="flex gap-3 mt-4 pt-4 border-t border-slate-100">
+    <button onclick="window.appAPI.changeBookingStatus('${b.id}', 'Выполнено')" class="card-convex-sm flex-1 py-3.5 bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all">Виконано</button>
+    <button onclick="window.appAPI.openCancelModal('${b.id}', 'admin')" class="card-convex-sm flex-1 py-3.5 bg-white text-red-600 hover:bg-red-50 rounded-xl text-sm font-bold active:scale-95 transition-all border border-red-100">Скасувати</button>
+</div>` : ''}
             </div>
         `;
     }).join('');
