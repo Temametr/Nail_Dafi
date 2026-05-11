@@ -82,6 +82,10 @@ import {
     confirmCancel as confirmCancelAction
 } from './features/cancel/cancelBooking.js';
 
+import {
+    changeBookingStatusAction
+} from './features/admin/adminActions.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -344,26 +348,10 @@ function confirmCancel() {
     });
 }
 
-async function changeBookingStatus(id, status) {
-    try {
-        const response = await updateBookingStatusAPI(id, status);
-
-        if (response.status === 'success') {
-            loadBookings('admin');
-        } else {
-            tg.showAlert(
-                'Помилка: ' +
-                (response.message || 'невідома помилка')
-            );
-        }
-    } catch (error) {
-        logError('Помилка зміни статусу', error);
-
-        tg.showAlert(
-            error.message ||
-            'Не вдалося змінити статус.'
-        );
-    }
+function changeBookingStatus(id, status) {
+    return changeBookingStatusAction(id, status, () => {
+        loadBookings('admin');
+    });
 }
 
 function switchBookingTab(filter, role) {
