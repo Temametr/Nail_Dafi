@@ -139,6 +139,34 @@ export async function submitBookingMessage() {
 
     if (!text) return;
 
+    const tempMessage = {
+        messageId:
+            'LOCAL-' + Date.now(),
+
+        bookingId:
+            messagesState.activeBookingId,
+
+        senderId:
+            String(window.Telegram.WebApp.initDataUnsafe?.user?.id || ''),
+
+        senderRole:
+            'local',
+
+        text,
+
+        createdAt:
+            new Date().toISOString(),
+
+        readByClient:
+            true,
+
+        readByMaster:
+            true,
+
+        isLocal:
+            true
+    };
+
     try {
 
         messagesState.isSending = true;
@@ -146,12 +174,21 @@ export async function submitBookingMessage() {
         input.value = '';
         input.style.height = 'auto';
 
+        messagesState.messages = [
+            ...messagesState.messages,
+            tempMessage
+        ];
+
+        renderMessagesList();
+
         await sendBookingMessage(
             messagesState.activeBookingId,
             text
         );
 
-        await loadBookingMessages();
+        await loadBookingMessages({
+            silent: true
+        });
 
     } catch (error) {
 
@@ -159,6 +196,15 @@ export async function submitBookingMessage() {
             'submitBookingMessage error:',
             error
         );
+
+        messagesState.messages =
+            messagesState.messages.filter(
+                message =>
+                    message.messageId !==
+                    tempMessage.messageId
+            );
+
+        renderMessagesList();
 
         tg.showAlert(
             'Не вдалося надіслати повідомлення'
