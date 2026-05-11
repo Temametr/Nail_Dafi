@@ -281,3 +281,10 @@ function changeBookingStatus(id, status) {
         }
     );
 }
+
+function openChatForCurrentUser(chatId) {
+    return openChat(
+        chatId,
+        state.isAdmin ? 'admin' : 'client'
+    );
+}
