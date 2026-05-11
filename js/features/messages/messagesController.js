@@ -19,6 +19,53 @@ import {
     renderMessagesList
 } from './messagesModal.js';
 
+const MESSAGE_CACHE_PREFIX =
+    'booking_messages_';
+    
+function getCacheKey(bookingId) {
+
+    return (
+        MESSAGE_CACHE_PREFIX +
+        String(bookingId || '')
+    );
+}
+
+function saveMessagesToCache(
+    bookingId,
+    messages
+) {
+    try {
+
+        localStorage.setItem(
+            getCacheKey(bookingId),
+            JSON.stringify(messages || [])
+        );
+
+    } catch (_) {}
+}
+
+function loadMessagesFromCache(
+    bookingId
+) {
+    try {
+
+        const raw =
+            localStorage.getItem(
+                getCacheKey(bookingId)
+            );
+
+        if (!raw) {
+            return [];
+        }
+
+        return JSON.parse(raw);
+
+    } catch (_) {
+
+        return [];
+    }
+}
+
 export async function openBookingMessages(booking) {
 
     if (!booking || !booking.id) {
@@ -31,7 +78,10 @@ export async function openBookingMessages(booking) {
 
     messagesState.activeBookingId = booking.id;
     messagesState.activeBooking = booking;
-    messagesState.messages = [];
+    messagesState.messages =
+    loadMessagesFromCache(
+        booking.id
+    );
     messagesState.isLoading = true;
 
     bindMessagesModalEvents();
@@ -89,6 +139,11 @@ async function loadBookingMessages({
 
         messagesState.messages =
             nextMessages;
+        
+        saveMessagesToCache(
+    messagesState.activeBookingId,
+    nextMessages
+);
 
         if (hasChanged || !silent) {
             renderMessagesList();
