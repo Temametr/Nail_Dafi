@@ -34,6 +34,11 @@ import {
 let currentSubmitHandler = null;
 let isSubmittingBooking = false;
 let lastDateRequestId = 0;
+let onBookingSuccessCallback = null;
+
+export function setBookingSuccessHandler(callback) {
+    onBookingSuccessCallback = callback;
+}
 
 export function resetDateTimeSelection() {
     state.selectedDate = null;
@@ -411,14 +416,19 @@ export function selectTime(time, btn) {
                 });
 
                 if (response.status === 'success') {
-                    notifySuccess();
+    notifySuccess();
 
-                    tg.showAlert(
-                        state.editingBookingId
-                            ? 'Запит на перенесення надіслано!'
-                            : 'Ура! Ти записалася на манікюр 🎉'
-                    );
-                } else {
+    tg.showAlert(
+        state.editingBookingId
+            ? 'Запит на перенесення надіслано!'
+            : 'Ура! Ти записалася на манікюр 🎉',
+        () => {
+            if (typeof onBookingSuccessCallback === 'function') {
+                onBookingSuccessCallback();
+            }
+        }
+    );
+} else {
                     tg.showAlert(
                         'Помилка: ' +
                             (
