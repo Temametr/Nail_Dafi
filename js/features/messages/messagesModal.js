@@ -16,8 +16,9 @@ function escapeHtml(text) {
 function renderMessage(message) {
 
     const isMine =
-        String(message.senderId) ===
-        String(state.user?.id || '');
+    message.isLocal ||
+    String(message.senderId) ===
+    String(state.user?.id || '');
 
     return `
         <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
