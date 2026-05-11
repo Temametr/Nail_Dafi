@@ -1,8 +1,7 @@
 import { state, tg } from './state.js';
 
 import {
-    renderHomeMasters,
-    renderMessagesTab
+    renderHomeMasters
 } from './client.js';
 
 import {
