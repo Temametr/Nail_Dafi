@@ -2,8 +2,9 @@ import { state, tg } from './state.js';
 import { formatDisplayTime, getStatusData } from './utils.js';
 
 import { renderServices } from './renderers/servicesRenderer.js';
+import { renderClientBookings } from './renderers/clientBookingsRenderer.js';
 
-export { renderServices };
+export { renderServices, renderClientBookings };
 
 export function renderHomeMasters() {
     const list = document.getElementById('home-masters-list');
