@@ -1,28 +1,67 @@
 import { state } from '../state.js';
 import { formatDisplayTime, getStatusData, sanitizeHtml } from '../utils.js';
 
+const STATUS_PENDING = 'В очереди';
+const STATUS_DONE = 'Выполнено';
+const STATUS_CANCELLED = 'Отменено';
+
+function getFilteredBookings() {
+    return state.clientBookings.filter(booking => {
+        if (state.currentBookingFilter === 'pending') {
+            return booking.status === STATUS_PENDING;
+        }
+
+        if (state.currentBookingFilter === 'confirmed') {
+            return booking.status === STATUS_DONE;
+        }
+
+        if (state.currentBookingFilter === 'cancelled') {
+            return booking.status === STATUS_CANCELLED;
+        }
+
+        if (state.currentBookingFilter === 'done') {
+            return booking.status === STATUS_DONE;
+        }
+
+        return booking.status === STATUS_DONE;
+    });
+}
+
+function syncClientBookingTabsVisibility() {
+    const hasPending = state.clientBookings.some(
+        booking => booking.status === STATUS_PENDING
+    );
+
+    const pendingTab = document.getElementById('client-subtab-pending');
+
+    if (pendingTab) {
+        pendingTab.classList.toggle('hidden', !hasPending);
+    }
+
+    if (!hasPending && state.currentBookingFilter === 'pending') {
+        state.currentBookingFilter = 'confirmed';
+    }
+}
+
 export function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
 
     if (!container) return;
 
-    const filtered = state.clientBookings.filter(booking => {
-        if (state.currentBookingFilter === 'active') {
-            return booking.status === 'В очереди' || booking.status === 'Выполнено';
-        }
+    syncClientBookingTabsVisibility();
 
-        return booking.status === 'Отменено';
-    });
+    const filtered = getFilteredBookings();
 
     if (filtered.length === 0) {
         container.innerHTML =
-            "<div class='text-center py-12 text-slate-400 font-medium'>У тебе поки немає записів.</div>";
+            "<div class='text-center py-12 text-slate-400 font-medium'>У тебе поки немає записів у цьому розділі.</div>";
         return;
     }
 
     container.innerHTML = filtered.map((booking, index) => {
-        const isConfirmed = booking.status === 'Выполнено';
-        const isPending = booking.status === 'В очереди';
+        const isPending = booking.status === STATUS_PENDING;
+        const isConfirmed = booking.status === STATUS_DONE;
+        const isCancelled = booking.status === STATUS_CANCELLED;
         const statusData = getStatusData(booking.status);
 
         const master = state.masters.find(
@@ -31,7 +70,7 @@ export function renderClientBookings() {
 
         const masterName = master
             ? master.name.replace(/^(Майстер|Мастер)\s+/i, '').trim()
-            : 'Майстра не знайдено';
+            : booking.masterName || 'Майстра не знайдено';
 
         const delay = index * 40;
 
@@ -79,26 +118,38 @@ export function renderClientBookings() {
                 }
 
                 ${
-                    isPending || isConfirmed
+                    !isCancelled
                         ? `
                             <div class="mt-4 pt-4 border-t border-slate-100 space-y-3.5">
                                 ${
                                     isConfirmed
                                         ? `
-                                         <button
-    onclick="window.appAPI.openTelegramChat('${booking.masterTelegram || ''}')"
-    class="card-convex-sm flex items-center justify-center w-full py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all"
->
-    Написати майстру 💬
-</button>
+                                            <button
+                                                onclick="window.appAPI.openTelegramChat('${booking.masterTelegram || ''}')"
+                                                class="card-convex-sm flex items-center justify-center w-full py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all"
+                                            >
+                                                Написати майстру 💬
+                                            </button>
+                                        `
+                                        : ''
+                                }
 
+                                ${
+                                    isPending || isConfirmed
+                                        ? `
                                             <div class="flex gap-3">
-                                                <button
-                                                    onclick="window.appAPI.startReschedule('${booking.id}')"
-                                                    class="card-convex-sm flex-1 py-3 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200"
-                                                >
-                                                    Перенести
-                                                </button>
+                                                ${
+                                                    isConfirmed
+                                                        ? `
+                                                            <button
+                                                                onclick="window.appAPI.startReschedule('${booking.id}')"
+                                                                class="card-convex-sm flex-1 py-3 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200"
+                                                            >
+                                                                Перенести
+                                                            </button>
+                                                        `
+                                                        : ''
+                                                }
 
                                                 <button
                                                     onclick="window.appAPI.openCancelModal('${booking.id}', 'client')"
@@ -108,14 +159,7 @@ export function renderClientBookings() {
                                                 </button>
                                             </div>
                                         `
-                                        : `
-                                            <button
-                                                onclick="window.appAPI.openCancelModal('${booking.id}', 'client')"
-                                                class="card-convex-sm w-full py-3.5 bg-white text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200"
-                                            >
-                                                Скасувати візит
-                                            </button>
-                                        `
+                                        : ''
                                 }
                             </div>
                         `
