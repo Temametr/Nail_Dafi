@@ -1,6 +1,6 @@
 import { state, modalState } from '../../state.js';
 
-import { updateBookingStatusAPI } from '../../api.js';
+import { updateBookingStatusAPI } from '../../api/bookingsApi.js';
 
 import {
     showModal,
