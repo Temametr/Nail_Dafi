@@ -117,22 +117,16 @@ export async function openChatFromBooking(
             ).trim();
 
         const chatId =
-            `CHAT-${clientId}-${masterId}`;
+    `CHAT-${clientId}-${masterId}`;
 
-        switchToMessagesTab();
+chatState.activeBooking = booking;
 
-        await loadChats(
-            state.isAdmin
-                ? 'admin'
-                : 'client'
-        );
-
-        await openChat(
-            chatId,
-            state.isAdmin
-                ? 'admin'
-                : 'client'
-        );
+await openChat(
+    chatId,
+    state.isAdmin
+        ? 'admin'
+        : 'client'
+);
 
     } catch (error) {
 
@@ -165,33 +159,13 @@ export async function submitChatMessage() {
 
         chatState.isSending = true;
 
-        const allBookings = [
-            ...(state.clientBookings || []),
-            ...(state.adminBookings || [])
-        ];
+        const booking = chatState.activeBooking;
 
-        const booking =
-            allBookings.find(item => {
-
-                const cId =
-                    String(item.clientId || '')
-                        .trim();
-
-                const mId =
-                    String(item.masterId || '')
-                        .trim();
-
-                return (
-                    `CHAT-${cId}-${mId}` ===
-                    chatState.activeChatId
-                );
-            });
-
-        if (!booking) {
-            throw new Error(
-                'Booking not found'
-            );
-        }
+if (!booking) {
+    throw new Error(
+        'Active booking not found'
+    );
+}
 
         const response =
             await sendMessage({
@@ -357,16 +331,3 @@ export function stopChatsPolling() {
     }
 }
 
-function switchToMessagesTab() {
-    document
-        .querySelectorAll('.tab-content, .admin-tab-content')
-        .forEach(el => {
-            el.classList.add('hidden-step');
-        });
-
-    const messagesTab = document.getElementById('tab-messages');
-
-    if (messagesTab) {
-        messagesTab.classList.remove('hidden-step');
-    }
-}
