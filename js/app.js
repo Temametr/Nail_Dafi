@@ -338,6 +338,12 @@ function openMap() {
     tg.openLink(url);
 }
 
+function confirmCancel() {
+    return confirmCancelAction((role) => {
+        loadBookings(role);
+    });
+}
+
 async function changeBookingStatus(id, status) {
     try {
         const response = await updateBookingStatusAPI(id, status);
