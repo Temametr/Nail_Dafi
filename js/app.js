@@ -8,7 +8,7 @@ window.appAPI = {
     selectService, selectMaster, selectDate, selectTime,
     changeBookingStatus, openCancelModal, closeCancelModal, confirmCancel,
     renderAdminStats, openMasterProfile, closeMasterProfile, bookFromProfile,
-    openMapSelection // Функція вибору карт прив'язана до вікна
+    openMap // ✅ Пряме і надійне відкриття карти
 };
 
 let currentSubmitHandler = null;
@@ -51,10 +51,8 @@ async function loadApp() {
 }
 
 function handleBack() {
-    if (!document.getElementById('master-profile-modal').classList.contains('hidden')) { 
-        closeMasterProfile(); 
-        return; 
-    }
+    if (!document.getElementById('cancel-modal').classList.contains('hidden')) { closeCancelModal(); return; }
+    if (!document.getElementById('master-profile-modal').classList.contains('hidden')) { closeMasterProfile(); return; }
 
     if (!document.getElementById('tab-booking-flow').classList.contains('hidden-step')) {
         if (state.editingBookingId) { 
@@ -175,9 +173,7 @@ function startClientBookingFlow() {
         }
     });
 
-    renderServices();
-    showStep('step-booking');
-    tg.BackButton.show();
+    renderServices(); showStep('step-booking'); tg.BackButton.show();
 }
 
 function startReschedule(id) {
@@ -186,7 +182,6 @@ function startReschedule(id) {
     state.selectedService = state.services.find(s => s.name === b.service);
     state.selectedMaster = state.masters.find(m => m.id.toString() === b.masterId.toString());
     resetDateTimeSelection();
-    
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
     
@@ -198,9 +193,7 @@ function startReschedule(id) {
         }
     });
 
-    renderCalendar();
-    showStep('step-date');
-    tg.BackButton.show();
+    renderCalendar(); showStep('step-date'); tg.BackButton.show();
 }
 
 function showStep(sId) {
@@ -219,15 +212,11 @@ function selectService(id) {
 function selectMaster(id) {
     resetDateTimeSelection();
     state.selectedMaster = state.masters.find(m => m.id.toString() === id.toString());
-    renderCalendar();
-    showStep('step-date');
+    renderCalendar(); showStep('step-date');
 }
 
 async function selectDate(date, btn) {
-    state.selectedDate = date;
-    state.selectedTime = null;
-    tg.MainButton.hide();
-    
+    state.selectedDate = date; state.selectedTime = null; tg.MainButton.hide();
     document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected-item', 'shadow-blue-300', 'border-transparent'));
     btn.classList.add('selected-item', 'shadow-blue-300', 'border-transparent');
     
@@ -237,10 +226,8 @@ async function selectDate(date, btn) {
     if(titleEl) titleEl.innerText = `Час на ${dateFormatted}`;
 
     showStep('step-time'); 
-    
     document.getElementById('time-loader').classList.remove('hidden');
     document.getElementById('time-slots').innerHTML = '';
-    
     const dData = await fetchOccupiedSlotsAPI(date, state.selectedMaster.id, state.editingBookingId);
     renderTimeSlots(dData.occupiedSlots || []);
     document.getElementById('time-loader').classList.add('hidden');
@@ -255,19 +242,15 @@ function selectTime(t, btn) {
     tg.MainButton.show();
     
     if (currentSubmitHandler) { tg.MainButton.offClick(currentSubmitHandler); }
-    
     currentSubmitHandler = async () => {
         tg.MainButton.showProgress();
         const r = await submitBookingAPI({ action: state.editingBookingId ? 'rescheduleBooking' : 'createBooking', date: state.selectedDate, time: state.selectedTime, masterId: state.selectedMaster.id, clientId: state.user.id.toString(), clientName: state.user.first_name, service: state.selectedService.name, bookingId: state.editingBookingId });
         if (r.status === 'success') {
             tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert(state.editingBookingId ? "Запит на перенесення надіслано!" : "Ура! Ти записалася на манікюр 🎉", () => switchTab('client', 'bookings'));
-        } else {
-            tg.showAlert('Помилка: ' + r.message);
-        }
+        } else { tg.showAlert('Помилка: ' + r.message); }
         tg.MainButton.hideProgress();
     };
-    
     tg.MainButton.onClick(currentSubmitHandler);
 }
 
@@ -307,48 +290,16 @@ function bookFromProfile() {
         }
     });
 
-    renderServices();
-    showStep('step-booking');
-    tg.BackButton.show();
+    renderServices(); showStep('step-booking'); tg.BackButton.show();
 }
 
-// ✅ ОНОВЛЕНО: Функція, яка була загублена в попередньому кроці!
-function openMapSelection() {
-    const lat = 50.0270; 
+// ✅ НОВЕ: Універсальне і просте відкриття карти
+function openMap() {
+    const lat = 50.0270;
     const lng = 36.3295;
-    const label = encodeURIComponent("NailBar Dafi");
-    
-    const buttons = [
-        { id: 'google', type: 'default', text: 'Google Maps' }, 
-        { id: 'waze', type: 'default', text: 'Waze' }
-    ];
-    
-    // Перевіряємо платформу, додаємо Apple Maps якщо це iOS/MacOS
-    if (tg.platform === 'ios' || tg.platform === 'macos') {
-        buttons.unshift({ id: 'apple', type: 'default', text: 'Apple Maps' });
-    }
-    
-    buttons.push({ type: 'cancel', text: 'Скасувати' });
-
-    tg.showPopup({ 
-        title: 'Відкрити карту', 
-        message: 'Оберіть додаток для маршруту', 
-        buttons 
-    }, (id) => {
-        if (!id) return;
-        let url = '';
-        if (id === 'google') {
-            url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-        } else if (id === 'apple') {
-            url = `http://maps.apple.com/?q=${label}&ll=${lat},${lng}`;
-        } else if (id === 'waze') {
-            url = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-        }
-        
-        if (url) {
-            tg.openLink(url);
-        }
-    });
+    // Універсальне посилання Google Maps, яке 100% підтримується і на мобільних, і на ПК
+    const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    tg.openLink(url);
 }
 
 function openCancelModal(id, role) { 
