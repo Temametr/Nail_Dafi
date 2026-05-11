@@ -70,6 +70,8 @@ import {
     hideLoader
 } from './core/bootstrap/appBootstrap.js';
 
+import { APP_CONFIG } from './config/appConfig.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -232,8 +234,7 @@ function switchBookingTab(filter, role) {
 }
 
 function openMap() {
-    const lat = 50.027388;
-    const lng = 36.3314636;
+    const { lat, lng } = APP_CONFIG.map;
 
     const url =
         `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
