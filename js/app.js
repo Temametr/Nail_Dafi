@@ -90,6 +90,13 @@ import {
     loadBookings
 } from './features/bookings/bookingsLoader.js';
 
+import {
+    loadInitialData,
+    bootstrapClient,
+    bootstrapAdmin,
+    hideLoader
+} from './core/bootstrap/appBootstrap.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -116,60 +123,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     await loadApp();
 });
 
-async function loadInitialData() {
-    try {
-        const data = await fetchInitialData();
-
-        state.services = data.services || [];
-        state.masters = data.masters || [];
-
-        if (state.user && state.user.id) {
-            const masterData = state.masters.find(
-                master => master.id.toString() === state.user.id.toString()
-            );
-
-            if (masterData) {
-                state.isAdmin = true;
-                state.adminMasterInfo = masterData;
-            }
-        }
-    } catch (error) {
-        logError('Помилка завантаження даних', error);
-showNetworkError();
-    }
-}
-
 async function loadApp() {
     await loadInitialData();
 
-    const loader = document.getElementById('loader');
-
-    if (loader) {
-        loader.classList.add('hidden');
-    }
+    hideLoader();
 
     if (state.isAdmin) {
-        document
-            .getElementById('admin-screen')
-            .classList.remove('hidden-step');
-
-        document
-            .getElementById('admin-bottom-nav')
-            .classList.remove('hidden-step');
-
+        await bootstrapAdmin();
         switchTab('admin', 'home');
     } else {
-        document
-            .getElementById('client-screen')
-            .classList.remove('hidden-step');
-
-        document
-            .getElementById('client-bottom-nav')
-            .classList.remove('hidden-step');
-
-        renderHomeMasters();
-        renderServices();
-
+        await bootstrapClient();
         switchTab('client', 'home');
     }
 }
