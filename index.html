@@ -31,6 +31,7 @@
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         .card-convex { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04); border-radius: 2rem; }
+        .card-convex-sm { background-color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border-radius: 1.5rem; }
         .ios-header { background: linear-gradient(180deg, rgba(230, 240, 250, 0.98) 0%, rgba(240, 244, 249, 0.95) 100%); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.9); border-radius: 0 0 1.75rem 1.75rem; box-shadow: 0 10px 30px -10px rgba(30, 60, 100, 0.12); }
         .floating-nav { background-color: rgba(255, 255, 255, 0.92); backdrop-filter: blur(15px); border: 1px solid rgba(200, 210, 220, 0.5); border-radius: 2rem; }
         .hidden-step { display: none !important; }
@@ -70,12 +71,10 @@
 
                 <div class="mt-6 px-1">
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-3 text-center">Про нас</h3>
-                    <div class="card-convex p-6 text-center animate-pop-in" style="animation-delay: 50ms">
+                    <div class="card-convex p-6 text-center animate-pop-in">
                         <div class="text-3xl mb-3">🌸</div>
                         <p class="text-[13px] font-medium text-slate-600 leading-relaxed">
                             Вітаємо у найзатишнішому манікюрному острівці на Салтівці! Ми створили цей простір з любов'ю до деталей, щоб ви могли відволіктися від метушні та насолодитися моментом турботи про себе.
-                            <br><br>
-                            Наші дівчата — справжні феї манікюру з багаторічним досвідом. Вони не лише роблять бездоганне покриття, але й створюють неймовірно теплу атмосферу.
                         </p>
                     </div>
                 </div>
@@ -83,36 +82,42 @@
                 <div class="mt-8 space-y-4 px-1 pb-6">
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-4 text-center">Контакти</h3>
                     
-                    <div class="card-convex p-5 flex items-center gap-4 animate-pop-in" style="animation-delay: 100ms">
-                        <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0 border border-rose-100 text-xl">📍</div>
-                        <div>
-                            <h4 class="text-sm font-extrabold text-slate-900">Адреса</h4>
-                            <p class="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">
-                                ТРЦ «Дафі», Україна, 61168,<br>м. Харків, вул. Нескорених, 9<br>
-                                <span class="text-[10px] text-slate-400">(раніше — вул. Героїв Праці, 9)</span><br>
-                                <span class="font-extrabold text-slate-700 mt-1 inline-block">Перший поверх</span>
-                            </p>
+                    <div onclick="window.appAPI.openMapSelection()" class="card-convex p-1 overflow-hidden animate-pop-in cursor-pointer active:scale-[0.98] transition-all">
+                        <div class="p-4 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0 border border-rose-100 text-xl shadow-inner">📍</div>
+                            <div>
+                                <h4 class="text-sm font-extrabold text-slate-900">Адреса</h4>
+                                <p class="text-[11px] font-medium text-slate-500 mt-0.5 leading-relaxed">
+                                    ТРЦ «Дафі», м. Харків, вул. Нескорених, 9<br>
+                                    <span class="font-extrabold text-blue-500 text-[10px] uppercase tracking-wider underline">Відкрити на карті</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="h-32 w-full bg-slate-100 relative overflow-hidden rounded-b-[1.75rem] border-t border-slate-50">
+                            <img src="https://static-maps.yandex.ru/1.x/?ll=36.3295,50.0270&z=15&l=map&size=450,150&pt=36.3295,50.0270,pm2rdm" 
+                                 class="w-full h-full object-cover opacity-80" alt="Map">
+                            <div class="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent"></div>
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full border-4 border-white shadow-lg animate-bounce flex items-center justify-center text-xs">📍</div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="card-convex p-5 flex items-center gap-4 animate-pop-in" style="animation-delay: 150ms">
+                    <div class="card-convex p-5 flex items-center gap-4 animate-pop-in" style="animation-delay: 100ms">
                         <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100 text-xl">🕒</div>
                         <div>
                             <h4 class="text-sm font-extrabold text-slate-900">Графік роботи</h4>
-                            <p class="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">
-                                Понеділок: <span class="font-extrabold text-rose-500">Вихідний</span><br>
-                                Інші дні: <span class="font-extrabold text-slate-800">10:00 - 20:00</span>
-                            </p>
+                            <p class="text-[11px] font-medium text-slate-500 mt-1">Пн: <span class="text-rose-500 font-bold">Вихідний</span> • Вт-Нд: 10:00 - 20:00</p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <a href="tel:+380957772818" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center animate-pop-in active:scale-95 transition-all" style="animation-delay: 200ms">
+                        <a href="tel:+380957772818" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center active:scale-95 transition-all">
                             <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center border border-green-100 text-lg">📞</div>
                             <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Телефон</div>
                             <div class="text-xs font-extrabold text-slate-900 mt-0.5">095 777 28 18</div>
                         </a>
-                        <a href="https://instagram.com/nailbar.dafi" target="_blank" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center animate-pop-in active:scale-95 transition-all" style="animation-delay: 250ms">
+                        <a href="https://instagram.com/nailbar.dafi" target="_blank" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center active:scale-95 transition-all">
                             <div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center border border-pink-100 text-lg">📸</div>
                             <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Instagram</div>
                             <div class="text-xs font-extrabold text-slate-900 mt-0.5">nailbar.dafi</div>
@@ -142,18 +147,15 @@
             </div>
 
             <div id="tab-bookings" class="tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
-                <div class="mb-5 px-1 mt-2">
-                    <button onclick="window.appAPI.startClientBookingFlow()" class="w-full py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">СТВОРИТИ НОВИЙ ВІЗИТ</button>
-                </div>
-                <div class="flex pb-4 gap-2 px-1 mt-2">
-                    <button onclick="window.appAPI.switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">Підтверджені</button>
-                    <button onclick="window.appAPI.switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
+                <button onclick="window.appAPI.startClientBookingFlow()" class="w-full mb-6 py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg active:scale-95 transition-all">СТВОРИТИ НОВИЙ ВІЗИТ</button>
+                <div class="flex pb-4 gap-2 px-1">
+                    <button onclick="window.appAPI.switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all">Підтверджені</button>
+                    <button onclick="window.appAPI.switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl border border-rose-100 transition-all">Скасовані</button>
                 </div>
                 <div id="my-bookings-list" class="space-y-5 px-1"></div>
             </div>
 
-                        <div id="tab-profile" class="tab-content hidden-step pt-[110px] px-4 animate-fade-in-up pb-10"></div>
-
+            <div id="tab-profile" class="tab-content hidden-step pt-[110px] px-4 animate-fade-in-up pb-10"></div>
         </div>
 
         <div id="admin-screen" class="hidden-step">
@@ -174,14 +176,14 @@
                 <div class="grid grid-cols-2 gap-4 mb-6 mx-1">
                     <div class="card-convex p-6 flex flex-col justify-center animate-pop-in">
                         <div class="text-4xl font-black text-slate-950 tracking-tighter" id="stat-count">0</div>
-                        <div class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Записів</div>
+                        <div class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest text-center">Записів</div>
                     </div>
                     <div class="grid grid-rows-2 gap-4">
-                        <div class="card-convex p-4 rounded-3xl flex flex-col justify-center animate-pop-in [animation-delay:100ms]">
+                        <div class="card-convex p-4 rounded-3xl flex flex-col justify-center animate-pop-in">
                             <div class="text-xl font-black text-teal-600" id="stat-revenue">0 ₴</div>
                             <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Дохід</div>
                         </div>
-                        <div class="card-convex p-4 rounded-3xl flex flex-col justify-center animate-pop-in [animation-delay:200ms]">
+                        <div class="card-convex p-4 rounded-3xl flex flex-col justify-center animate-pop-in">
                             <div class="text-xl font-black text-red-500" id="stat-cancelled">0</div>
                             <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Скасовано</div>
                         </div>
@@ -242,7 +244,7 @@
                     <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-2 mb-6">Топ-майстер</p>
                     
                     <a id="mp-phone-link" href="#" class="card-convex p-4 mb-5 flex items-center gap-4 active:scale-95 transition-all">
-                        <div class="w-10 h-10 rounded-2xl bg-green-50 flex items-center justify-center border border-green-100 shrink-0 text-lg">📞</div>
+                        <div class="w-10 h-10 rounded-2xl bg-green-50 flex items-center justify-center border border-green-100 shrink-0 text-lg shadow-inner">📞</div>
                         <div>
                             <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Телефон</div>
                             <div id="mp-phone" class="text-sm font-extrabold text-slate-900 mt-0.5"></div>
@@ -256,7 +258,7 @@
                 </div>
             </div>
             <div class="absolute bottom-0 left-0 right-0 p-5 bg-white/80 backdrop-blur-xl border-t border-slate-100 pb-8 z-20">
-                <button onclick="window.appAPI.bookFromProfile()" class="w-full py-4 bg-blue-500 text-white rounded-2xl text-sm font-black shadow-lg active:scale-95 transition-all">ЗАПИСАТИСЯ ДО МАЙСТРА</button>
+                <button onclick="window.appAPI.bookFromProfile()" class="w-full py-4 bg-blue-500 text-white rounded-2xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">ЗАПИСАТИСЯ ДО МАЙСТРА</button>
             </div>
         </div>
 
