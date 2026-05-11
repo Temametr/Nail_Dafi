@@ -64,6 +64,10 @@ import {
 
 import { APP_CONFIG } from './config/appConfig.js';
 
+import {
+    openTelegramChat
+} from './utils/telegramChat.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -87,6 +91,8 @@ window.appAPI = {
     openMasterProfile,
     closeMasterProfile,
     bookFromProfile,
+    
+    openTelegramChat,
 
     openMap
 };
