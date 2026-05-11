@@ -3,7 +3,7 @@ import { state, tg } from '../../state.js';
 import {
     fetchOccupiedSlotsAPI,
     submitBookingAPI
-} from '../../api.js';
+} from '../../api/bookingsApi.js';
 
 import {
     renderServices,
