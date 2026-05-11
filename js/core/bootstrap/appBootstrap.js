@@ -1,8 +1,6 @@
-import { state, tg } from '../../state.js';
+import { state } from '../../state.js';
 
-import {
-    fetchInitialData
-} from '../../api.js';
+import { fetchInitialData } from '../../api.js';
 
 import {
     renderHomeMasters,
@@ -14,6 +12,11 @@ import {
     showNetworkError
 } from '../ui/notify.js';
 
+import {
+    getById,
+    showStepElement
+} from '../ui/dom.js';
+
 export async function loadInitialData() {
     try {
         const data = await fetchInitialData();
@@ -24,8 +27,8 @@ export async function loadInitialData() {
         if (state.user && state.user.id) {
             const masterData = state.masters.find(
                 master =>
-                    master.id.toString() ===
-                    state.user.id.toString()
+                    String(master.id).trim() ===
+                    String(state.user.id).trim()
             );
 
             if (masterData) {
@@ -34,42 +37,26 @@ export async function loadInitialData() {
             }
         }
     } catch (error) {
-        logError(
-            'Помилка завантаження даних',
-            error
-        );
-
+        logError('Помилка завантаження даних', error);
         showNetworkError();
     }
 }
 
 export async function bootstrapClient() {
-    document
-        .getElementById('client-screen')
-        .classList.remove('hidden-step');
-
-    document
-        .getElementById('client-bottom-nav')
-        .classList.remove('hidden-step');
+    showStepElement(getById('client-screen'));
+    showStepElement(getById('client-bottom-nav'));
 
     renderHomeMasters();
-
     renderServices();
 }
 
 export async function bootstrapAdmin() {
-    document
-        .getElementById('admin-screen')
-        .classList.remove('hidden-step');
-
-    document
-        .getElementById('admin-bottom-nav')
-        .classList.remove('hidden-step');
+    showStepElement(getById('admin-screen'));
+    showStepElement(getById('admin-bottom-nav'));
 }
 
 export function hideLoader() {
-    const loader =
-        document.getElementById('loader');
+    const loader = getById('loader');
 
     if (loader) {
         loader.classList.add('hidden');
