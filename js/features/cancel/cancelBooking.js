@@ -2,6 +2,8 @@ import { state, modalState } from '../../state.js';
 
 import { updateBookingStatusAPI } from '../../api/bookingsApi.js';
 
+import { runLocked } from '../../core/async/actionLock.js';
+
 import {
     showModal,
     hideModal,
@@ -39,37 +41,39 @@ export function closeCancelModal() {
 }
 
 export async function confirmCancel(onSuccess) {
-    const reason = getInputValue('cancel-reason').trim();
+    return runLocked('cancel-booking', async () => {
+        const reason = getInputValue('cancel-reason').trim();
 
-    if (!reason) {
-        return showValidationError('Будь ласка, вкажіть причину.');
-    }
-
-    try {
-        const response = await updateBookingStatusAPI(
-            modalState.currentCancelBookingId,
-            'Отменено',
-            reason
-        );
-
-        if (response.status === 'success') {
-            if (typeof onSuccess === 'function') {
-                onSuccess(state.isAdmin ? 'admin' : 'client');
-            }
-        } else {
-            showError(
-                'Помилка: ' +
-                (response.message || 'невідома помилка')
-            );
+        if (!reason) {
+            return showValidationError('Будь ласка, вкажіть причину.');
         }
-    } catch (error) {
-        logError('Помилка скасування', error);
 
-        showError(
-            error.message ||
-            'Не вдалося скасувати запис.'
-        );
-    } finally {
-        closeCancelModal();
-    }
+        try {
+            const response = await updateBookingStatusAPI(
+                modalState.currentCancelBookingId,
+                'Отменено',
+                reason
+            );
+
+            if (response.status === 'success') {
+                if (typeof onSuccess === 'function') {
+                    onSuccess(state.isAdmin ? 'admin' : 'client');
+                }
+            } else {
+                showError(
+                    'Помилка: ' +
+                    (response.message || 'невідома помилка')
+                );
+            }
+        } catch (error) {
+            logError('Помилка скасування', error);
+
+            showError(
+                error.message ||
+                'Не вдалося скасувати запис.'
+            );
+        } finally {
+            closeCancelModal();
+        }
+    });
 }
