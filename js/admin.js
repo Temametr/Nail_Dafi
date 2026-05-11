@@ -69,8 +69,8 @@ export function renderAdminBookings() {
                     </div>
                     <span class="text-[10px] font-bold px-3 py-1.5 rounded-full border shrink-0 ${statusData.color}">${statusData.text}</span>
                 </div>
-               <button
-    onclick='window.appAPI.openBookingMessages(${JSON.stringify(b)})'
+              <button
+    onclick="window.appAPI.openTelegramChat('${b.clientTelegram || ''}')"
     class="card-convex-sm shadow-convex-sm flex items-center justify-center w-full py-3 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-sm font-bold mt-5 active:scale-95 transition-all"
 >
     💬 Написати клієнту
