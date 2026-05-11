@@ -39,6 +39,16 @@ import {
 
 import { notifySuccess } from './core/telegram/haptic.js';
 
+import {
+    showModal,
+    hideModal,
+    setInputValue,
+    setText,
+    setPlaceholder,
+    getInputValue,
+    setHtml
+} from './core/ui/modalManager.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -159,9 +169,7 @@ function resetDateTimeSelection() {
     state.selectedTime = null;
     lastDateRequestId++;
 
-    const timeSlotsContainer = document.getElementById('time-slots');
-    if (timeSlotsContainer) timeSlotsContainer.innerHTML = '';
-
+    setHtml('time-slots', '');
     hideMainButton();
 }
 
@@ -261,12 +269,12 @@ async function loadBookings(role, silent = false, dash = false) {
             ? 'border-t-teal-500'
             : 'border-t-blue-500';
 
-        document.getElementById(contId).innerHTML = `
+        setHtml(contId, `
             <div class="flex flex-col items-center justify-center py-16 animate-pulse">
                 <div class="w-12 h-12 border-4 border-slate-100 rounded-full ${spinnerColor} animate-spin mb-4 shadow-sm"></div>
                 <p class="text-slate-400 font-medium text-sm">Завантажуємо дані...</p>
             </div>
-        `;
+        `);
     }
 
     try {
@@ -283,8 +291,10 @@ async function loadBookings(role, silent = false, dash = false) {
         console.error('Помилка завантаження записів:', e);
 
         if (!silent && contId) {
-            document.getElementById(contId).innerHTML =
-                '<div class="text-center py-12 text-red-500 font-medium">Помилка мережі 🌐</div>';
+            setHtml(
+                contId,
+                '<div class="text-center py-12 text-red-500 font-medium">Помилка мережі 🌐</div>'
+            );
         }
     }
 }
@@ -434,16 +444,14 @@ async function selectDate(date, btn) {
         month: 'long'
     });
 
-    const titleEl = document.getElementById('time-step-title');
-    if (titleEl) titleEl.innerText = `Час на ${dateFormatted}`;
+    setText('time-step-title', `Час на ${dateFormatted}`);
 
     showStep('step-time');
 
     const loader = document.getElementById('time-loader');
-    const slots = document.getElementById('time-slots');
 
     if (loader) loader.classList.remove('hidden');
-    if (slots) slots.innerHTML = '';
+    setHtml('time-slots', '');
 
     try {
         const dData = await fetchOccupiedSlotsAPI(
@@ -460,13 +468,11 @@ async function selectDate(date, btn) {
 
         console.error('Помилка завантаження слотів:', error);
 
-        if (slots) {
-            slots.innerHTML = `
-                <div class="col-span-4 text-center text-red-500 py-6 font-medium bg-white rounded-2xl border border-red-100 shadow-convex-sm">
-                    Не вдалося завантажити час. Спробуйте ще раз.
-                </div>
-            `;
-        }
+        setHtml('time-slots', `
+            <div class="col-span-4 text-center text-red-500 py-6 font-medium bg-white rounded-2xl border border-red-100 shadow-convex-sm">
+                Не вдалося завантажити час. Спробуйте ще раз.
+            </div>
+        `);
     } finally {
         if (requestId === lastDateRequestId && loader) {
             loader.classList.add('hidden');
@@ -633,26 +639,25 @@ function openCancelModal(id, role) {
     modalState.currentCancelBookingId = id;
     modalState.currentCancelRole = role;
 
-    const title = document.getElementById('cancel-modal-title');
-    const input = document.getElementById('cancel-reason');
+    setText('cancel-modal-title', 'Скасувати?');
 
-    title.innerText = 'Скасувати?';
-    input.placeholder = role === 'client'
-        ? 'Напишіть причину скасування для майстра...'
-        : 'Напишіть клієнту, чому візит скасовано...';
+    setPlaceholder(
+        'cancel-reason',
+        role === 'client'
+            ? 'Напишіть причину скасування для майстра...'
+            : 'Напишіть клієнту, чому візит скасовано...'
+    );
 
-    document.getElementById('cancel-modal').classList.remove('hidden');
-    document.getElementById('cancel-modal').classList.add('flex');
+    showModal('cancel-modal');
 }
 
 function closeCancelModal() {
-    document.getElementById('cancel-modal').classList.add('hidden');
-    document.getElementById('cancel-modal').classList.remove('flex');
-    document.getElementById('cancel-reason').value = '';
+    hideModal('cancel-modal');
+    setInputValue('cancel-reason', '');
 }
 
 async function confirmCancel() {
-    const reason = document.getElementById('cancel-reason').value.trim();
+    const reason = getInputValue('cancel-reason').trim();
 
     if (!reason) {
         return tg.showAlert('Будь ласка, вкажіть причину.');
