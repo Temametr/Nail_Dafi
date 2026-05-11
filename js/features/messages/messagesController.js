@@ -1,4 +1,4 @@
-import { tg } from '../../state.js';
+import { state, tg } from '../../state.js';
 
 import {
     fetchBookingMessages,
