@@ -8,6 +8,10 @@ import {
 } from '../../client.js';
 
 import {
+    loadChats
+} from '../chat/chatController.js';
+
+import {
     renderAdminBookings
 } from '../../admin.js';
 
@@ -76,9 +80,11 @@ export function switchTab({
             });
 
         } else if (tabId === 'messages') {
-            renderMessagesTab();
 
-        } else if (tabId === 'profile') {
+    renderMessagesTab();
+
+    loadChats('client');
+} else if (tabId === 'profile') {
             renderUserProfile();
         }
 
