@@ -287,9 +287,51 @@ export function renderMessagesList() {
 
     if (!container) return;
 
-    if (
-        !messagesState.messages.length
-    ) {
+    if (messagesState.isLoading) {
+
+        container.innerHTML = `
+            <div class="space-y-4 animate-pulse">
+
+                <div class="flex justify-start">
+                    <div class="
+                        w-40
+                        h-14
+                        rounded-3xl
+                        rounded-bl-lg
+                        bg-white
+                        border
+                        border-slate-100
+                    "></div>
+                </div>
+
+                <div class="flex justify-end">
+                    <div class="
+                        w-52
+                        h-16
+                        rounded-3xl
+                        rounded-br-lg
+                        bg-blue-200
+                    "></div>
+                </div>
+
+                <div class="flex justify-start">
+                    <div class="
+                        w-32
+                        h-12
+                        rounded-3xl
+                        rounded-bl-lg
+                        bg-white
+                        border
+                        border-slate-100
+                    "></div>
+                </div>
+            </div>
+        `;
+
+        return;
+    }
+
+    if (!messagesState.messages.length) {
 
         container.innerHTML = `
             <div class="
