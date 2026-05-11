@@ -110,40 +110,72 @@ export function startReschedule(id) {
 
     state.editingBookingId = id;
 
-    const bookingServiceName = String(booking.service || '').trim().toLowerCase();
-    const bookingMasterId = String(booking.masterId || '').trim();
+    const bookingServiceName = String(
+        booking.service || ''
+    ).trim().toLowerCase();
+
+    const bookingMasterId = String(
+        booking.masterId || ''
+    ).trim();
 
     state.selectedService = state.services.find(service =>
-        String(service.name || '').trim().toLowerCase() === bookingServiceName
+        String(service.name || '')
+            .trim()
+            .toLowerCase() === bookingServiceName
     );
 
     state.selectedMaster = state.masters.find(master =>
         String(master.id || '').trim() === bookingMasterId
     );
 
-    if (!state.selectedService) {
-        const fallbackDuration = Number(booking.duration) || 60;
+    /*
+    ==========================================
+    SERVICE FALLBACK
+    ==========================================
+    */
 
+    if (!state.selectedService) {
         state.selectedService = {
-            id: `legacy-${booking.id}`,
+            id: `legacy-service-${booking.id}`,
             name: booking.service || 'Послуга',
-            price: booking.price || '',
-            duration: fallbackDuration
+            duration: Number(booking.duration) || 60,
+            price: booking.price || ''
         };
 
-        console.warn('Service fallback used for reschedule:', {
-            booking,
-            fallbackService: state.selectedService
-        });
+        console.warn(
+            'Fallback service used:',
+            state.selectedService
+        );
     }
 
-    if (!state.selectedMaster) {
-        console.error('Master not found for reschedule:', {
-            bookingMasterId,
-            masters: state.masters
-        });
+    /*
+    ==========================================
+    MASTER FALLBACK
+    ==========================================
+    */
 
-        return tg.showAlert('Не вдалося знайти майстра для цього запису.');
+    if (!state.selectedMaster) {
+        state.selectedMaster = state.masters[0];
+
+        console.warn(
+            'Fallback master used:',
+            {
+                booking,
+                selectedMaster: state.selectedMaster
+            }
+        );
+    }
+
+    /*
+    ==========================================
+    FINAL VALIDATION
+    ==========================================
+    */
+
+    if (!state.selectedMaster) {
+        return tg.showAlert(
+            'Не вдалося знайти майстра.'
+        );
     }
 
     isSubmittingBooking = false;
@@ -158,19 +190,34 @@ export function startReschedule(id) {
         .getElementById('tab-booking-flow')
         .classList.remove('hidden-step');
 
-    ['home', 'bookings', 'messages', 'profile'].forEach(nav => {
-        const btn = document.getElementById(`client-nav-${nav}`);
+    ['home', 'bookings', 'messages', 'profile']
+        .forEach(nav => {
+            const btn = document.getElementById(
+                `client-nav-${nav}`
+            );
 
-        if (!btn) return;
+            if (!btn) return;
 
-        if (nav === 'bookings') {
-            btn.classList.remove('text-slate-400');
-            btn.classList.add('text-blue-500', 'bg-blue-50');
-        } else {
-            btn.classList.remove('text-blue-500', 'bg-blue-50');
-            btn.classList.add('text-slate-400');
-        }
-    });
+            if (nav === 'bookings') {
+                btn.classList.remove(
+                    'text-slate-400'
+                );
+
+                btn.classList.add(
+                    'text-blue-500',
+                    'bg-blue-50'
+                );
+            } else {
+                btn.classList.remove(
+                    'text-blue-500',
+                    'bg-blue-50'
+                );
+
+                btn.classList.add(
+                    'text-slate-400'
+                );
+            }
+        });
 
     renderCalendar();
 
