@@ -107,7 +107,7 @@ window.appAPI = {
     closeMasterProfile,
     bookFromProfile,
     
-    openChat,
+    openChat: openChatForCurrentUser,
     openChatFromBooking,
     submitChatMessage,
     closeActiveChat,
