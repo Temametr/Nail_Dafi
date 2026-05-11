@@ -64,6 +64,11 @@ import {
 
 import { APP_CONFIG } from './config/appConfig.js';
 
+import {
+    openBookingMessages,
+    closeBookingMessages
+} from './features/messages/messagesController.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -87,6 +92,9 @@ window.appAPI = {
     openMasterProfile,
     closeMasterProfile,
     bookFromProfile,
+    
+    openBookingMessages,
+    closeBookingMessages,
 
     openMap
 };
