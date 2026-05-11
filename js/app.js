@@ -1,20 +1,16 @@
-import { state, tg, modalState, polling } from './state.js';
-
-import {
-    fetchInitialData,
-    fetchBookings,
-    updateBookingStatusAPI
-} from './api.js';
+import { state, tg } from './state.js';
 
 import {
     renderHomeMasters,
-    renderServices,
     renderClientBookings,
     renderUserProfile,
     renderMessagesTab
 } from './client.js';
 
-import { renderAdminStats, renderAdminBookings } from './admin.js';
+import {
+    renderAdminStats,
+    renderAdminBookings
+} from './admin.js';
 
 import {
     startClientBookingFlow,
@@ -24,7 +20,8 @@ import {
     selectDate,
     selectTime,
     resetDateTimeSelection,
-    showStep
+    showStep,
+    setBookingSuccessHandler
 } from './features/booking/bookingFlow.js';
 
 import {
@@ -32,20 +29,9 @@ import {
 } from './core/telegram/mainButton.js';
 
 import {
-    showBackButton,
     hideBackButton,
     setBackButtonHandler
 } from './core/telegram/backButton.js';
-
-import {
-    showModal,
-    hideModal,
-    setInputValue,
-    setText,
-    setPlaceholder,
-    getInputValue,
-    setHtml
-} from './core/ui/modalManager.js';
 
 import {
     openMasterProfile,
@@ -62,19 +48,6 @@ import {
     startPolling as startPollingManager,
     stopPolling
 } from './core/polling/pollingManager.js';
-
-import {
-    renderLoading,
-    renderError
-} from './core/ui/loadingManager.js';
-
-import {
-    showError,
-    showSuccess,
-    logError,
-    showNetworkError,
-    showValidationError
-} from './core/ui/notify.js';
 
 import {
     openCancelModal,
@@ -100,26 +73,39 @@ import {
 window.appAPI = {
     switchTab,
     switchBookingTab,
+
     startClientBookingFlow,
     startReschedule,
+
     selectService,
     selectMaster,
     selectDate,
     selectTime,
+
     changeBookingStatus,
+
     openCancelModal,
     closeCancelModal,
     confirmCancel,
+
     renderAdminStats,
+
     openMasterProfile,
     closeMasterProfile,
     bookFromProfile,
+
     openMap
 };
 
 window.addEventListener('DOMContentLoaded', async () => {
     tg.MainButton.color = '#3b82f6';
+
     setBackButtonHandler(handleBack);
+
+    setBookingSuccessHandler(() => {
+        switchTab('client', 'bookings');
+    });
+
     await loadApp();
 });
 
@@ -138,55 +124,64 @@ async function loadApp() {
 }
 
 function handleBack() {
+    const cancelModal = document.getElementById('cancel-modal');
+
     if (
-        !document
-            .getElementById('cancel-modal')
-            .classList
-            .contains('hidden')
+        cancelModal &&
+        !cancelModal.classList.contains('hidden')
     ) {
         closeCancelModal();
         return;
     }
 
+    const profileModal =
+        document.getElementById('master-profile-modal');
+
     if (
-        !document
-            .getElementById('master-profile-modal')
-            .classList
-            .contains('hidden')
+        profileModal &&
+        !profileModal.classList.contains('hidden')
     ) {
         closeMasterProfile();
         return;
     }
 
+    const bookingFlow =
+        document.getElementById('tab-booking-flow');
+
     if (
-        !document
-            .getElementById('tab-booking-flow')
-            .classList
-            .contains('hidden-step')
+        bookingFlow &&
+        !bookingFlow.classList.contains('hidden-step')
     ) {
         if (state.editingBookingId) {
             state.editingBookingId = null;
+
             switchTab('client', 'bookings');
+
             return;
         }
 
+        const timeStep =
+            document.getElementById('step-time');
+
         if (
-            !document
-                .getElementById('step-time')
-                .classList
-                .contains('hidden-step')
+            timeStep &&
+            !timeStep.classList.contains('hidden-step')
         ) {
             state.selectedTime = null;
+
             hideMainButton();
+
             showStep('step-date');
+
             return;
         }
 
+        const dateStep =
+            document.getElementById('step-date');
+
         if (
-            !document
-                .getElementById('step-date')
-                .classList
-                .contains('hidden-step')
+            dateStep &&
+            !dateStep.classList.contains('hidden-step')
         ) {
             resetDateTimeSelection();
 
@@ -199,18 +194,21 @@ function handleBack() {
             return;
         }
 
+        const masterStep =
+            document.getElementById('step-master');
+
         if (
-            !document
-                .getElementById('step-master')
-                .classList
-                .contains('hidden-step')
+            masterStep &&
+            !masterStep.classList.contains('hidden-step')
         ) {
             showStep('step-booking');
+
             return;
         }
 
         if (state.viewedMasterId) {
             switchTab('client', 'home');
+
             openMasterProfile(state.viewedMasterId);
         } else {
             switchTab('client', 'bookings');
@@ -219,13 +217,25 @@ function handleBack() {
 }
 
 function switchTab(role, tabId) {
-    const screenPrefix = role === 'admin' ? 'admin-' : '';
+    const screenPrefix =
+        role === 'admin'
+            ? 'admin-'
+            : '';
 
     document
-        .querySelectorAll(role === 'admin' ? '.admin-tab-content' : '.tab-content')
-        .forEach(element => element.classList.add('hidden-step'));
+        .querySelectorAll(
+            role === 'admin'
+                ? '.admin-tab-content'
+                : '.tab-content'
+        )
+        .forEach(element => {
+            element.classList.add('hidden-step');
+        });
 
-    const target = document.getElementById(`${screenPrefix}tab-${tabId}`);
+    const target =
+        document.getElementById(
+            `${screenPrefix}tab-${tabId}`
+        );
 
     if (target) {
         target.classList.remove('hidden-step');
@@ -243,25 +253,40 @@ function switchTab(role, tabId) {
     state.editingBookingId = null;
 
     if (role === 'client') {
-    if (tabId === 'home') {
-        renderHomeMasters();
-    } else if (tabId === 'bookings') {
-        loadBookings('client');
-        startPollingManager(() => loadBookings('client', true));
-    } else if (tabId === 'messages') {
-        renderMessagesTab();
-    } else if (tabId === 'profile') {
-        renderUserProfile();
+        if (tabId === 'home') {
+            renderHomeMasters();
+
+        } else if (tabId === 'bookings') {
+            loadBookings('client');
+
+            startPollingManager(() => {
+                loadBookings('client', true);
+            });
+
+        } else if (tabId === 'messages') {
+            renderMessagesTab();
+
+        } else if (tabId === 'profile') {
+            renderUserProfile();
+        }
+
+        return;
     }
-} else {
+
     if (tabId === 'home') {
         loadBookings('admin', false, true);
-        startPollingManager(() => loadBookings('admin', true, true));
+
+        startPollingManager(() => {
+            loadBookings('admin', true, true);
+        });
+
     } else if (tabId === 'bookings') {
         loadBookings('admin');
-        startPollingManager(() => loadBookings('admin', true));
+
+        startPollingManager(() => {
+            loadBookings('admin', true);
+        });
     }
-}
 }
 
 function openMap() {
@@ -281,16 +306,27 @@ function confirmCancel() {
 }
 
 function changeBookingStatus(id, status) {
-    return changeBookingStatusAction(id, status, () => {
-        loadBookings('admin');
-    });
+    return changeBookingStatusAction(
+        id,
+        status,
+        () => {
+            loadBookings('admin');
+        }
+    );
 }
 
 function switchBookingTab(filter, role) {
     state.currentBookingFilter = filter;
 
-    const activeButton = document.getElementById(`${role}-subtab-active`);
-    const cancelledButton = document.getElementById(`${role}-subtab-cancelled`);
+    const activeButton =
+        document.getElementById(
+            `${role}-subtab-active`
+        );
+
+    const cancelledButton =
+        document.getElementById(
+            `${role}-subtab-cancelled`
+        );
 
     if (filter === 'active') {
         activeButton.className =
@@ -298,6 +334,7 @@ function switchBookingTab(filter, role) {
 
         cancelledButton.className =
             'flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100';
+
     } else {
         cancelledButton.className =
             'flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300';
