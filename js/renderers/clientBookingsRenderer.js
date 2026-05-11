@@ -2,6 +2,7 @@ import { state } from '../state.js';
 import { formatDisplayTime, getStatusData, sanitizeHtml } from '../utils.js';
 
 const STATUS_PENDING = 'В очереди';
+const STATUS_CONFIRMED = 'Подтверждено';
 const STATUS_DONE = 'Выполнено';
 const STATUS_CANCELLED = 'Отменено';
 
@@ -12,7 +13,7 @@ function getFilteredBookings() {
         }
 
         if (state.currentBookingFilter === 'confirmed') {
-            return booking.status === STATUS_DONE;
+            return booking.status === STATUS_CONFIRMED;
         }
 
         if (state.currentBookingFilter === 'cancelled') {
@@ -23,7 +24,7 @@ function getFilteredBookings() {
             return booking.status === STATUS_DONE;
         }
 
-        return booking.status === STATUS_DONE;
+        return booking.status === STATUS_CONFIRMED;
     });
 }
 
@@ -60,8 +61,10 @@ export function renderClientBookings() {
 
     container.innerHTML = filtered.map((booking, index) => {
         const isPending = booking.status === STATUS_PENDING;
-        const isConfirmed = booking.status === STATUS_DONE;
+        const isConfirmed = booking.status === STATUS_CONFIRMED;
+        const isDone = booking.status === STATUS_DONE;
         const isCancelled = booking.status === STATUS_CANCELLED;
+
         const statusData = getStatusData(booking.status);
 
         const master = state.masters.find(
@@ -118,7 +121,7 @@ export function renderClientBookings() {
                 }
 
                 ${
-                    !isCancelled
+                    !isCancelled && !isDone
                         ? `
                             <div class="mt-4 pt-4 border-t border-slate-100 space-y-3.5">
                                 ${
@@ -130,26 +133,14 @@ export function renderClientBookings() {
                                             >
                                                 Написати майстру 💬
                                             </button>
-                                        `
-                                        : ''
-                                }
 
-                                ${
-                                    isPending || isConfirmed
-                                        ? `
                                             <div class="flex gap-3">
-                                                ${
-                                                    isConfirmed
-                                                        ? `
-                                                            <button
-                                                                onclick="window.appAPI.startReschedule('${booking.id}')"
-                                                                class="card-convex-sm flex-1 py-3 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200"
-                                                            >
-                                                                Перенести
-                                                            </button>
-                                                        `
-                                                        : ''
-                                                }
+                                                <button
+                                                    onclick="window.appAPI.startReschedule('${booking.id}')"
+                                                    class="card-convex-sm flex-1 py-3 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200"
+                                                >
+                                                    Перенести
+                                                </button>
 
                                                 <button
                                                     onclick="window.appAPI.openCancelModal('${booking.id}', 'client')"
@@ -158,6 +149,19 @@ export function renderClientBookings() {
                                                     Скасувати
                                                 </button>
                                             </div>
+                                        `
+                                        : ''
+                                }
+
+                                ${
+                                    isPending
+                                        ? `
+                                            <button
+                                                onclick="window.appAPI.openCancelModal('${booking.id}', 'client')"
+                                                class="card-convex-sm w-full py-3.5 bg-white text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200"
+                                            >
+                                                Скасувати візит
+                                            </button>
                                         `
                                         : ''
                                 }
