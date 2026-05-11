@@ -82,7 +82,7 @@
                 <div class="mt-8 space-y-4 px-1 pb-6">
                     <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-4 text-center">Контакти</h3>
                     
-                    <div onclick="window.appAPI.openMapSelection()" class="card-convex p-1 overflow-hidden animate-pop-in cursor-pointer active:scale-[0.98] transition-all">
+                    <div onclick="window.appAPI.openMap()" class="card-convex p-1 overflow-hidden animate-pop-in cursor-pointer active:scale-[0.98] transition-all">
                         <div class="p-4 flex items-center gap-4">
                             <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0 border border-rose-100 text-xl shadow-inner">📍</div>
                             <div>
@@ -112,12 +112,12 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <a href="tel:+380957772818" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center active:scale-95 transition-all">
+                        <a href="tel:+380957772818" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center animate-pop-in active:scale-95 transition-all" style="animation-delay: 200ms">
                             <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center border border-green-100 text-lg">📞</div>
                             <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Телефон</div>
                             <div class="text-xs font-extrabold text-slate-900 mt-0.5">095 777 28 18</div>
                         </a>
-                        <a href="https://instagram.com/nailbar.dafi" target="_blank" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center active:scale-95 transition-all">
+                        <a href="https://instagram.com/nailbar.dafi" target="_blank" class="card-convex p-4 flex flex-col items-center justify-center gap-2 text-center animate-pop-in active:scale-95 transition-all" style="animation-delay: 250ms">
                             <div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center border border-pink-100 text-lg">📸</div>
                             <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Instagram</div>
                             <div class="text-xs font-extrabold text-slate-900 mt-0.5">nailbar.dafi</div>
@@ -147,10 +147,12 @@
             </div>
 
             <div id="tab-bookings" class="tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
-                <button onclick="window.appAPI.startClientBookingFlow()" class="w-full mb-6 py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg active:scale-95 transition-all">СТВОРИТИ НОВИЙ ВІЗИТ</button>
-                <div class="flex pb-4 gap-2 px-1">
-                    <button onclick="window.appAPI.switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all">Підтверджені</button>
-                    <button onclick="window.appAPI.switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl border border-rose-100 transition-all">Скасовані</button>
+                <div class="mb-5 px-1 mt-2">
+                    <button onclick="window.appAPI.startClientBookingFlow()" class="w-full py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">СТВОРИТИ НОВИЙ ВІЗИТ</button>
+                </div>
+                <div class="flex pb-4 gap-2 px-1 mt-2">
+                    <button onclick="window.appAPI.switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">Підтверджені</button>
+                    <button onclick="window.appAPI.switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
                 </div>
                 <div id="my-bookings-list" class="space-y-5 px-1"></div>
             </div>
