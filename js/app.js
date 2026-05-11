@@ -1,6 +1,6 @@
 import { state, tg, modalState, polling } from './state.js';
 import { fetchInitialData, fetchBookings, updateBookingStatusAPI, submitBookingAPI, fetchOccupiedSlotsAPI } from './api.js';
-import { renderHomeMasters, renderServices, renderMasters, renderCalendar, renderClientBookings, renderTimeSlots, renderUserProfile } from './client.js';
+import { renderHomeMasters, renderServices, renderMasters, renderCalendar, renderClientBookings, renderTimeSlots, renderUserProfile, renderMessagesTab } from './client.js';
 import { renderAdminStats, renderAdminBookings } from './admin.js';
 
 window.appAPI = {
@@ -100,7 +100,7 @@ function switchTab(role, tabId) {
     if (target) target.classList.remove('hidden-step');
 
     const activeColor = role === 'admin' ? 'text-teal-600' : 'text-blue-500';
-    ['home', 'bookings', 'profile'].forEach(nav => {
+    ['home', 'bookings', 'messages', 'profile'].forEach(nav => {
         const btn = document.getElementById(`${role}-nav-${nav}`);
         if (btn) {
             if (nav === tabId) { btn.classList.remove('text-slate-400'); btn.classList.add(activeColor, 'bg-white/50'); }
@@ -117,6 +117,7 @@ function switchTab(role, tabId) {
     if (role === 'client') {
         if (tabId === 'home') renderHomeMasters();
         else if (tabId === 'bookings') { loadBookings('client'); startPolling('client'); }
+        else if (tabId === 'messages') renderMessagesTab();
         else if (tabId === 'profile') renderUserProfile(); 
     } else {
         if (tabId === 'home') { loadBookings('admin', false, true); startPolling('admin', true); }
@@ -130,6 +131,7 @@ function updateHeaderTitle(role, tabId) {
     if (role === 'client') {
         if (tabId === 'home') title.innerHTML = `Привіт, <span class="text-blue-600">${state.user.first_name || 'Гість'}</span> 👋`;
         else if (tabId === 'bookings') title.innerHTML = `Твої візити 💅`;
+        else if (tabId === 'messages') title.innerHTML = `Мої чати 💬`;
         else title.innerHTML = `Мій кабінет ⚙️`;
     } else {
         const cleanName = state.adminMasterInfo.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
@@ -254,18 +256,29 @@ function selectTime(t, btn) {
     tg.MainButton.onClick(currentSubmitHandler);
 }
 
+// ✅ ПРАВКА 1: Безпечна обробка номера телефону (щоб уникнути помилки .replace)
 function openMasterProfile(id) {
-    state.viewedMasterId = id;
-    const m = state.masters.find(x => x.id.toString() === id.toString());
-    const originalIdx = state.masters.indexOf(m);
-    document.getElementById('mp-image').src = originalIdx === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
-    document.getElementById('mp-name').innerText = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
-    document.getElementById('mp-phone').innerText = m.phone || "Не вказано";
-    document.getElementById('mp-phone-link').href = m.phone ? `tel:${m.phone.replace(/[^0-9+]/g, '')}` : "#";
-    document.getElementById('mp-description').innerText = m.about || "Найкращий майстер нашого салону!";
-    document.getElementById('master-profile-modal').classList.remove('hidden');
-    document.getElementById('master-profile-modal').classList.add('flex');
-    tg.BackButton.show();
+    try {
+        state.viewedMasterId = id;
+        const m = state.masters.find(x => x.id.toString() === id.toString());
+        if (!m) return;
+        
+        const originalIdx = state.masters.indexOf(m);
+        document.getElementById('mp-image').src = originalIdx === 0 ? 'media/IMG_0222.jpeg' : 'media/IMG_0223.jpeg';
+        document.getElementById('mp-name').innerText = m.name.replace(/^(Майстер|Мастер)\s+/i, '').trim();
+        
+        // Гарантуємо, що телефон - це рядок (string)
+        const phoneStr = m.phone ? String(m.phone) : null;
+        document.getElementById('mp-phone').innerText = phoneStr || "Не вказано";
+        document.getElementById('mp-phone-link').href = phoneStr ? `tel:${phoneStr.replace(/[^0-9+]/g, '')}` : "#";
+        
+        document.getElementById('mp-description').innerText = m.about || "Найкращий майстер нашого салону!";
+        document.getElementById('master-profile-modal').classList.remove('hidden');
+        document.getElementById('master-profile-modal').classList.add('flex');
+        tg.BackButton.show();
+    } catch(e) {
+        console.error("Помилка відкриття профілю майстра:", e);
+    }
 }
 
 function closeMasterProfile() {
@@ -278,8 +291,7 @@ function bookFromProfile() {
     state.selectedMaster = state.masters.find(x => x.id.toString() === state.viewedMasterId.toString());
     resetDateTimeSelection();
     document.getElementById('master-profile-modal').classList.add('hidden');
-    document.getElementById('master-profile-modal').classList.remove('flex');
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
+    document.getElementById('tab-home').classList.add('hidden-step');
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
     
     ['home', 'bookings', 'profile'].forEach(nav => {
@@ -293,12 +305,11 @@ function bookFromProfile() {
     renderServices(); showStep('step-booking'); tg.BackButton.show();
 }
 
-// ✅ ОНОВЛЕНО: Надійне посилання Google Maps з новими координатами
+// ✅ ПРАВКА 2: Правильне та універсальне посилання на Google Maps
 function openMap() {
     const lat = 50.0273880;
     const lng = 36.3314636;
-    // Офіційний формат Google Maps URL, який автоматично прокидається в додаток на смартфоні
-    const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    const url = `https://www.google.com/maps?q=${lat},${lng}`;
     tg.openLink(url);
 }
 
