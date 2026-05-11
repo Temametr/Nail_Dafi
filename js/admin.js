@@ -69,7 +69,12 @@ export function renderAdminBookings() {
                     </div>
                     <span class="text-[10px] font-bold px-3 py-1.5 rounded-full border shrink-0 ${statusData.color}">${statusData.text}</span>
                 </div>
-                <a href="tg://user?id=${b.clientId}" class="card-convex-sm shadow-convex-sm flex items-center justify-center w-full py-3 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-sm font-bold mt-5 active:scale-95 transition-all">💬 Написать клиенту</a>
+               <button
+    onclick="window.appAPI.openChatFromBooking('${b.id}')"
+    class="card-convex-sm shadow-convex-sm flex items-center justify-center w-full py-3 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-sm font-bold mt-5 active:scale-95 transition-all"
+>
+    💬 Написати клієнту
+</button>
                 ${b.cancelReason ? `<div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">Причина: ${b.cancelReason}</div>` : ''}
                 ${isPending ? `<div class="flex gap-3 mt-4 pt-4 border-t border-slate-100">
                     <button onclick="window.appAPI.changeBookingStatus('${b.id}', 'Выполнено')" class="card-convex-sm flex-1 py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all">Принять</button>
