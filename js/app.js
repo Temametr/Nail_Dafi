@@ -68,6 +68,14 @@ import {
     renderError
 } from './core/ui/loadingManager.js';
 
+import {
+    showError,
+    showSuccess,
+    logError,
+    showNetworkError,
+    showValidationError
+} from './core/ui/notify.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -112,8 +120,8 @@ async function loadInitialData() {
             }
         }
     } catch (error) {
-        console.error('Помилка завантаження даних:', error);
-        tg.showAlert('Помилка мережі або завантаження даних.');
+        logError('Помилка завантаження даних', error);
+showNetworkError();
     }
 }
 
@@ -306,7 +314,7 @@ async function loadBookings(role, silent = false, dash = false) {
             renderClientBookings();
         }
     } catch (error) {
-        console.error('Помилка завантаження записів:', error);
+        logError('Помилка завантаження записів', error);
 
         if (!silent && contId) {
             renderError(contId);
@@ -349,7 +357,7 @@ async function confirmCancel() {
     const reason = getInputValue('cancel-reason').trim();
 
     if (!reason) {
-        return tg.showAlert('Будь ласка, вкажіть причину.');
+        return showValidationError('Будь ласка, вкажіть причину.');
     }
 
     try {
@@ -368,7 +376,7 @@ async function confirmCancel() {
             );
         }
     } catch (error) {
-        console.error('Помилка скасування:', error);
+        logError('Помилка скасування', error);
 
         tg.showAlert(
             error.message ||
@@ -392,7 +400,7 @@ async function changeBookingStatus(id, status) {
             );
         }
     } catch (error) {
-        console.error('Помилка зміни статусу:', error);
+        logError('Помилка зміни статусу', error);
 
         tg.showAlert(
             error.message ||
