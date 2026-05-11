@@ -76,6 +76,12 @@ import {
     showValidationError
 } from './core/ui/notify.js';
 
+import {
+    openCancelModal,
+    closeCancelModal,
+    confirmCancel as confirmCancelAction
+} from './features/cancel/cancelBooking.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -330,61 +336,6 @@ function openMap() {
         `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
     tg.openLink(url);
-}
-
-function openCancelModal(id, role) {
-    modalState.currentCancelBookingId = id;
-    modalState.currentCancelRole = role;
-
-    setText('cancel-modal-title', 'Скасувати?');
-
-    setPlaceholder(
-        'cancel-reason',
-        role === 'client'
-            ? 'Напишіть причину скасування для майстра...'
-            : 'Напишіть клієнту, чому візит скасовано...'
-    );
-
-    showModal('cancel-modal');
-}
-
-function closeCancelModal() {
-    hideModal('cancel-modal');
-    setInputValue('cancel-reason', '');
-}
-
-async function confirmCancel() {
-    const reason = getInputValue('cancel-reason').trim();
-
-    if (!reason) {
-        return showValidationError('Будь ласка, вкажіть причину.');
-    }
-
-    try {
-        const response = await updateBookingStatusAPI(
-            modalState.currentCancelBookingId,
-            'Отменено',
-            reason
-        );
-
-        if (response.status === 'success') {
-            loadBookings(state.isAdmin ? 'admin' : 'client');
-        } else {
-            tg.showAlert(
-                'Помилка: ' +
-                (response.message || 'невідома помилка')
-            );
-        }
-    } catch (error) {
-        logError('Помилка скасування', error);
-
-        tg.showAlert(
-            error.message ||
-            'Не вдалося скасувати запис.'
-        );
-    } finally {
-        closeCancelModal();
-    }
 }
 
 async function changeBookingStatus(id, status) {
