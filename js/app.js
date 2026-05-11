@@ -25,7 +25,7 @@ async function loadInitialData() {
         state.services = data.services;
         state.masters = data.masters;
         
-        // Защита: проверяем, что state.user существует
+        // Критичний захист: якщо state.user не встиг завантажитись з Telegram
         if (state.user && state.user.id) {
             const masterData = state.masters.find(m => m.id.toString() === state.user.id.toString());
             if (masterData) { 
@@ -41,7 +41,9 @@ async function loadInitialData() {
 
 async function loadApp() {
     await loadInitialData();
-    document.getElementById('loader').classList.add('hidden');
+    
+    const loader = document.getElementById('loader');
+    if (loader) loader.classList.add('hidden');
     
     if (state.isAdmin) {
         document.getElementById('admin-screen').classList.remove('hidden-step');
@@ -135,7 +137,6 @@ function updateHeaderTitle(role, tabId) {
     const title = document.getElementById(role === 'client' ? 'client-header-title' : 'admin-header-title');
     if (!title) return;
     
-    // Защита: проверяем наличие state.user перед обращением
     const firstName = (state.user && state.user.first_name) ? state.user.first_name : 'Гість';
 
     if (role === 'client') {
@@ -229,6 +230,7 @@ function selectMaster(id) {
 
 async function selectDate(date, btn) {
     state.selectedDate = date; state.selectedTime = null; tg.MainButton.hide();
+    
     document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected-item', 'shadow-blue-300', 'border-transparent'));
     btn.classList.add('selected-item', 'shadow-blue-300', 'border-transparent');
     
@@ -238,8 +240,10 @@ async function selectDate(date, btn) {
     if(titleEl) titleEl.innerText = `Час на ${dateFormatted}`;
 
     showStep('step-time'); 
+    
     document.getElementById('time-loader').classList.remove('hidden');
     document.getElementById('time-slots').innerHTML = '';
+    
     const dData = await fetchOccupiedSlotsAPI(date, state.selectedMaster.id, state.editingBookingId);
     renderTimeSlots(dData.occupiedSlots || []);
     document.getElementById('time-loader').classList.add('hidden');
@@ -254,10 +258,10 @@ function selectTime(t, btn) {
     tg.MainButton.show();
     
     if (currentSubmitHandler) { tg.MainButton.offClick(currentSubmitHandler); }
+    
     currentSubmitHandler = async () => {
         tg.MainButton.showProgress();
         
-        // Защита для имени пользователя
         const clientName = (state.user && state.user.first_name) ? state.user.first_name : 'Гість';
         const clientId = (state.user && state.user.id) ? state.user.id.toString() : '000000';
 
@@ -265,13 +269,14 @@ function selectTime(t, btn) {
         if (r.status === 'success') {
             tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert(state.editingBookingId ? "Запит на перенесення надіслано!" : "Ура! Ти записалася на манікюр 🎉", () => switchTab('client', 'bookings'));
-        } else { tg.showAlert('Помилка: ' + r.message); }
+        } else { 
+            tg.showAlert('Помилка: ' + r.message); 
+        }
         tg.MainButton.hideProgress();
     };
     tg.MainButton.onClick(currentSubmitHandler);
 }
 
-// Защита для профиля
 function openMasterProfile(id) {
     try {
         state.viewedMasterId = id;
@@ -319,7 +324,6 @@ function bookFromProfile() {
     renderServices(); showStep('step-booking'); tg.BackButton.show();
 }
 
-// 100% Рабочая ссылка маршрута
 function openMap() {
     const lat = 50.027388;
     const lng = 36.3314636;
