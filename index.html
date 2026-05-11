@@ -154,8 +154,6 @@
                 </div>
                 <div id="my-bookings-list" class="space-y-5 px-1"></div>
             </div>
-
-            <div id="tab-messages" class="tab-content hidden-step pt-[110px] px-4 animate-fade-in-up pb-10"></div>
             <div id="tab-profile" class="tab-content hidden-step pt-[110px] px-4 animate-fade-in-up pb-10"></div>
         </div>
 
@@ -211,22 +209,7 @@
                     <svg class="w-6 h-6 mb-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg>
                     <span class="text-[9px] font-bold uppercase">Візити</span>
                 </button>
-                <button onclick="window.appAPI.switchTab('client', 'messages')" id="client-nav-messages" class="relative flex flex-col items-center justify-center p-2 text-slate-400 w-16 rounded-xl transition-all">
-
-    <span
-        id="client-nav-messages-badge"
-        class="hidden absolute -top-1 right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-white"
-    ></span>
-
-    <svg class="w-6 h-6 mb-0.5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-    </svg>
-
-    <span class="text-[9px] font-bold uppercase">
-        Чати
-    </span>
-
-</button>
+               
                 <button onclick="window.appAPI.switchTab('client', 'profile')" id="client-nav-profile" class="flex flex-col items-center justify-center p-2 text-slate-400 w-16 rounded-xl transition-all">
                     <svg class="w-6 h-6 mb-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                     <span class="text-[9px] font-bold uppercase">Профіль</span>
