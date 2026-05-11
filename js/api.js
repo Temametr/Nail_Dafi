@@ -1,39 +1,66 @@
-// js/api.js
 import { API_URL, state } from './state.js';
+import { requestJson } from './core/httpClient.js';
 
-// Отримати початкові дані (послуги та майстрів)
+function getCurrentUserId() {
+    return state.user && state.user.id
+        ? String(state.user.id)
+        : '';
+}
+
+function assertUserId() {
+    const userId = getCurrentUserId();
+
+    if (!userId) {
+        throw new Error('Telegram user не визначений. Відкрийте додаток через Telegram.');
+    }
+
+    return userId;
+}
+
 export async function fetchInitialData() {
-    const response = await fetch(`${API_URL}?action=getInitData`);
-    return await response.json();
+    return await requestJson(API_URL, {
+        params: {
+            action: 'getInitData'
+        }
+    });
 }
 
-// Отримати записи (візити)
 export async function fetchBookings(role) {
-    const response = await fetch(`${API_URL}?action=getBookings&userId=${state.user.id}&role=${role}`);
-    return await response.json();
-}
-
-// Оновити статус запису (підтвердити / скасувати)
-export async function updateBookingStatusAPI(bookingId, newStatus, reason = "") {
-    const response = await fetch(API_URL, { 
-        method: 'POST', 
-        body: JSON.stringify({ action: 'updateStatus', bookingId, newStatus, reason }) 
+    return await requestJson(API_URL, {
+        params: {
+            action: 'getBookings',
+            userId: assertUserId(),
+            role
+        }
     });
-    return await response.json();
 }
 
-// Створити новий запис або змінити дату (reschedule)
+export async function updateBookingStatusAPI(bookingId, newStatus, reason = '') {
+    return await requestJson(API_URL, {
+        method: 'POST',
+        body: {
+            action: 'updateStatus',
+            bookingId,
+            newStatus,
+            reason
+        }
+    });
+}
+
 export async function submitBookingAPI(bookingData) {
-    const response = await fetch(API_URL, { 
-        method: 'POST', 
-        body: JSON.stringify(bookingData) 
+    return await requestJson(API_URL, {
+        method: 'POST',
+        body: bookingData
     });
-    return await response.json();
 }
 
-// Отримати зайнятий час майстра на вибрану дату
 export async function fetchOccupiedSlotsAPI(dateStr, masterId, ignoreBookingId) {
-    const ignoreParam = ignoreBookingId ? `&ignoreBookingId=${ignoreBookingId}` : '';
-    const response = await fetch(`${API_URL}?action=getOccupiedSlots&date=${dateStr}&masterId=${masterId}${ignoreParam}`);
-    return await response.json();
+    return await requestJson(API_URL, {
+        params: {
+            action: 'getOccupiedSlots',
+            date: dateStr,
+            masterId,
+            ignoreBookingId
+        }
+    });
 }
