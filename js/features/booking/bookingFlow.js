@@ -101,7 +101,7 @@ export function startClientBookingFlow() {
 
 export function startReschedule(id) {
     const booking = state.clientBookings.find(
-        item => item.id === id
+        item => String(item.id).trim() === String(id).trim()
     );
 
     if (!booking) {
@@ -110,18 +110,40 @@ export function startReschedule(id) {
 
     state.editingBookingId = id;
 
-    state.selectedService = state.services.find(
-        s => s.name === booking.service
+    const bookingServiceName = String(booking.service || '').trim().toLowerCase();
+    const bookingMasterId = String(booking.masterId || '').trim();
+
+    state.selectedService = state.services.find(service =>
+        String(service.name || '').trim().toLowerCase() === bookingServiceName
     );
 
-    state.selectedMaster = state.masters.find(
-        m => m.id.toString() === booking.masterId.toString()
+    state.selectedMaster = state.masters.find(master =>
+        String(master.id || '').trim() === bookingMasterId
     );
 
-    if (!state.selectedService || !state.selectedMaster) {
-        return tg.showAlert(
-            'Не вдалося підготувати перенесення запису.'
-        );
+    if (!state.selectedService) {
+        const fallbackDuration = Number(booking.duration) || 60;
+
+        state.selectedService = {
+            id: `legacy-${booking.id}`,
+            name: booking.service || 'Послуга',
+            price: booking.price || '',
+            duration: fallbackDuration
+        };
+
+        console.warn('Service fallback used for reschedule:', {
+            booking,
+            fallbackService: state.selectedService
+        });
+    }
+
+    if (!state.selectedMaster) {
+        console.error('Master not found for reschedule:', {
+            bookingMasterId,
+            masters: state.masters
+        });
+
+        return tg.showAlert('Не вдалося знайти майстра для цього запису.');
     }
 
     isSubmittingBooking = false;
