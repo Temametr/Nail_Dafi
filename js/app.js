@@ -12,6 +12,8 @@ window.appAPI = {
 };
 
 let currentSubmitHandler = null;
+let isSubmittingBooking = false;
+let lastDateRequestId = 0;
 
 window.addEventListener('DOMContentLoaded', async () => {
     tg.MainButton.color = "#3b82f6";
