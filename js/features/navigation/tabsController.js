@@ -103,32 +103,39 @@ export function switchBookingTab({
 }) {
     state.currentBookingFilter = filter;
 
-    const activeButton = document.getElementById(
-        `${role}-subtab-active`
-    );
+    const filters = [
+        'pending',
+        'confirmed',
+        'cancelled',
+        'done'
+    ];
 
-    const cancelledButton = document.getElementById(
-        `${role}-subtab-cancelled`
-    );
+    filters.forEach(item => {
+        const button = document.getElementById(
+            `${role}-subtab-${item}`
+        );
 
-    if (!activeButton || !cancelledButton) return;
+        if (!button) return;
 
-    if (filter === 'active') {
-        activeButton.className =
-            'flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300';
+        const isActive = item === filter;
 
-        cancelledButton.className =
-            'flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100';
-
-    } else {
-        cancelledButton.className =
-            'flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300';
-
-        activeButton.className =
-            'flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100';
-    }
+        button.className = isActive
+            ? 'shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300'
+            : getInactiveBookingTabClass(item);
+    });
 
     role === 'admin'
         ? renderAdminBookings()
         : renderClientBookings();
+}
+
+function getInactiveBookingTabClass(filter) {
+    const borderMap = {
+        pending: 'border-amber-100',
+        confirmed: 'border-blue-100',
+        cancelled: 'border-rose-100',
+        done: 'border-emerald-100'
+    };
+
+    return `shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border ${borderMap[filter] || 'border-slate-100'}`;
 }
