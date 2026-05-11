@@ -86,10 +86,16 @@ export function getStatusData(dbStatus) {
                 color: 'text-amber-700 bg-amber-50 border-amber-200'
             };
 
-        case 'Выполнено':
+        case 'Подтверждено':
             return {
                 text: 'Підтверджено',
-                color: 'text-teal-700 bg-teal-50 border-teal-200'
+                color: 'text-blue-700 bg-blue-50 border-blue-200'
+            };
+
+        case 'Выполнено':
+            return {
+                text: 'Виконано',
+                color: 'text-emerald-700 bg-emerald-50 border-emerald-200'
             };
 
         case 'Отменено':
