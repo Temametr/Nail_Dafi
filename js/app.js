@@ -53,6 +53,11 @@ import {
     bookFromProfile
 } from './features/masters/masterProfile.js';
 
+import {
+    setActiveNav,
+    updateHeaderTitle
+} from './features/navigation/navigationState.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -231,23 +236,7 @@ function switchTab(role, tabId) {
         target.classList.remove('hidden-step');
     }
 
-    const activeColor = role === 'admin'
-        ? 'text-teal-600'
-        : 'text-blue-500';
-
-    ['home', 'bookings', 'messages', 'profile'].forEach(nav => {
-        const btn = document.getElementById(`${role}-nav-${nav}`);
-
-        if (!btn) return;
-
-        if (nav === tabId) {
-            btn.classList.remove('text-slate-400');
-            btn.classList.add(activeColor, 'bg-white/50');
-        } else {
-            btn.classList.remove(activeColor, 'bg-white/50');
-            btn.classList.add('text-slate-400');
-        }
-    });
+    setActiveNav(role, tabId);
 
     updateHeaderTitle(role, tabId);
 
@@ -278,49 +267,6 @@ function switchTab(role, tabId) {
             startPolling('admin');
         }
     }
-}
-
-function updateHeaderTitle(role, tabId) {
-    const title = document.getElementById(
-        role === 'client'
-            ? 'client-header-title'
-            : 'admin-header-title'
-    );
-
-    if (!title) return;
-
-    const firstName =
-        state.user && state.user.first_name
-            ? state.user.first_name
-            : 'Гість';
-
-    if (role === 'client') {
-        if (tabId === 'home') {
-            title.innerHTML =
-                `Привіт, <span class="text-blue-600">${firstName}</span> 👋`;
-        } else if (tabId === 'bookings') {
-            title.innerHTML = 'Твої візити 💅';
-        } else if (tabId === 'messages') {
-            title.innerHTML = 'Мої чати 💬';
-        } else {
-            title.innerHTML = 'Мій кабінет ⚙️';
-        }
-
-        return;
-    }
-
-    const adminName =
-        state.adminMasterInfo && state.adminMasterInfo.name
-            ? state.adminMasterInfo.name
-            : 'Майстер';
-
-    const cleanName = adminName
-        .replace(/^(Майстер|Мастер)\s+/i, '')
-        .trim();
-
-    title.innerHTML = tabId === 'home'
-        ? `Панель: <span class="text-teal-600">${cleanName}</span> 📊`
-        : 'Розклад 📅';
 }
 
 async function loadBookings(role, silent = false, dash = false) {
