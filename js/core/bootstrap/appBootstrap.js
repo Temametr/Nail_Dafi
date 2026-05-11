@@ -17,28 +17,54 @@ import {
     showStepElement
 } from '../ui/dom.js';
 
+import { APP_CONFIG } from '../../config/appConfig.js';
+
+import {
+    getCache,
+    setCache
+} from '../cache/localCache.js';
+
 export async function loadInitialData() {
     try {
-        const data = await fetchInitialData();
+        const cachedData = getCache(APP_CONFIG.cache.initDataKey);
 
-        state.services = data.services || [];
-        state.masters = data.masters || [];
-
-        if (state.user && state.user.id) {
-            const masterData = state.masters.find(
-                master =>
-                    String(master.id).trim() ===
-                    String(state.user.id).trim()
-            );
-
-            if (masterData) {
-                state.isAdmin = true;
-                state.adminMasterInfo = masterData;
-            }
+        if (cachedData) {
+            applyInitialData(cachedData);
         }
+
+        const freshData = await fetchInitialData();
+
+        applyInitialData(freshData);
+
+        setCache(
+            APP_CONFIG.cache.initDataKey,
+            freshData,
+            APP_CONFIG.cache.initDataTtlMs
+        );
     } catch (error) {
         logError('Помилка завантаження даних', error);
-        showNetworkError();
+
+        if (!state.services.length || !state.masters.length) {
+            showNetworkError();
+        }
+    }
+}
+
+function applyInitialData(data) {
+    state.services = data.services || [];
+    state.masters = data.masters || [];
+
+    if (state.user && state.user.id) {
+        const masterData = state.masters.find(
+            master =>
+                String(master.id).trim() ===
+                String(state.user.id).trim()
+        );
+
+        if (masterData) {
+            state.isAdmin = true;
+            state.adminMasterInfo = masterData;
+        }
     }
 }
 
