@@ -8,7 +8,7 @@ window.appAPI = {
     selectService, selectMaster, selectDate, selectTime,
     changeBookingStatus, openCancelModal, closeCancelModal, confirmCancel,
     renderAdminStats, openMasterProfile, closeMasterProfile, bookFromProfile,
-    openMapSelection // ✅ Добавлено: функция выбора карт
+    openMapSelection // Функція вибору карт прив'язана до вікна
 };
 
 let currentSubmitHandler = null;
@@ -166,6 +166,15 @@ function startClientBookingFlow() {
     resetDateTimeSelection();
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
+    
+    ['home', 'bookings', 'profile'].forEach(nav => {
+        const btn = document.getElementById(`client-nav-${nav}`);
+        if(btn) {
+            if (nav === 'bookings') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
+            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
+        }
+    });
+
     renderServices();
     showStep('step-booking');
     tg.BackButton.show();
@@ -177,8 +186,18 @@ function startReschedule(id) {
     state.selectedService = state.services.find(s => s.name === b.service);
     state.selectedMaster = state.masters.find(m => m.id.toString() === b.masterId.toString());
     resetDateTimeSelection();
+    
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
+    
+    ['home', 'bookings', 'profile'].forEach(nav => {
+        const btn = document.getElementById(`client-nav-${nav}`);
+        if(btn) {
+            if (nav === 'bookings') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
+            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
+        }
+    });
+
     renderCalendar();
     showStep('step-date');
     tg.BackButton.show();
@@ -198,6 +217,7 @@ function selectService(id) {
 }
 
 function selectMaster(id) {
+    resetDateTimeSelection();
     state.selectedMaster = state.masters.find(m => m.id.toString() === id.toString());
     renderCalendar();
     showStep('step-date');
@@ -207,6 +227,7 @@ async function selectDate(date, btn) {
     state.selectedDate = date;
     state.selectedTime = null;
     tg.MainButton.hide();
+    
     document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected-item', 'shadow-blue-300', 'border-transparent'));
     btn.classList.add('selected-item', 'shadow-blue-300', 'border-transparent');
     
@@ -216,8 +237,10 @@ async function selectDate(date, btn) {
     if(titleEl) titleEl.innerText = `Час на ${dateFormatted}`;
 
     showStep('step-time'); 
+    
     document.getElementById('time-loader').classList.remove('hidden');
     document.getElementById('time-slots').innerHTML = '';
+    
     const dData = await fetchOccupiedSlotsAPI(date, state.selectedMaster.id, state.editingBookingId);
     renderTimeSlots(dData.occupiedSlots || []);
     document.getElementById('time-loader').classList.add('hidden');
@@ -227,19 +250,24 @@ function selectTime(t, btn) {
     state.selectedTime = t;
     document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected-item', 'shadow-blue-300', 'border-transparent'));
     btn.classList.add('selected-item', 'shadow-blue-300', 'border-transparent');
+    
     tg.MainButton.text = state.editingBookingId ? `Перенести на ${t}` : `Записатися на ${t}`;
     tg.MainButton.show();
     
     if (currentSubmitHandler) { tg.MainButton.offClick(currentSubmitHandler); }
+    
     currentSubmitHandler = async () => {
         tg.MainButton.showProgress();
         const r = await submitBookingAPI({ action: state.editingBookingId ? 'rescheduleBooking' : 'createBooking', date: state.selectedDate, time: state.selectedTime, masterId: state.selectedMaster.id, clientId: state.user.id.toString(), clientName: state.user.first_name, service: state.selectedService.name, bookingId: state.editingBookingId });
         if (r.status === 'success') {
             tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert(state.editingBookingId ? "Запит на перенесення надіслано!" : "Ура! Ти записалася на манікюр 🎉", () => switchTab('client', 'bookings'));
-        } else tg.showAlert(r.message);
+        } else {
+            tg.showAlert('Помилка: ' + r.message);
+        }
         tg.MainButton.hideProgress();
     };
+    
     tg.MainButton.onClick(currentSubmitHandler);
 }
 
@@ -267,42 +295,102 @@ function bookFromProfile() {
     state.selectedMaster = state.masters.find(x => x.id.toString() === state.viewedMasterId.toString());
     resetDateTimeSelection();
     document.getElementById('master-profile-modal').classList.add('hidden');
-    document.getElementById('tab-home').classList.add('hidden-step');
+    document.getElementById('master-profile-modal').classList.remove('flex');
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-step'));
     document.getElementById('tab-booking-flow').classList.remove('hidden-step');
+    
+    ['home', 'bookings', 'profile'].forEach(nav => {
+        const btn = document.getElementById(`client-nav-${nav}`);
+        if(btn) {
+            if (nav === 'home') { btn.classList.remove('text-slate-400'); btn.classList.add('text-blue-500', 'bg-blue-50'); }
+            else { btn.classList.remove('text-blue-500', 'bg-blue-50'); btn.classList.add('text-slate-400'); }
+        }
+    });
+
     renderServices();
     showStep('step-booking');
     tg.BackButton.show();
 }
 
-// ✅ НОВОЕ: Умное открытие карт
+// ✅ ОНОВЛЕНО: Функція, яка була загублена в попередньому кроці!
 function openMapSelection() {
-    const lat = 50.0270; const lng = 36.3295;
+    const lat = 50.0270; 
+    const lng = 36.3295;
     const label = encodeURIComponent("NailBar Dafi");
-    const buttons = [{ id: 'google', type: 'default', text: 'Google Maps' }, { id: 'waze', type: 'default', text: 'Waze' }];
-    if (tg.platform === 'ios') buttons.unshift({ id: 'apple', type: 'default', text: 'Apple Maps' });
+    
+    const buttons = [
+        { id: 'google', type: 'default', text: 'Google Maps' }, 
+        { id: 'waze', type: 'default', text: 'Waze' }
+    ];
+    
+    // Перевіряємо платформу, додаємо Apple Maps якщо це iOS/MacOS
+    if (tg.platform === 'ios' || tg.platform === 'macos') {
+        buttons.unshift({ id: 'apple', type: 'default', text: 'Apple Maps' });
+    }
+    
     buttons.push({ type: 'cancel', text: 'Скасувати' });
 
-    tg.showPopup({ title: 'Відкрити карту', message: 'Оберіть додаток для маршруту', buttons }, (id) => {
+    tg.showPopup({ 
+        title: 'Відкрити карту', 
+        message: 'Оберіть додаток для маршруту', 
+        buttons 
+    }, (id) => {
         if (!id) return;
         let url = '';
-        if (id === 'google') url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-        else if (id === 'apple') url = `http://maps.apple.com/?q=${label}&ll=${lat},${lng}`;
-        else if (id === 'waze') url = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-        if (url) tg.openLink(url);
+        if (id === 'google') {
+            url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+        } else if (id === 'apple') {
+            url = `http://maps.apple.com/?q=${label}&ll=${lat},${lng}`;
+        } else if (id === 'waze') {
+            url = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+        }
+        
+        if (url) {
+            tg.openLink(url);
+        }
     });
 }
 
 function openCancelModal(id, role) { 
     modalState.currentCancelBookingId = id; 
     modalState.currentCancelRole = role;
+    const title = document.getElementById('cancel-modal-title');
+    const input = document.getElementById('cancel-reason');
+    title.innerText = 'Скасувати?';
+    input.placeholder = role === 'client' ? 'Напишіть причину скасування для майстра...' : 'Напишіть клієнту, чому візит скасовано...';
     document.getElementById('cancel-modal').classList.remove('hidden'); 
     document.getElementById('cancel-modal').classList.add('flex'); 
 }
-function closeCancelModal() { document.getElementById('cancel-modal').classList.add('hidden'); }
+
+function closeCancelModal() { 
+    document.getElementById('cancel-modal').classList.add('hidden'); 
+    document.getElementById('cancel-modal').classList.remove('flex');
+    document.getElementById('cancel-reason').value = '';
+}
+
 async function confirmCancel() {
-    const r = await updateBookingStatusAPI(modalState.currentCancelBookingId, 'Отменено', document.getElementById('cancel-reason').value);
+    const reason = document.getElementById('cancel-reason').value.trim();
+    if (!reason) return tg.showAlert("Будь ласка, вкажіть причину.");
+    const r = await updateBookingStatusAPI(modalState.currentCancelBookingId, 'Отменено', reason);
     if (r.status === 'success') loadBookings(state.isAdmin ? 'admin' : 'client');
     closeCancelModal();
 }
-async function changeBookingStatus(id, s) { const r = await updateBookingStatusAPI(id, s); if (r.status === 'success') loadBookings('admin'); }
-function switchBookingTab(f, r) { state.currentBookingFilter = f; r === 'admin' ? renderAdminBookings() : renderClientBookings(); }
+
+async function changeBookingStatus(id, s) { 
+    const r = await updateBookingStatusAPI(id, s);
+    if (r.status === 'success') loadBookings('admin');
+}
+
+function switchBookingTab(f, r) { 
+    state.currentBookingFilter = f; 
+    const btnA = document.getElementById(`${r}-subtab-active`);
+    const btnC = document.getElementById(`${r}-subtab-cancelled`);
+    if (f === 'active') {
+        btnA.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300";
+        btnC.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100";
+    } else {
+        btnC.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300";
+        btnA.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100";
+    }
+    r === 'admin' ? renderAdminBookings() : renderClientBookings(); 
+}
