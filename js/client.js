@@ -271,10 +271,6 @@ export function renderTimeSlots(occupiedSlots) {
     }
 }
 
-export function renderClientBookings() {
-    document.getElementById('my-bookings-list').innerHTML =
-        '<div class="text-center py-12 text-slate-400 font-medium">Render layer migration...</div>';
-}
 
 export function renderUserProfile() {
     const container = document.getElementById('tab-profile');
