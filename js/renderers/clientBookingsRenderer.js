@@ -85,24 +85,9 @@ export function renderClientBookings() {
                                 ${
                                     isConfirmed
                                         ? `
-                                            <button
+                                           <button
     onclick="window.appAPI.openChatFromBooking('${booking.id}')"
-    class="
-        card-convex-sm
-        flex
-        items-center
-        justify-center
-        w-full
-        py-3.5
-        bg-slate-950
-        text-white
-        rounded-xl
-        text-sm
-        font-bold
-        shadow-lg
-        active:scale-95
-        transition-all
-    "
+    class="card-convex-sm flex items-center justify-center w-full py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all"
 >
     Написати майстру 💬
 </button>
