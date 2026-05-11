@@ -3,8 +3,7 @@ import { state } from '../../state.js';
 import {
     renderHomeMasters,
     renderClientBookings,
-    renderUserProfile,
-    renderMessagesTab
+    renderUserProfile
 } from '../../client.js';
 
 import {
@@ -74,9 +73,6 @@ export function switchTab({
             startPollingManager(() => {
                 loadBookings('client', true);
             });
-
-        } else if (tabId === 'messages') {
-            renderMessagesTab();
 
         } else if (tabId === 'profile') {
             renderUserProfile();
