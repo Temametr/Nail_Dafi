@@ -1,12 +1,16 @@
 import { state } from '../../state.js';
 
+import {
+    getById
+} from '../../core/ui/dom.js';
+
 export function setActiveNav(role, tabId) {
     const activeColor = role === 'admin'
         ? 'text-teal-600'
         : 'text-blue-500';
 
     ['home', 'bookings', 'messages', 'profile'].forEach(nav => {
-        const btn = document.getElementById(`${role}-nav-${nav}`);
+        const btn = getById((`${role}-nav-${nav}`);
 
         if (!btn) return;
 
@@ -21,7 +25,7 @@ export function setActiveNav(role, tabId) {
 }
 
 export function updateHeaderTitle(role, tabId) {
-    const title = document.getElementById(
+    const title = getById((
         role === 'client'
             ? 'client-header-title'
             : 'admin-header-title'
