@@ -58,6 +58,11 @@ import {
     updateHeaderTitle
 } from './features/navigation/navigationState.js';
 
+import {
+    startPolling as startPollingManager,
+    stopPolling
+} from './core/polling/pollingManager.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -248,25 +253,25 @@ function switchTab(role, tabId) {
     state.editingBookingId = null;
 
     if (role === 'client') {
-        if (tabId === 'home') {
-            renderHomeMasters();
-        } else if (tabId === 'bookings') {
-            loadBookings('client');
-            startPolling('client');
-        } else if (tabId === 'messages') {
-            renderMessagesTab();
-        } else if (tabId === 'profile') {
-            renderUserProfile();
-        }
-    } else {
-        if (tabId === 'home') {
-            loadBookings('admin', false, true);
-            startPolling('admin', true);
-        } else if (tabId === 'bookings') {
-            loadBookings('admin');
-            startPolling('admin');
-        }
+    if (tabId === 'home') {
+        renderHomeMasters();
+    } else if (tabId === 'bookings') {
+        loadBookings('client');
+        startPollingManager(() => loadBookings('client', true));
+    } else if (tabId === 'messages') {
+        renderMessagesTab();
+    } else if (tabId === 'profile') {
+        renderUserProfile();
     }
+} else {
+    if (tabId === 'home') {
+        loadBookings('admin', false, true);
+        startPollingManager(() => loadBookings('admin', true, true));
+    } else if (tabId === 'bookings') {
+        loadBookings('admin');
+        startPollingManager(() => loadBookings('admin', true));
+    }
+}
 }
 
 async function loadBookings(role, silent = false, dash = false) {
@@ -310,23 +315,6 @@ async function loadBookings(role, silent = false, dash = false) {
             );
         }
     }
-}
-
-function startPolling(role, forDashboard = false) {
-    stopPolling();
-
-    polling.interval = setInterval(
-        () => loadBookings(role, true, forDashboard),
-        15000
-    );
-}
-
-function stopPolling() {
-    if (!polling.interval) return;
-
-    clearInterval(polling.interval);
-
-    polling.interval = null;
 }
 
 function openMap() {
