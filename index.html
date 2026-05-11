@@ -148,10 +148,23 @@
                 <div class="mb-5 px-1 mt-2">
                     <button onclick="window.appAPI.startClientBookingFlow()" class="w-full py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">СТВОРИТИ НОВИЙ ВІЗИТ</button>
                 </div>
-                <div class="flex pb-4 gap-2 px-1 mt-2">
-                    <button onclick="window.appAPI.switchBookingTab('active', 'client')" id="client-subtab-active" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">Підтверджені</button>
-                    <button onclick="window.appAPI.switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">Скасовані</button>
-                </div>
+               <div id="client-booking-tabs" class="flex pb-4 gap-2 px-1 mt-2 overflow-x-auto hide-scrollbar">
+    <button onclick="window.appAPI.switchBookingTab('pending', 'client')" id="client-subtab-pending" class="hidden shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-amber-100">
+        Очікування
+    </button>
+
+    <button onclick="window.appAPI.switchBookingTab('confirmed', 'client')" id="client-subtab-confirmed" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">
+        Підтверджені
+    </button>
+
+    <button onclick="window.appAPI.switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">
+        Скасовані
+    </button>
+
+    <button onclick="window.appAPI.switchBookingTab('done', 'client')" id="client-subtab-done" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-emerald-100">
+        Виконані
+    </button>
+</div>
                 <div id="my-bookings-list" class="space-y-5 px-1"></div>
             </div>
             <div id="tab-profile" class="tab-content hidden-step pt-[110px] px-4 animate-fade-in-up pb-10"></div>
