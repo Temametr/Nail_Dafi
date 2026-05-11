@@ -8,7 +8,7 @@ window.appAPI = {
     selectService, selectMaster, selectDate, selectTime,
     changeBookingStatus, openCancelModal, closeCancelModal, confirmCancel,
     renderAdminStats, openMasterProfile, closeMasterProfile, bookFromProfile,
-    openMap // ✅ Пряме і надійне відкриття карти
+    openMap // Відкриття карти за прямим посиланням
 };
 
 let currentSubmitHandler = null;
@@ -293,11 +293,11 @@ function bookFromProfile() {
     renderServices(); showStep('step-booking'); tg.BackButton.show();
 }
 
-// ✅ НОВЕ: Універсальне і просте відкриття карти
+// ✅ ОНОВЛЕНО: Надійне посилання Google Maps з новими координатами
 function openMap() {
-    const lat = 50.0270;
-    const lng = 36.3295;
-    // Універсальне посилання Google Maps, яке 100% підтримується і на мобільних, і на ПК
+    const lat = 50.0273880;
+    const lng = 36.3314636;
+    // Офіційний формат Google Maps URL, який автоматично прокидається в додаток на смартфоні
     const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
     tg.openLink(url);
 }
