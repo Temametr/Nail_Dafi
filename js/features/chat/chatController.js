@@ -35,25 +35,20 @@ export async function loadChats(role) {
             );
         }
 
-        chatState.chats =
-            response.chats || [];
-
-        renderChatsList();
+        chatState.chats = response.chats || [];
 
     } catch (error) {
+        console.error('loadChats error:', error);
 
-        console.error(
-            'loadChats error:',
-            error
-        );
+        chatState.chats = [];
 
         tg.showAlert(
-            'Не вдалося завантажити чати'
+            'Не вдалося завантажити чати. Перевір Apps Script deployment і лист Chats.'
         );
 
     } finally {
-
         chatState.isLoadingChats = false;
+        renderChatsList();
     }
 }
 
