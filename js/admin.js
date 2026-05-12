@@ -40,6 +40,24 @@ function getServicePrice(serviceName) {
     return parsePrice(service.price);
 }
 
+function parseYmdLocal(value) {
+    const parts = String(value || '').split('-').map(Number);
+
+    if (parts.length !== 3 || parts.some(Number.isNaN)) {
+        return new Date(0);
+    }
+
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+function isSameDay(a, b) {
+    return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+    );
+}
+
 export function renderAdminStats(period = 'today') {
 
     const selectedPeriod =
