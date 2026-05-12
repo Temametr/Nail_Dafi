@@ -9,7 +9,11 @@ export function setActiveNav(role, tabId) {
         ? 'text-teal-600'
         : 'text-blue-500';
 
-    ['home', 'bookings', 'messages', 'profile'].forEach(nav => {
+    const navItems = role === 'admin'
+    ? ['home', 'bookings', 'clients']
+    : ['home', 'bookings', 'profile'];
+
+navItems.forEach(nav => {
         const btn = getById(`${role}-nav-${nav}`);
 
         if (!btn) return;
