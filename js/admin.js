@@ -11,77 +11,103 @@ const STATUS_CONFIRMED = 'Подтверждено';
 const STATUS_DONE = 'Выполнено';
 const STATUS_CANCELLED = 'Отменено';
 
-export function renderAdminStats(period) {
-    ['day', 'week', 'month'].forEach(item => {
-        const button = document.getElementById(`stat-btn-${item}`);
-
-        if (!button) return;
-
-        if (item === period) {
-            button.classList.remove('text-slate-400');
-            button.classList.add('bg-white', 'shadow-md', 'text-slate-950');
-        } else {
-            button.classList.add('text-slate-400');
-            button.classList.remove('bg-white', 'shadow-md', 'text-slate-950');
-        }
-    });
+export function renderAdminStats(period = 'day') {
 
     const now = new Date();
-    now.setHours(0, 0, 0, 0);
 
-    let startDate = new Date(now);
+    const bookings = (state.adminBookings || []).filter(booking => {
 
-    if (period === 'week') {
-        startDate.setDate(now.getDate() - 6);
-    } else if (period === 'month') {
-        startDate.setDate(now.getDate() - 29);
-    }
-
-    let totalCount = 0;
-    let totalRevenue = 0;
-    let cancelledCount = 0;
-
-    state.adminBookings.forEach(booking => {
-        const bookingDate = parseSafeDate(booking.date);
-        bookingDate.setHours(0, 0, 0, 0);
-
-        const service = state.services.find(
-            item => item.name === booking.service
-        );
-
-        const price = service ? Number(service.price) || 0 : 0;
-
-        const inRange =
-            period === 'day'
-                ? bookingDate.getTime() === now.getTime()
-                : bookingDate >= startDate && bookingDate <= now;
-
-        if (!inRange) return;
-
-        if (
-            booking.status === STATUS_PENDING ||
-            booking.status === STATUS_CONFIRMED ||
-            booking.status === STATUS_DONE
-        ) {
-            totalCount++;
+        if (!booking.rawDate) {
+            return false;
         }
 
-        if (booking.status === STATUS_DONE) {
-            totalRevenue += price;
+        const bookingDate = new Date(booking.rawDate);
+
+        if (period === 'day') {
+            return bookingDate.toDateString() === now.toDateString();
         }
 
-        if (booking.status === STATUS_CANCELLED) {
-            cancelledCount++;
+        if (period === 'week') {
+
+            const diff =
+                (bookingDate - now) / (1000 * 60 * 60 * 24);
+
+            return diff >= -7 && diff <= 7;
         }
+
+        if (period === 'month') {
+            return (
+                bookingDate.getMonth() === now.getMonth() &&
+                bookingDate.getFullYear() === now.getFullYear()
+            );
+        }
+
+        return true;
     });
 
-    const countEl = document.getElementById('stat-count');
-    const revenueEl = document.getElementById('stat-revenue');
-    const cancelledEl = document.getElementById('stat-cancelled');
+    const activeBookings = bookings.filter(
+        booking =>
+            booking.status !== 'Отменено'
+    );
 
-    if (countEl) countEl.innerText = totalCount;
-    if (revenueEl) revenueEl.innerText = `${totalRevenue} ₴`;
-    if (cancelledEl) cancelledEl.innerText = cancelledCount;
+    const pendingBookings = bookings.filter(
+        booking =>
+            booking.status === 'В очереди'
+    );
+
+    const cancelledBookings = bookings.filter(
+        booking =>
+            booking.status === 'Отменено'
+    );
+
+    let revenue = 0;
+
+    activeBookings.forEach(booking => {
+
+        const service = state.services.find(
+            item =>
+                String(item.name) === String(booking.service)
+        );
+
+        if (!service) return;
+
+        revenue += Number(service.price || 0);
+    });
+
+    const statCount =
+        document.getElementById('stat-count');
+
+    const statPending =
+        document.getElementById('stat-pending');
+
+    const statRevenue =
+        document.getElementById('stat-revenue');
+
+    const statCancelled =
+        document.getElementById('stat-cancelled');
+
+    if (statCount) {
+        statCount.textContent =
+            activeBookings.length;
+    }
+
+    if (statPending) {
+        statPending.textContent =
+            pendingBookings.length;
+    }
+
+    if (statRevenue) {
+        statRevenue.textContent =
+            `${revenue} ₴`;
+    }
+
+    if (statCancelled) {
+        statCancelled.textContent =
+            cancelledBookings.length;
+    }
+
+    renderNearestBooking();
+    renderTodaySchedule();
 }
 
 function getFilteredAdminBookings() {
@@ -255,4 +281,182 @@ function renderAdminActions(booking) {
     }
 
     return '';
+}
+function renderNearestBooking() {
+
+    const container =
+        document.getElementById(
+            'admin-next-booking'
+        );
+
+    if (!container) return;
+
+    const now = new Date();
+
+    const nearest = (state.adminBookings || [])
+        .filter(booking =>
+            booking.status !== 'Отменено'
+        )
+        .map(booking => {
+
+            const dateTime = new Date(
+                `${booking.rawDate}T${booking.time}`
+            );
+
+            return {
+                ...booking,
+                timestamp: dateTime.getTime()
+            };
+        })
+        .filter(booking =>
+            booking.timestamp >= now.getTime()
+        )
+        .sort((a, b) =>
+            a.timestamp - b.timestamp
+        )[0];
+
+    if (!nearest) {
+
+        container.innerHTML = `
+            <div class="text-center py-6">
+                <div class="text-4xl mb-3">🌸</div>
+                <div class="text-sm font-bold text-slate-500">
+                    На сьогодні записів більше немає
+                </div>
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+
+            <div class="flex-1 min-w-0">
+
+                <div class="text-lg font-black text-slate-950 truncate">
+                    ${sanitizeHtml(nearest.clientName)}
+                </div>
+
+                <div class="text-sm font-semibold text-slate-500 mt-1">
+                    ${sanitizeHtml(nearest.service)}
+                </div>
+
+                <div class="flex items-center gap-2 mt-4">
+
+                    <div class="px-3 py-2 rounded-2xl bg-blue-50 text-blue-600 text-xs font-black">
+                        🕒 ${sanitizeHtml(nearest.time)}
+                    </div>
+
+                    <div class="px-3 py-2 rounded-2xl bg-emerald-50 text-emerald-600 text-xs font-black">
+                        📞 ${sanitizeHtml(nearest.clientPhone || '—')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-100 to-blue-100 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                💅
+            </div>
+        </div>
+    `;
+}
+
+function renderTodaySchedule() {
+
+    const container =
+        document.getElementById(
+            'admin-today-schedule'
+        );
+
+    if (!container) return;
+
+    const now = new Date();
+
+    const todayBookings = (state.adminBookings || [])
+        .filter(booking => {
+
+            if (
+                booking.status === 'Отменено'
+            ) {
+                return false;
+            }
+
+            const bookingDate =
+                new Date(booking.rawDate);
+
+            return (
+                bookingDate.toDateString() ===
+                now.toDateString()
+            );
+        })
+        .sort((a, b) =>
+            String(a.time).localeCompare(
+                String(b.time)
+            )
+        );
+
+    if (!todayBookings.length) {
+
+        container.innerHTML = `
+            <div class="card-convex p-8 text-center">
+                <div class="text-4xl mb-3">✨</div>
+                <div class="text-sm font-bold text-slate-500">
+                    Сьогодні записів поки немає
+                </div>
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML =
+        todayBookings.map(booking => `
+
+            <div class="card-convex p-4 flex items-center gap-4">
+
+                <div class="w-14 h-14 rounded-2xl bg-slate-950 text-white flex flex-col items-center justify-center shrink-0 shadow-lg">
+
+                    <div class="text-[10px] font-bold opacity-70 uppercase">
+                        час
+                    </div>
+
+                    <div class="text-sm font-black">
+                        ${sanitizeHtml(booking.time)}
+                    </div>
+                </div>
+
+                <div class="flex-1 min-w-0">
+
+                    <div class="text-sm font-black text-slate-950 truncate">
+                        ${sanitizeHtml(booking.clientName)}
+                    </div>
+
+                    <div class="text-xs font-semibold text-slate-400 mt-1 truncate">
+                        ${sanitizeHtml(booking.service)}
+                    </div>
+
+                    <div class="flex items-center gap-2 mt-3">
+
+                        <div class="text-[11px] font-bold text-emerald-600">
+                            📞 ${sanitizeHtml(booking.clientPhone || '—')}
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="
+                    px-3 py-2 rounded-xl text-[10px]
+                    font-black uppercase tracking-wider
+                    ${booking.status === 'Выполнено'
+                        ? 'bg-emerald-50 text-emerald-600'
+                        : booking.status === 'В очереди'
+                            ? 'bg-amber-50 text-amber-600'
+                            : 'bg-blue-50 text-blue-600'}
+                ">
+                    ${sanitizeHtml(booking.status)}
+                </div>
+
+            </div>
+
+        `).join('');
 }
