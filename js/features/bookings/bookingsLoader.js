@@ -50,7 +50,7 @@ function applyBookings(role, bookings, dash = false, forceRender = false) {
         }
 
         if (dash) {
-            renderAdminStats('day');
+            renderAdminStats(state.adminStatsPeriod || 'today');
         } else {
             renderAdminBookings();
         }
