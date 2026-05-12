@@ -270,9 +270,42 @@ function openMap() {
 
 function confirmCancel() {
 
-    return confirmCancelAction((role) => {
+    const bookingId =
+        window.modalState?.currentCancelBookingId;
 
-        loadBookings(role);
+    const role =
+        window.modalState?.currentCancelRole ||
+        (state.isAdmin ? 'admin' : 'client');
+
+    const reasonInput =
+        document.getElementById('cancel-reason');
+
+    const reason =
+        String(reasonInput?.value || '').trim();
+
+    const targetList =
+        role === 'admin'
+            ? state.adminBookings
+            : state.clientBookings;
+
+    const booking =
+        targetList.find(
+            item => String(item.id) === String(bookingId)
+        );
+
+    if (booking && reason) {
+        booking.status = 'Отменено';
+        booking.cancelReason = reason;
+
+        switchBookingTab('cancelled', role);
+
+        if (role === 'admin') {
+            renderAdminStats('day');
+        }
+    }
+
+    return confirmCancelAction((updatedRole) => {
+        loadBookings(updatedRole, true);
     });
 }
 
