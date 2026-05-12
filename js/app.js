@@ -123,16 +123,24 @@ async function loadApp() {
 
     if (state.isAdmin) {
 
-        await bootstrapAdmin();
+    await bootstrapAdmin();
 
-        switchTab('admin', 'home');
+    switchTab('admin', 'home');
 
-    } else {
+    setTimeout(() => {
+        loadBookings('admin', true);
+    }, 300);
 
-        await bootstrapClient();
+} else {
 
-        switchTab('client', 'home');
-    }
+    await bootstrapClient();
+
+    switchTab('client', 'home');
+
+    setTimeout(() => {
+        loadBookings('client', true);
+    }, 300);
+}
 }
 
 function handleBack() {
