@@ -470,7 +470,7 @@ function renderTodaySchedule() {
         .filter(booking => {
 
             if (
-                booking.status === 'Отменено'
+                booking.status === STATUS_CANCELLED
             ) {
                 return false;
             }
@@ -494,8 +494,13 @@ function renderTodaySchedule() {
         container.innerHTML = `
             <div class="card-convex p-8 text-center">
                 <div class="text-4xl mb-3">✨</div>
-                <div class="text-sm font-bold text-slate-500">
+
+                <div class="text-sm font-black text-slate-700">
                     Сьогодні записів поки немає
+                </div>
+
+                <div class="text-xs font-medium text-slate-400 mt-1">
+                    Ідеальний день для планування 💅
                 </div>
             </div>
         `;
@@ -504,53 +509,129 @@ function renderTodaySchedule() {
     }
 
     container.innerHTML =
-        todayBookings.map(booking => `
+        todayBookings.map(booking => {
 
-            <div class="card-convex p-4 flex items-center gap-4">
+            const statusData =
+                getStatusData(booking.status);
 
-                <div class="w-14 h-14 rounded-2xl bg-slate-950 text-white flex flex-col items-center justify-center shrink-0 shadow-lg">
+            const isPending =
+                booking.status === STATUS_PENDING;
 
-                    <div class="text-[10px] font-bold opacity-70 uppercase">
-                        час
-                    </div>
+            const isConfirmed =
+                booking.status === STATUS_CONFIRMED;
 
-                    <div class="text-sm font-black">
-                        ${sanitizeHtml(booking.time)}
-                    </div>
-                </div>
+            const isDone =
+                booking.status === STATUS_DONE;
 
-                <div class="flex-1 min-w-0">
+            return `
 
-                    <div class="text-sm font-black text-slate-950 truncate">
-                        ${sanitizeHtml(booking.clientName)}
-                    </div>
+                <div class="card-convex p-4">
 
-                    <div class="text-xs font-semibold text-slate-400 mt-1 truncate">
-                        ${sanitizeHtml(booking.service)}
-                    </div>
+                    <div class="flex items-start gap-4">
 
-                    <div class="flex items-center gap-2 mt-3">
+                        <div class="w-14 h-14 rounded-2xl bg-slate-950 text-white flex flex-col items-center justify-center shrink-0 shadow-lg">
 
-                        <div class="text-[11px] font-bold text-emerald-600">
-                            📞 ${sanitizeHtml(booking.clientPhone || '—')}
+                            <div class="text-[10px] font-bold opacity-70 uppercase">
+                                час
+                            </div>
+
+                            <div class="text-sm font-black">
+                                ${sanitizeHtml(booking.time)}
+                            </div>
                         </div>
 
+                        <div class="flex-1 min-w-0">
+
+                            <div class="flex items-start justify-between gap-2">
+
+                                <div class="min-w-0">
+                                    <div class="text-sm font-black text-slate-950 truncate">
+                                        ${sanitizeHtml(booking.clientName)}
+                                    </div>
+
+                                    <div class="text-xs font-semibold text-slate-400 mt-1 truncate">
+                                        ${sanitizeHtml(booking.service)}
+                                    </div>
+                                </div>
+
+                                <span class="text-[9px] font-black px-2.5 py-1.5 rounded-full border shrink-0 ${statusData.color}">
+                                    ${statusData.text}
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-2 mt-3 flex-wrap">
+
+                                <a
+                                    href="tel:${sanitizeHtml(booking.clientPhone || '')}"
+                                    class="text-[11px] font-black text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl active:scale-95 transition-all"
+                                >
+                                    📞 ${sanitizeHtml(booking.clientPhone || '—')}
+                                </a>
+
+                                ${
+                                    booking.clientTelegram
+                                        ? `
+                                            <button
+                                                onclick="window.appAPI.openTelegramChat('${booking.clientTelegram}')"
+                                                class="text-[11px] font-black text-teal-700 bg-teal-50 px-3 py-2 rounded-xl active:scale-95 transition-all"
+                                            >
+                                                💬 Telegram
+                                            </button>
+                                        `
+                                        : ''
+                                }
+                            </div>
+                        </div>
                     </div>
+
+                    ${
+                        !isDone
+                            ? `
+                                <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100">
+
+                                    ${
+                                        isPending
+                                            ? `
+                                                <button
+                                                    onclick="window.appAPI.changeBookingStatus('${booking.id}', '${STATUS_CONFIRMED}')"
+                                                    class="py-3 bg-slate-950 text-white rounded-xl text-xs font-black shadow-lg active:scale-95 transition-all"
+                                                >
+                                                    Прийняти
+                                                </button>
+                                            `
+                                            : ''
+                                    }
+
+                                    ${
+                                        isConfirmed
+                                            ? `
+                                                <button
+                                                    onclick="window.appAPI.changeBookingStatus('${booking.id}', '${STATUS_DONE}')"
+                                                    class="py-3 bg-emerald-500 text-white rounded-xl text-xs font-black shadow-lg active:scale-95 transition-all"
+                                                >
+                                                    Виконано
+                                                </button>
+                                            `
+                                            : ''
+                                    }
+
+                                    <button
+                                        onclick="window.appAPI.openCancelModal('${booking.id}', 'admin')"
+                                        class="py-3 bg-white text-red-600 rounded-xl text-xs font-black border border-red-100 active:scale-95 transition-all ${isPending || isConfirmed ? '' : 'col-span-2'}"
+                                    >
+                                        Скасувати
+                                    </button>
+                                </div>
+                            `
+                            : `
+                                <div class="mt-4 pt-4 border-t border-slate-100">
+                                    <div class="py-3 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-black text-center">
+                                        ✅ Послуга виконана
+                                    </div>
+                                </div>
+                            `
+                    }
                 </div>
-
-                <div class="
-                    px-3 py-2 rounded-xl text-[10px]
-                    font-black uppercase tracking-wider
-                    ${booking.status === 'Выполнено'
-                        ? 'bg-emerald-50 text-emerald-600'
-                        : booking.status === 'В очереди'
-                            ? 'bg-amber-50 text-amber-600'
-                            : 'bg-blue-50 text-blue-600'}
-                ">
-                    ${sanitizeHtml(booking.status)}
-                </div>
-
-            </div>
-
-        `).join('');
+            `;
+        }).join('');
 }
