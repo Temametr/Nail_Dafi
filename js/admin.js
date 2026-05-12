@@ -83,21 +83,20 @@ export function renderAdminStats(period = 'today') {
     const bookings = (state.adminBookings || []).filter(booking => {
         if (!booking.rawDate) return false;
 
-        const bookingDate = new Date(booking.rawDate);
-        const now = new Date();
+        const bookingDate = parseYmdLocal(booking.rawDate);
+const now = new Date();
 
-        bookingDate.setHours(0, 0, 0, 0);
-        now.setHours(0, 0, 0, 0);
+now.setHours(0, 0, 0, 0);
 
         if (selectedPeriod === 'today') {
-            return bookingDate.getTime() === now.getTime();
+            return isSameDay(bookingDate, now);
         }
 
         if (selectedPeriod === 'yesterday') {
             const yesterday = new Date(now);
             yesterday.setDate(now.getDate() - 1);
 
-            return bookingDate.getTime() === yesterday.getTime();
+            return isSameDay(bookingDate, yesterday);
         }
 
         if (selectedPeriod === 'week') {
@@ -123,12 +122,9 @@ export function renderAdminStats(period = 'today') {
         if (selectedPeriod === 'custom') {
             if (!state.adminStatsCustomDate) return false;
 
-            const customDate =
-                new Date(state.adminStatsCustomDate);
+            const customDate = parseYmdLocal(state.adminStatsCustomDate);
 
-            customDate.setHours(0, 0, 0, 0);
-
-            return bookingDate.getTime() === customDate.getTime();
+return isSameDay(bookingDate, customDate);
         }
 
         return false;
