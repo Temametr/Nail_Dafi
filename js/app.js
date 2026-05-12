@@ -82,6 +82,10 @@ window.appAPI = {
     confirmClientPhone,
 
     changeBookingStatus,
+    
+    toggleAdminPeriodMenu,
+setAdminStatsPeriod,
+setAdminStatsCustomDate,
 
     openCancelModal,
     closeCancelModal,
@@ -345,4 +349,39 @@ function changeBookingStatus(id, status) {
             loadBookings('admin', true);
         }
     );
+}
+function toggleAdminPeriodMenu() {
+    const menu = document.getElementById('admin-period-menu');
+
+    if (!menu) return;
+
+    menu.classList.toggle('hidden');
+}
+
+function closeAdminPeriodMenu() {
+    const menu = document.getElementById('admin-period-menu');
+
+    if (!menu) return;
+
+    menu.classList.add('hidden');
+}
+
+function setAdminStatsPeriod(period) {
+    state.adminStatsPeriod = period;
+    state.adminStatsCustomDate = '';
+
+    renderAdminStats(period);
+
+    closeAdminPeriodMenu();
+}
+
+function setAdminStatsCustomDate(date) {
+    if (!date) return;
+
+    state.adminStatsPeriod = 'custom';
+    state.adminStatsCustomDate = date;
+
+    renderAdminStats('custom');
+
+    closeAdminPeriodMenu();
 }
