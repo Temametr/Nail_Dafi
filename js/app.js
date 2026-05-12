@@ -1,4 +1,4 @@
-import { state, tg } from './state.js';
+import { state, tg, modalState } from './state.js';
 
 import {
     renderHomeMasters
@@ -271,11 +271,11 @@ function openMap() {
 function confirmCancel() {
 
     const bookingId =
-        window.modalState?.currentCancelBookingId;
+    modalState.currentCancelBookingId;
 
-    const role =
-        window.modalState?.currentCancelRole ||
-        (state.isAdmin ? 'admin' : 'client');
+const role =
+    modalState.currentCancelRole ||
+    (state.isAdmin ? 'admin' : 'client');
 
     const reasonInput =
         document.getElementById('cancel-reason');
