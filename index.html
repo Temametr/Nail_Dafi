@@ -233,9 +233,50 @@
                 <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
                     Beauty workspace
                 </div>
-                <h2 class="text-2xl font-black text-slate-950 tracking-tight mt-1">
-                    Сьогодні ✨
-                </h2>
+                <div class="relative mt-1">
+    <button
+        onclick="window.appAPI.toggleAdminPeriodMenu()"
+        class="flex items-center gap-2 text-2xl font-black text-slate-950 tracking-tight active:scale-95 transition-all"
+    >
+        <span id="admin-period-title">Сьогодні</span>
+        <span class="text-base">⌄</span>
+    </button>
+
+    <div
+        id="admin-period-menu"
+        class="hidden absolute left-0 top-10 z-40 w-56 bg-white rounded-3xl shadow-floating border border-slate-100 p-2 space-y-1"
+    >
+        <button onclick="window.appAPI.setAdminStatsPeriod('today')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50">
+            Сьогодні
+        </button>
+
+        <button onclick="window.appAPI.setAdminStatsPeriod('yesterday')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50">
+            Вчора
+        </button>
+
+        <button onclick="window.appAPI.setAdminStatsPeriod('week')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50">
+            Тиждень
+        </button>
+
+        <button onclick="window.appAPI.setAdminStatsPeriod('month')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50">
+            Місяць
+        </button>
+
+        <button onclick="window.appAPI.setAdminStatsPeriod('year')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50">
+            Рік
+        </button>
+
+        <label class="block px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 bg-slate-50">
+            Обрати день
+            <input
+                id="admin-period-date"
+                type="date"
+                onchange="window.appAPI.setAdminStatsCustomDate(this.value)"
+                class="mt-2 w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold outline-none"
+            >
+        </label>
+    </div>
+</div>
             </div>
 
             <button
