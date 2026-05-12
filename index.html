@@ -276,8 +276,9 @@
 <input
     id="admin-period-date"
     type="date"
+    onfocus="window.appAPI.prepareAdminDatePicker()"
     onchange="window.appAPI.setAdminStatsCustomDate(this.value)"
-    class="absolute opacity-0 pointer-events-none w-px h-px"
+    class="absolute opacity-0 w-px h-px"
 >
     </div>
 </div>
