@@ -316,7 +316,7 @@ const role =
         switchBookingTab('cancelled', role);
 
         if (role === 'admin') {
-            renderAdminStats('day');
+            renderAdminStats(state.adminStatsPeriod || 'today');
         }
     }
 
@@ -340,7 +340,7 @@ function changeBookingStatus(id, status) {
         'admin'
     );
 
-    renderAdminStats('day');
+    renderAdminStats(state.adminStatsPeriod || 'today');
 
     return changeBookingStatusAction(
         id,
