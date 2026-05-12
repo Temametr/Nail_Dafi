@@ -50,6 +50,17 @@ function parseYmdLocal(value) {
     return new Date(parts[0], parts[1] - 1, parts[2]);
 }
 
+function formatSelectedDate(value) {
+    if (!value) return 'Обраний день';
+
+    const date = parseYmdLocal(value);
+
+    return date.toLocaleDateString('uk-UA', {
+        day: 'numeric',
+        month: 'long'
+    });
+}
+
 function isSameDay(a, b) {
     return (
         a.getFullYear() === b.getFullYear() &&
@@ -68,8 +79,7 @@ export function renderAdminStats(period = 'today') {
         yesterday: 'Вчора',
         week: 'Тиждень',
         month: 'Місяць',
-        year: 'Рік',
-        custom: 'Обраний день'
+        year: 'Рік'
     };
 
     const title =
@@ -77,7 +87,9 @@ export function renderAdminStats(period = 'today') {
 
     if (title) {
         title.textContent =
-            periodTitleMap[selectedPeriod] || 'Сьогодні';
+    selectedPeriod === 'custom'
+        ? formatSelectedDate(state.adminStatsCustomDate)
+        : periodTitleMap[selectedPeriod] || 'Сьогодні';
     }
 
     const bookings = (state.adminBookings || []).filter(booking => {
