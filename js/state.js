@@ -39,6 +39,9 @@ export const state = {
     clientPhone: '',
 
     viewedMasterId: null,
+    
+    adminStatsPeriod: 'today',
+adminStatsCustomDate: '',
 
     editingBookingId: null,
 
