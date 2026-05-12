@@ -211,7 +211,7 @@
                     <h1 class="text-[19px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5" id="admin-header-title"></h1>
                 </div>
                 <button
-    onclick="window.Telegram.WebApp.showAlert('Профіль майстра скоро буде доступний ✨')"
+    onclick="window.appAPI.openAdminProfile()"
     class="relative z-10 w-12 h-12 rounded-full overflow-hidden bg-white border-2 border-white shadow-md active:scale-95 transition-all shrink-0"
 >
     <img
@@ -615,11 +615,12 @@
             </button>
 
             <button
-                onclick="window.appAPI.saveAdminProfileField()"
-                class="flex-1 py-4 rounded-2xl bg-slate-950 text-white font-bold shadow-lg active:scale-95 text-sm"
-            >
-                Зберегти
-            </button>
+    id="admin-profile-save-button"
+    onclick="window.appAPI.saveAdminProfileField()"
+    class="flex-1 py-4 rounded-2xl bg-slate-950 text-white font-bold shadow-lg active:scale-95 text-sm disabled:opacity-60 disabled:active:scale-100"
+>
+    Зберегти
+</button>
         </div>
     </div>
 </div>
