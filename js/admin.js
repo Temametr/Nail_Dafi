@@ -16,10 +16,7 @@ export function renderAdminStats(period = 'day') {
     const now = new Date();
 
     const bookings = (state.adminBookings || []).filter(booking => {
-
-        if (!booking.rawDate) {
-            return false;
-        }
+        if (!booking.rawDate) return false;
 
         const bookingDate = new Date(booking.rawDate);
 
@@ -28,7 +25,6 @@ export function renderAdminStats(period = 'day') {
         }
 
         if (period === 'week') {
-
             const diff =
                 (bookingDate - now) / (1000 * 60 * 60 * 24);
 
@@ -46,33 +42,30 @@ export function renderAdminStats(period = 'day') {
     });
 
     const activeBookings = bookings.filter(
-        booking =>
-            booking.status !== 'Отменено'
+        booking => booking.status !== STATUS_CANCELLED
     );
 
     const pendingBookings = bookings.filter(
-        booking =>
-            booking.status === 'В очереди'
+        booking => booking.status === STATUS_PENDING
+    );
+
+    const doneBookings = bookings.filter(
+        booking => booking.status === STATUS_DONE
     );
 
     const cancelledBookings = bookings.filter(
-        booking =>
-            booking.status === 'Отменено'
+        booking => booking.status === STATUS_CANCELLED
     );
 
-    let revenue = 0;
-
-    activeBookings.forEach(booking => {
-
+    const revenue = doneBookings.reduce((sum, booking) => {
         const service = state.services.find(
-            item =>
-                String(item.name) === String(booking.service)
+            item => String(item.name) === String(booking.service)
         );
 
-        if (!service) return;
+        if (!service) return sum;
 
-        revenue += Number(service.price || 0);
-    });
+        return sum + (Number(service.price) || 0);
+    }, 0);
 
     const statCount =
         document.getElementById('stat-count');
@@ -87,23 +80,19 @@ export function renderAdminStats(period = 'day') {
         document.getElementById('stat-cancelled');
 
     if (statCount) {
-        statCount.textContent =
-            activeBookings.length;
+        statCount.textContent = activeBookings.length;
     }
 
     if (statPending) {
-        statPending.textContent =
-            pendingBookings.length;
+        statPending.textContent = pendingBookings.length;
     }
 
     if (statRevenue) {
-        statRevenue.textContent =
-            `${revenue} ₴`;
+        statRevenue.textContent = `${revenue} ₴`;
     }
 
     if (statCancelled) {
-        statCancelled.textContent =
-            cancelledBookings.length;
+        statCancelled.textContent = cancelledBookings.length;
     }
 
     renderNearestBooking();
