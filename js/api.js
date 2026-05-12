@@ -64,3 +64,15 @@ export async function fetchOccupiedSlotsAPI(dateStr, masterId, ignoreBookingId) 
         }
     });
 }
+
+export async function updateMasterProfileFieldAPI(masterId, field, value) {
+    return await requestJson(API_URL, {
+        method: 'POST',
+        body: {
+            action: 'updateMasterProfileField',
+            masterId,
+            field,
+            value
+        }
+    });
+}
