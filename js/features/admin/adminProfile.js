@@ -1,5 +1,9 @@
 import { state, tg } from '../../state.js';
 
+import {
+    updateMasterProfileFieldAPI
+} from '../../api.js';
+
 let currentEditField = null;
 
 const FIELD_LABELS = {
@@ -156,7 +160,7 @@ export function closeAdminProfileEdit() {
     currentEditField = null;
 }
 
-export function saveAdminProfileField() {
+export async function saveAdminProfileField() {
     const master = getAdminMaster();
     const input = document.getElementById('admin-profile-edit-input');
 
@@ -192,8 +196,23 @@ export function saveAdminProfileField() {
         };
     }
 
+    try {
+    const response = await updateMasterProfileFieldAPI(
+        master.id,
+        currentEditField,
+        value
+    );
+
+    if (response.status !== 'success') {
+        throw new Error(response.message || 'Не вдалося зберегти');
+    }
+
     renderAdminProfile();
     closeAdminProfileEdit();
 
-    tg.showAlert('Збережено локально ✅\nНаступним кроком підключимо запис у таблицю.');
+    tg.showAlert('Збережено ✅');
+
+} catch (error) {
+    tg.showAlert(error.message || 'Помилка збереження');
+}
 }
