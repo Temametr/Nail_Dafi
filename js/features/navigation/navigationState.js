@@ -69,4 +69,29 @@ export function updateHeaderTitle(role, tabId) {
         </span>
     </div>
 `;
+updateAdminAvatar();
+}
+function getAdminAvatarImage() {
+    const masters = state.masters || [];
+    const admin = state.adminMasterInfo;
+
+    if (!admin) {
+        return 'media/IMG_0222.jpeg';
+    }
+
+    const index = masters.findIndex(master =>
+        String(master.id) === String(admin.id)
+    );
+
+    return index === 1
+        ? 'media/IMG_0223.jpeg'
+        : 'media/IMG_0222.jpeg';
+}
+
+function updateAdminAvatar() {
+    const avatar = getById('admin-avatar-img');
+
+    if (!avatar) return;
+
+    avatar.src = getAdminAvatarImage();
 }
