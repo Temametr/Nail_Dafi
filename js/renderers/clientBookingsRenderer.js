@@ -102,6 +102,12 @@ export function renderClientBookings() {
                                 </span>
                                 Майстер: ${sanitizeHtml(masterName)}
                             </div>
+                            <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5">
+    <span class="w-7 h-7 rounded-full bg-green-50 flex justify-center items-center text-green-600 text-[10px]">
+        📞
+    </span>
+    Телефон: ${sanitizeHtml(booking.clientPhone || 'Не вказано')}
+</div>
                         </div>
                     </div>
 
