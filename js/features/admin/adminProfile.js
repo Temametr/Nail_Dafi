@@ -160,6 +160,17 @@ export function closeAdminProfileEdit() {
     currentEditField = null;
 }
 
+function setProfileSaving(isSaving) {
+    const button = document.getElementById('admin-profile-save-button');
+
+    if (!button) return;
+
+    button.disabled = isSaving;
+    button.textContent = isSaving
+        ? 'Зберігаємо...'
+        : 'Зберегти';
+}
+
 export async function saveAdminProfileField() {
     const master = getAdminMaster();
     const input = document.getElementById('admin-profile-edit-input');
@@ -195,6 +206,8 @@ export async function saveAdminProfileField() {
             [currentEditField]: value
         };
     }
+    
+    setProfileSaving(true);
 
     try {
     const response = await updateMasterProfileFieldAPI(
@@ -214,5 +227,7 @@ export async function saveAdminProfileField() {
 
 } catch (error) {
     tg.showAlert(error.message || 'Помилка збереження');
+} finally {
+    setProfileSaving(false);
 }
 }
