@@ -225,29 +225,114 @@
 </button>
             </header>
 
-            <div id="admin-tab-home" class="admin-tab-content pt-[110px] px-4 animate-fade-in-up">
-                <div class="flex gap-2 mb-6 bg-white/40 border border-white/60 p-1.5 rounded-2xl mx-1 backdrop-blur-sm mt-2">
-                    <button onclick="window.appAPI.renderAdminStats('day')" id="stat-btn-day" class="flex-1 py-2.5 bg-white shadow-md rounded-xl text-xs font-bold uppercase tracking-wider text-slate-950 transition-all">Сьогодні</button>
-                    <button onclick="window.appAPI.renderAdminStats('week')" id="stat-btn-week" class="flex-1 py-2.5 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">Тиждень</button>
-                    <button onclick="window.appAPI.renderAdminStats('month')" id="stat-btn-month" class="flex-1 py-2.5 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">Місяць</button>
+           <div id="admin-tab-home" class="admin-tab-content pt-[110px] px-4 animate-fade-in-up">
+
+    <section class="mx-1 mt-2 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
+                    Beauty workspace
                 </div>
-                <div class="grid grid-cols-2 gap-4 mb-6 mx-1">
-                    <div class="card-convex p-6 flex flex-col justify-center animate-pop-in">
-                        <div class="text-4xl font-black text-slate-950 tracking-tighter" id="stat-count">0</div>
-                        <div class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest text-center">Записів</div>
-                    </div>
-                    <div class="grid grid-rows-2 gap-4">
-                        <div class="card-convex p-4 rounded-3xl flex flex-col justify-center animate-pop-in">
-                            <div class="text-xl font-black text-teal-600" id="stat-revenue">0 ₴</div>
-                            <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Дохід</div>
-                        </div>
-                        <div class="card-convex p-4 rounded-3xl flex flex-col justify-center animate-pop-in">
-                            <div class="text-xl font-black text-red-500" id="stat-cancelled">0</div>
-                            <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Скасовано</div>
-                        </div>
-                    </div>
+                <h2 class="text-2xl font-black text-slate-950 tracking-tight mt-1">
+                    Сьогодні ✨
+                </h2>
+            </div>
+
+            <button
+                onclick="window.appAPI.switchTab('admin', 'bookings')"
+                class="px-4 py-2.5 bg-slate-950 text-white rounded-2xl text-xs font-black shadow-lg active:scale-95 transition-all"
+            >
+                Розклад
+            </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div class="card-convex p-5">
+                <div id="stat-count" class="text-3xl font-black text-slate-950">0</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                    Записів
                 </div>
             </div>
+
+            <div class="card-convex p-5">
+                <div id="stat-pending" class="text-3xl font-black text-amber-500">0</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                    Очікують
+                </div>
+            </div>
+
+            <div class="card-convex p-5">
+                <div id="stat-revenue" class="text-2xl font-black text-emerald-600">0 ₴</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                    Дохід
+                </div>
+            </div>
+
+            <div class="card-convex p-5">
+                <div id="stat-cancelled" class="text-3xl font-black text-red-500">0</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                    Скасовано
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mx-1 mb-6">
+        <h3 class="font-bold text-xs text-rose-400 uppercase tracking-[0.15em] mb-3">
+            Найближчий запис
+        </h3>
+
+        <div id="admin-next-booking" class="card-convex p-5">
+            <div class="text-center text-sm font-medium text-slate-400 py-6">
+                Завантажуємо найближчий запис...
+            </div>
+        </div>
+    </section>
+
+    <section class="mx-1 mb-6">
+        <h3 class="font-bold text-xs text-rose-400 uppercase tracking-[0.15em] mb-3">
+            Швидкі дії
+        </h3>
+
+        <div class="grid grid-cols-2 gap-3">
+            <button onclick="window.appAPI.switchTab('admin', 'bookings')" class="card-convex p-4 text-left active:scale-95 transition-all">
+                <div class="text-2xl mb-2">📅</div>
+                <div class="text-sm font-black text-slate-900">Розклад</div>
+                <div class="text-[11px] font-medium text-slate-400 mt-1">Всі записи</div>
+            </button>
+
+            <button onclick="window.Telegram.WebApp.showAlert('Профіль майстра скоро буде доступний ✨')" class="card-convex p-4 text-left active:scale-95 transition-all">
+                <div class="text-2xl mb-2">👩‍🎨</div>
+                <div class="text-sm font-black text-slate-900">Профіль</div>
+                <div class="text-[11px] font-medium text-slate-400 mt-1">Сторінка майстра</div>
+            </button>
+
+            <button onclick="window.Telegram.WebApp.openLink('https://instagram.com/nailbar.dafi')" class="card-convex p-4 text-left active:scale-95 transition-all">
+                <div class="text-2xl mb-2">📸</div>
+                <div class="text-sm font-black text-slate-900">Instagram</div>
+                <div class="text-[11px] font-medium text-slate-400 mt-1">Відкрити</div>
+            </button>
+
+            <button onclick="window.Telegram.WebApp.showAlert('Клієнтська база скоро буде доступна 💎')" class="card-convex p-4 text-left active:scale-95 transition-all">
+                <div class="text-2xl mb-2">💎</div>
+                <div class="text-sm font-black text-slate-900">Клієнти</div>
+                <div class="text-[11px] font-medium text-slate-400 mt-1">CRM скоро</div>
+            </button>
+        </div>
+    </section>
+
+    <section class="mx-1 pb-6">
+        <h3 class="font-bold text-xs text-rose-400 uppercase tracking-[0.15em] mb-3">
+            Сьогоднішній розклад
+        </h3>
+
+        <div id="admin-today-schedule" class="space-y-3">
+            <div class="text-center text-sm font-medium text-slate-400 py-6">
+                Завантажуємо розклад...
+            </div>
+        </div>
+    </section>
+</div>
 
             <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
                 <div id="admin-booking-tabs" class="flex px-1 pb-4 gap-2 mt-2 overflow-x-auto hide-scrollbar">
