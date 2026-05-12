@@ -13,6 +13,7 @@ import {
     startReschedule,
     selectService,
     selectMaster,
+    confirmClientPhone,
     selectDate,
     selectTime,
     resetDateTimeSelection,
@@ -78,6 +79,7 @@ window.appAPI = {
     selectMaster,
     selectDate,
     selectTime,
+    confirmClientPhone,
 
     changeBookingStatus,
 
