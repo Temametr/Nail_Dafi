@@ -86,6 +86,7 @@ window.appAPI = {
     toggleAdminPeriodMenu,
 setAdminStatsPeriod,
 setAdminStatsCustomDate,
+prepareAdminDatePicker,
 
     openCancelModal,
     closeCancelModal,
@@ -388,4 +389,26 @@ localStorage.setItem('adminStatsCustomDate', date);
     renderAdminStats('custom');
 
     closeAdminPeriodMenu();
+}
+
+function getTodayYmd() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
+function prepareAdminDatePicker() {
+    const input = document.getElementById('admin-period-date');
+
+    if (!input) return;
+
+    if (!input.value) {
+        input.value =
+            state.adminStatsCustomDate ||
+            getTodayYmd();
+    }
 }
