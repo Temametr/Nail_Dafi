@@ -11,6 +11,35 @@ const STATUS_CONFIRMED = 'Подтверждено';
 const STATUS_DONE = 'Выполнено';
 const STATUS_CANCELLED = 'Отменено';
 
+function normalizeText(value) {
+    return String(value || '')
+        .trim()
+        .toLowerCase();
+}
+
+function parsePrice(value) {
+    const clean = String(value || '')
+        .replace(',', '.')
+        .replace(/[^\d.]/g, '');
+
+    return Number(clean) || 0;
+}
+
+function getServicePrice(serviceName) {
+    const targetName = normalizeText(serviceName);
+
+    const service = (state.services || []).find(item =>
+        normalizeText(item.name) === targetName
+    );
+
+    if (!service) {
+        console.warn('Service price not found:', serviceName);
+        return 0;
+    }
+
+    return parsePrice(service.price);
+}
+
 export function renderAdminStats(period = 'day') {
 
     const now = new Date();
@@ -58,13 +87,7 @@ export function renderAdminStats(period = 'day') {
     );
 
     const revenue = doneBookings.reduce((sum, booking) => {
-        const service = state.services.find(
-            item => String(item.name) === String(booking.service)
-        );
-
-        if (!service) return sum;
-
-        return sum + (Number(service.price) || 0);
+        return sum + getServicePrice(booking.service);
     }, 0);
 
     const statCount =
