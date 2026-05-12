@@ -59,7 +59,14 @@ export function updateHeaderTitle(role, tabId) {
         .replace(/^(Майстер|Мастер)\s+/i, '')
         .trim();
 
-    title.innerHTML = tabId === 'home'
-        ? `Панель: <span class="text-teal-600">${cleanName}</span> 📊`
-        : 'Розклад 📅';
+    title.innerHTML = `
+    <div class="flex flex-col leading-tight">
+        <span class="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
+            Привітик 👋
+        </span>
+        <span class="text-[20px] font-black text-slate-900 truncate">
+            ${cleanName}
+        </span>
+    </div>
+`;
 }
