@@ -40,8 +40,8 @@ export const state = {
 
     viewedMasterId: null,
     
-    adminStatsPeriod: 'today',
-adminStatsCustomDate: '',
+    adminStatsPeriod: localStorage.getItem('adminStatsPeriod') || 'today',
+adminStatsCustomDate: localStorage.getItem('adminStatsCustomDate') || '',
 
     editingBookingId: null,
 
