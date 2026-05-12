@@ -295,7 +295,8 @@ function renderNearestBooking() {
 
     const nearest = (state.adminBookings || [])
         .filter(booking =>
-            booking.status !== 'Отменено'
+            booking.status !== STATUS_CANCELLED &&
+            booking.status !== STATUS_DONE
         )
         .map(booking => {
 
@@ -318,10 +319,15 @@ function renderNearestBooking() {
     if (!nearest) {
 
         container.innerHTML = `
-            <div class="text-center py-6">
+            <div class="text-center py-7">
                 <div class="text-4xl mb-3">🌸</div>
-                <div class="text-sm font-bold text-slate-500">
-                    На сьогодні записів більше немає
+
+                <div class="text-sm font-black text-slate-700">
+                    Найближчих активних записів немає
+                </div>
+
+                <div class="text-xs font-medium text-slate-400 mt-1">
+                    Можна трохи видихнути ✨
                 </div>
             </div>
         `;
@@ -329,33 +335,121 @@ function renderNearestBooking() {
         return;
     }
 
+    const statusData =
+        getStatusData(nearest.status);
+
+    const isPending =
+        nearest.status === STATUS_PENDING;
+
+    const isConfirmed =
+        nearest.status === STATUS_CONFIRMED;
+
     container.innerHTML = `
-        <div class="flex items-start justify-between gap-4">
+        <div class="space-y-5">
 
-            <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between gap-4">
 
-                <div class="text-lg font-black text-slate-950 truncate">
-                    ${sanitizeHtml(nearest.clientName)}
-                </div>
+                <div class="flex-1 min-w-0">
 
-                <div class="text-sm font-semibold text-slate-500 mt-1">
-                    ${sanitizeHtml(nearest.service)}
-                </div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] font-black px-3 py-1.5 rounded-full border ${statusData.color}">
+                            ${statusData.text}
+                        </span>
 
-                <div class="flex items-center gap-2 mt-4">
-
-                    <div class="px-3 py-2 rounded-2xl bg-blue-50 text-blue-600 text-xs font-black">
-                        🕒 ${sanitizeHtml(nearest.time)}
+                        <span class="text-[10px] font-black px-3 py-1.5 rounded-full bg-slate-100 text-slate-500">
+                            Найближчий
+                        </span>
                     </div>
 
-                    <div class="px-3 py-2 rounded-2xl bg-emerald-50 text-emerald-600 text-xs font-black">
-                        📞 ${sanitizeHtml(nearest.clientPhone || '—')}
+                    <div class="text-xl font-black text-slate-950 truncate">
+                        ${sanitizeHtml(nearest.clientName)}
                     </div>
+
+                    <div class="text-sm font-semibold text-slate-500 mt-1 truncate">
+                        ${sanitizeHtml(nearest.service)}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+
+                        <div class="px-3 py-3 rounded-2xl bg-blue-50 text-blue-600">
+                            <div class="text-[9px] font-black uppercase tracking-wider opacity-60">
+                                Час
+                            </div>
+                            <div class="text-sm font-black mt-0.5">
+                                ${sanitizeHtml(nearest.time)}
+                            </div>
+                        </div>
+
+                        <div class="px-3 py-3 rounded-2xl bg-emerald-50 text-emerald-600">
+                            <div class="text-[9px] font-black uppercase tracking-wider opacity-60">
+                                Телефон
+                            </div>
+                            <div class="text-sm font-black mt-0.5 truncate">
+                                ${sanitizeHtml(nearest.clientPhone || '—')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-16 h-16 rounded-[1.4rem] bg-gradient-to-br from-rose-100 to-blue-100 flex items-center justify-center text-3xl shadow-inner shrink-0">
+                    💅
                 </div>
             </div>
 
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-100 to-blue-100 flex items-center justify-center text-2xl shadow-inner shrink-0">
-                💅
+            <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
+
+                ${
+                    nearest.clientTelegram
+                        ? `
+                            <button
+                                onclick="window.appAPI.openTelegramChat('${nearest.clientTelegram}')"
+                                class="card-convex-sm py-3 bg-teal-50 text-teal-800 rounded-xl text-sm font-black active:scale-95 transition-all"
+                            >
+                                💬 Написати
+                            </button>
+                        `
+                        : `
+                            <a
+                                href="tel:${sanitizeHtml(nearest.clientPhone || '')}"
+                                class="card-convex-sm py-3 bg-teal-50 text-teal-800 rounded-xl text-sm font-black active:scale-95 transition-all text-center"
+                            >
+                                📞 Подзвонити
+                            </a>
+                        `
+                }
+
+                ${
+                    isPending
+                        ? `
+                            <button
+                                onclick="window.appAPI.changeBookingStatus('${nearest.id}', '${STATUS_CONFIRMED}')"
+                                class="card-convex-sm py-3 bg-slate-950 text-white rounded-xl text-sm font-black shadow-lg active:scale-95 transition-all"
+                            >
+                                Прийняти
+                            </button>
+                        `
+                        : ''
+                }
+
+                ${
+                    isConfirmed
+                        ? `
+                            <button
+                                onclick="window.appAPI.changeBookingStatus('${nearest.id}', '${STATUS_DONE}')"
+                                class="card-convex-sm py-3 bg-emerald-500 text-white rounded-xl text-sm font-black shadow-lg active:scale-95 transition-all"
+                            >
+                                Виконано
+                            </button>
+                        `
+                        : ''
+                }
+
+                <button
+                    onclick="window.appAPI.openCancelModal('${nearest.id}', 'admin')"
+                    class="card-convex-sm py-3 bg-white text-red-600 rounded-xl text-sm font-black border border-red-100 active:scale-95 transition-all ${isPending || isConfirmed ? 'col-span-2' : ''}"
+                >
+                    Скасувати
+                </button>
             </div>
         </div>
     `;
