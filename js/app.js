@@ -369,6 +369,8 @@ function closeAdminPeriodMenu() {
 function setAdminStatsPeriod(period) {
     state.adminStatsPeriod = period;
     state.adminStatsCustomDate = '';
+    localStorage.setItem('adminStatsPeriod', period);
+localStorage.removeItem('adminStatsCustomDate');
 
     renderAdminStats(period);
 
@@ -380,6 +382,8 @@ function setAdminStatsCustomDate(date) {
 
     state.adminStatsPeriod = 'custom';
     state.adminStatsCustomDate = date;
+    localStorage.setItem('adminStatsPeriod', 'custom');
+localStorage.setItem('adminStatsCustomDate', date);
 
     renderAdminStats('custom');
 
