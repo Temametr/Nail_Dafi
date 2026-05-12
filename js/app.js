@@ -105,8 +105,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     setBackButtonHandler(handleBack);
 
     setBookingSuccessHandler(() => {
-        switchTab('client', 'bookings');
-    });
+    state.currentBookingFilter = 'pending';
+
+    switchTab('client', 'bookings');
+
+    loadBookings('client', true);
+});
 
     await loadApp();
 });
