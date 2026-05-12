@@ -35,6 +35,8 @@ export const state = {
 
     selectedDate: null,
     selectedTime: null,
+    
+    clientPhone: '',
 
     viewedMasterId: null,
 
