@@ -40,34 +40,80 @@ function getServicePrice(serviceName) {
     return parsePrice(service.price);
 }
 
-export function renderAdminStats(period = 'day') {
+export function renderAdminStats(period = 'today') {
 
-    const now = new Date();
+    const selectedPeriod =
+        period || state.adminStatsPeriod || 'today';
+
+    const periodTitleMap = {
+        today: 'Сьогодні',
+        yesterday: 'Вчора',
+        week: 'Тиждень',
+        month: 'Місяць',
+        year: 'Рік',
+        custom: 'Обраний день'
+    };
+
+    const title =
+        document.getElementById('admin-period-title');
+
+    if (title) {
+        title.textContent =
+            periodTitleMap[selectedPeriod] || 'Сьогодні';
+    }
 
     const bookings = (state.adminBookings || []).filter(booking => {
         if (!booking.rawDate) return false;
 
         const bookingDate = new Date(booking.rawDate);
+        const now = new Date();
 
-        if (period === 'day') {
-            return bookingDate.toDateString() === now.toDateString();
+        bookingDate.setHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
+
+        if (selectedPeriod === 'today') {
+            return bookingDate.getTime() === now.getTime();
         }
 
-        if (period === 'week') {
-            const diff =
-                (bookingDate - now) / (1000 * 60 * 60 * 24);
+        if (selectedPeriod === 'yesterday') {
+            const yesterday = new Date(now);
+            yesterday.setDate(now.getDate() - 1);
 
-            return diff >= -7 && diff <= 7;
+            return bookingDate.getTime() === yesterday.getTime();
         }
 
-        if (period === 'month') {
+        if (selectedPeriod === 'week') {
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - 6);
+
+            return bookingDate >= weekStart && bookingDate <= now;
+        }
+
+        if (selectedPeriod === 'month') {
             return (
                 bookingDate.getMonth() === now.getMonth() &&
                 bookingDate.getFullYear() === now.getFullYear()
             );
         }
 
-        return true;
+        if (selectedPeriod === 'year') {
+            return (
+                bookingDate.getFullYear() === now.getFullYear()
+            );
+        }
+
+        if (selectedPeriod === 'custom') {
+            if (!state.adminStatsCustomDate) return false;
+
+            const customDate =
+                new Date(state.adminStatsCustomDate);
+
+            customDate.setHours(0, 0, 0, 0);
+
+            return bookingDate.getTime() === customDate.getTime();
+        }
+
+        return false;
     });
 
     const activeBookings = bookings.filter(
