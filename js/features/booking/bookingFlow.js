@@ -85,7 +85,7 @@ export function startClientBookingFlow() {
         .getElementById('tab-booking-flow')
         .classList.remove('hidden-step');
 
-    ['home', 'bookings', 'messages', 'profile'].forEach(nav => {
+    ['home', 'bookings', 'profile'].forEach(nav => {
         const btn = document.getElementById(`client-nav-${nav}`);
 
         if (!btn) return;
@@ -199,7 +199,7 @@ export function startReschedule(id) {
         .getElementById('tab-booking-flow')
         .classList.remove('hidden-step');
 
-    ['home', 'bookings', 'messages', 'profile']
+    ['home', 'bookings', 'profile']
         .forEach(nav => {
             const btn = document.getElementById(
                 `client-nav-${nav}`
