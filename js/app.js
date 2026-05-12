@@ -68,6 +68,14 @@ import {
     openTelegramChat
 } from './utils/telegramChat.js';
 
+import {
+    openAdminProfile,
+    closeAdminProfile,
+    openAdminProfileEdit,
+    closeAdminProfileEdit,
+    saveAdminProfileField
+} from './features/admin/adminProfile.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -99,6 +107,12 @@ prepareAdminDatePicker,
     bookFromProfile,
     
     openTelegramChat,
+    
+    openAdminProfile,
+closeAdminProfile,
+openAdminProfileEdit,
+closeAdminProfileEdit,
+saveAdminProfileField,
 
     openMap
 };
