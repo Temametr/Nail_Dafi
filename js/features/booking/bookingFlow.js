@@ -71,6 +71,7 @@ export function startClientBookingFlow() {
     state.editingBookingId = null;
     state.selectedMaster = null;
     state.viewedMasterId = null;
+    state.clientPhone = '';
 
     isSubmittingBooking = false;
 
@@ -244,12 +245,29 @@ export function selectService(id) {
     }
 
     if (state.selectedMaster) {
-        renderCalendar();
-        showStep('step-date');
-    } else {
+    showStep('step-phone');
+} else {
         renderMasters();
         showStep('step-master');
     }
+}
+
+export function confirmClientPhone() {
+    const input = document.getElementById('client-phone-input');
+
+    const phone = String(input?.value || '')
+        .replace(/[^\d+]/g, '')
+        .trim();
+
+    if (!phone || phone.length < 10) {
+        return tg.showAlert('Будь ласка, вкажіть коректний номер телефону.');
+    }
+
+    state.clientPhone = phone;
+
+    renderCalendar();
+
+    showStep('step-date');
 }
 
 export function selectMaster(id) {
@@ -263,9 +281,7 @@ export function selectMaster(id) {
         return tg.showAlert('Майстра не знайдено');
     }
 
-    renderCalendar();
-
-    showStep('step-date');
+    showStep('step-phone');
 }
 
 export async function selectDate(date, btn) {
@@ -412,6 +428,7 @@ export function selectTime(time, btn) {
 
                     clientId,
                     clientName,
+                    clientPhone: state.clientPhone,
 
                     service: state.selectedService.name,
 
