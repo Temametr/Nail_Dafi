@@ -20,6 +20,69 @@ import {
     logError
 } from '../../core/ui/notify.js';
 
+import {
+    getCache,
+    setCache
+} from '../../core/cache/localCache.js';
+
+const BOOKINGS_CACHE_TTL_MS = 2 * 60 * 1000;
+
+function getBookingsCacheKey(role) {
+    return `nail_dafi_${role}_bookings`;
+}
+
+function areBookingsEqual(currentBookings, nextBookings) {
+    try {
+        return JSON.stringify(currentBookings || []) === JSON.stringify(nextBookings || []);
+    } catch (_) {
+        return false;
+    }
+}
+
+function applyBookings(role, bookings, dash = false, forceRender = false) {
+    if (role === 'admin') {
+        const hasChanged = !areBookingsEqual(state.adminBookings, bookings);
+
+        state.adminBookings = bookings || [];
+
+        if (!hasChanged && !forceRender) {
+            return;
+        }
+
+        if (dash) {
+            renderAdminStats('day');
+        } else {
+            renderAdminBookings();
+        }
+
+        return;
+    }
+
+    const hasChanged = !areBookingsEqual(state.clientBookings, bookings);
+
+    state.clientBookings = bookings || [];
+
+    if (!hasChanged && !forceRender) {
+        return;
+    }
+
+    renderClientBookings();
+}
+
+function hydrateFromCache(role, dash = false) {
+    const cachedBookings = getCache(
+        getBookingsCacheKey(role)
+    );
+
+    if (!cachedBookings || !Array.isArray(cachedBookings)) {
+        return false;
+    }
+
+    applyBookings(role, cachedBookings, dash, true);
+
+    return true;
+}
+
 export async function loadBookings(
     role,
     silent = false,
@@ -31,7 +94,9 @@ export async function loadBookings(
             : 'admin-bookings-list'
         : 'my-bookings-list';
 
-    if (!silent && containerId) {
+    const usedCache = hydrateFromCache(role, dash);
+
+    if (!silent && !usedCache && containerId) {
         renderLoading(containerId, {
             color: role === 'admin'
                 ? 'border-t-teal-500'
@@ -41,27 +106,28 @@ export async function loadBookings(
 
     try {
         const data = await fetchBookings(role);
+        const freshBookings = data.bookings || [];
 
-        if (role === 'admin') {
-            state.adminBookings = data.bookings || [];
+        setCache(
+            getBookingsCacheKey(role),
+            freshBookings,
+            BOOKINGS_CACHE_TTL_MS
+        );
 
-            if (dash) {
-                renderAdminStats('day');
-            } else {
-                renderAdminBookings();
-            }
-        } else {
-            state.clientBookings = data.bookings || [];
+        applyBookings(
+            role,
+            freshBookings,
+            dash,
+            false
+        );
 
-            renderClientBookings();
-        }
     } catch (error) {
         logError(
             'Помилка завантаження записів',
             error
         );
 
-        if (!silent && containerId) {
+        if (!silent && !usedCache && containerId) {
             renderError(containerId);
         }
     }
