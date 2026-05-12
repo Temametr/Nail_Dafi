@@ -266,15 +266,19 @@
             Рік
         </button>
 
-        <label class="block px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 bg-slate-50">
-            Обрати день
-            <input
-                id="admin-period-date"
-                type="date"
-                onchange="window.appAPI.setAdminStatsCustomDate(this.value)"
-                class="mt-2 w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold outline-none"
-            >
-        </label>
+        <button
+    onclick="window.appAPI.openAdminDatePicker()"
+    class="w-full text-left px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50"
+>
+    Обрати день
+</button>
+
+<input
+    id="admin-period-date"
+    type="date"
+    onchange="window.appAPI.setAdminStatsCustomDate(this.value)"
+    class="hidden"
+>
     </div>
 </div>
             </div>
