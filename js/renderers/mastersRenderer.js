@@ -34,6 +34,8 @@ export function renderHomeMasters() {
                 <img
                     src="${getMasterImage(originalIndex)}"
                     alt="${cleanMasterName(master.name)}"
+                     loading="lazy"
+                     decoding="async"
                     class="absolute inset-0 w-full h-full object-cover object-top"
                 >
 
@@ -69,6 +71,8 @@ export function renderMasters() {
                     <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-sm">
                         <img
                             src="${getMasterImage(index)}"
+                             loading="lazy"
+                             decoding="async"
                             class="w-full h-full object-cover object-top"
                         >
                     </div>
