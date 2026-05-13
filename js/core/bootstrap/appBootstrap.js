@@ -30,6 +30,12 @@ export async function loadInitialData() {
 
         if (cachedData) {
             applyInitialData(cachedData);
+
+            refreshInitialDataInBackground();
+
+            return {
+                fromCache: true
+            };
         }
 
         const freshData = await fetchInitialData();
@@ -41,12 +47,39 @@ export async function loadInitialData() {
             freshData,
             APP_CONFIG.cache.initDataTtlMs
         );
+
+        return {
+            fromCache: false
+        };
+
     } catch (error) {
         logError('Помилка завантаження даних', error);
 
         if (!state.services.length || !state.masters.length) {
             showNetworkError();
         }
+
+        return {
+            fromCache: false,
+            error
+        };
+    }
+}
+
+async function refreshInitialDataInBackground() {
+    try {
+        const freshData = await fetchInitialData();
+
+        applyInitialData(freshData);
+
+        setCache(
+            APP_CONFIG.cache.initDataKey,
+            freshData,
+            APP_CONFIG.cache.initDataTtlMs
+        );
+
+    } catch (error) {
+        logError('Фонове оновлення даних не вдалося', error);
     }
 }
 
@@ -84,7 +117,13 @@ export async function bootstrapAdmin() {
 export function hideLoader() {
     const loader = getById('loader');
 
-    if (loader) {
-        loader.classList.add('hidden');
-    }
+    if (!loader) return;
+
+    loader.style.opacity = '0';
+    loader.style.transform = 'scale(0.98)';
+    loader.style.transition = 'opacity 180ms ease, transform 180ms ease';
+
+    setTimeout(() => {
+        loader.classList.add('hidden-step');
+    }, 180);
 }
