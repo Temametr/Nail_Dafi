@@ -212,12 +212,12 @@ async function loadApp() {
     try {
         await loadInitialData();
 
-        hideLoader();
-
         if (state.isAdmin) {
             await bootstrapAdmin();
 
             switchTab('admin', 'home');
+
+            hideLoader();
 
             setTimeout(() => {
                 loadBookings('admin', true);
@@ -235,6 +235,7 @@ async function loadApp() {
 
         if (!hasPhone) {
             showClientContactGate();
+            hideLoader();
             return;
         }
 
@@ -243,6 +244,8 @@ async function loadApp() {
         await bootstrapClient();
 
         switchTab('client', 'home');
+
+        hideLoader();
 
         setTimeout(() => {
             loadBookings('client', true);
