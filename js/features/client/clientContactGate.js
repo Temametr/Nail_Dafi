@@ -88,8 +88,16 @@ export function showClientContactGate() {
     }
 
     if (gate) {
-        gate.classList.remove('hidden-step');
-    }
+    gate.style.opacity = '0';
+    gate.style.transform = 'translateY(8px)';
+    gate.classList.remove('hidden-step');
+
+    requestAnimationFrame(() => {
+        gate.style.transition = 'opacity 180ms ease, transform 180ms ease';
+        gate.style.opacity = '1';
+        gate.style.transform = 'translateY(0)';
+    });
+}
 }
 
 export function hideClientContactGate() {
