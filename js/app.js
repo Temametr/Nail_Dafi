@@ -104,6 +104,13 @@ import {
     deleteClientFromProfile
 } from './features/admin/adminClients.js';
 
+import {
+    checkClientPhoneFast,
+    showClientContactGate,
+    hideClientContactGate,
+    requestClientContactAtLaunch
+} from './features/client/clientContactGate.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -122,9 +129,9 @@ window.appAPI = {
     changeBookingStatus,
     
     toggleAdminPeriodMenu,
-setAdminStatsPeriod,
-setAdminStatsCustomDate,
-prepareAdminDatePicker,
+    setAdminStatsPeriod,
+    setAdminStatsCustomDate,
+    prepareAdminDatePicker,
 
     openCancelModal,
     closeCancelModal,
@@ -137,12 +144,12 @@ prepareAdminDatePicker,
     bookFromProfile,
     
     openManualBookingModal,
-closeManualBookingModal,
-manualBookingNextFromClient,
-selectManualService,
-selectManualMaster,
-selectManualDate,
-selectManualTime,
+    closeManualBookingModal,
+    manualBookingNextFromClient,
+    selectManualService,
+    selectManualMaster,
+    selectManualDate,
+    selectManualTime,
 createManualBooking,
 
 loadAdminClients,
@@ -168,6 +175,18 @@ toggleClientBlockedFromProfile,
 deleteClientFromProfile,
 
     openMap
+    
+    requestClientContactAtLaunch: () => {
+    requestClientContactAtLaunch(async () => {
+        await bootstrapClient();
+
+        switchTab('client', 'home');
+
+        setTimeout(() => {
+            loadBookings('client', true);
+        }, 300);
+    });
+},
 };
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -208,6 +227,14 @@ async function loadApp() {
 }, 800);
 
 } else {
+    const hasPhone = await checkClientPhoneFast();
+
+    if (!hasPhone) {
+        showClientContactGate();
+        return;
+    }
+
+    hideClientContactGate();
 
     await bootstrapClient();
 
