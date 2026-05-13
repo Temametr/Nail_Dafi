@@ -2,12 +2,14 @@ import {
     fetchBookings,
     updateBookingStatusAPI,
     submitBookingAPI,
-    fetchOccupiedSlotsAPI
+    fetchOccupiedSlotsAPI,
+    fetchClientContactAPI
 } from '../api.js';
 
 export {
     fetchBookings,
     updateBookingStatusAPI,
     submitBookingAPI,
-    fetchOccupiedSlotsAPI
+    fetchOccupiedSlotsAPI,
+    fetchClientContactAPI
 };
