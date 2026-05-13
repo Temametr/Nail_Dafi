@@ -200,7 +200,6 @@ export async function createManualBooking() {
 
         await loadBookings(
             'admin',
-            state.adminMasterInfo.id,
             true
         );
 
