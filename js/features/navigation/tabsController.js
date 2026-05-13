@@ -28,6 +28,10 @@ import {
     updateHeaderTitle
 } from './navigationState.js';
 
+import {
+    loadAdminClients
+} from '../admin/adminClients.js';
+
 export function switchTab({
     role,
     tabId,
@@ -94,7 +98,9 @@ export function switchTab({
         startPollingManager(() => {
             loadBookings('admin', true);
         });
-    }
+    } else if (tabId === 'clients') {
+    loadAdminClients();
+}
 }
 
 export function switchBookingTab({
