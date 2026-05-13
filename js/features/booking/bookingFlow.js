@@ -428,6 +428,7 @@ export function selectTime(time, btn) {
 
                     clientId,
                     clientName,
+                     clientTelegram: state.user?.username || '',
                     clientPhone: state.clientPhone,
 
                     service: state.selectedService.name,
