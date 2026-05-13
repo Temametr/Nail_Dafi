@@ -4,6 +4,11 @@ import {
     updateMasterProfileFieldAPI
 } from '../../api.js';
 
+import {
+    showBackButton,
+    hideBackButton
+} from '../../core/telegram/backButton.js';
+
 let currentEditField = null;
 
 const FIELD_LABELS = {
@@ -57,6 +62,8 @@ export function openAdminProfile() {
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+
+    showBackButton();
 }
 
 export function closeAdminProfile() {
@@ -66,6 +73,8 @@ export function closeAdminProfile() {
 
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+
+    hideBackButton();
 }
 
 export function renderAdminProfile() {
