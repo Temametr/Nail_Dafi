@@ -436,13 +436,3 @@ function prepareAdminDatePicker() {
             getTodayYmd();
     }
 }
-
-export async function createBookingAPI(data) {
-    return await requestJson(API_URL, {
-        method: 'POST',
-        body: {
-            action: 'createBooking',
-            ...data
-        }
-    });
-}
