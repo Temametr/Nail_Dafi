@@ -84,6 +84,12 @@ function isTelegramClient(client) {
     );
 }
 
+function getClientSourceLabel(client) {
+    return isTelegramClient(client)
+        ? 'Telegram-клієнт'
+        : 'Клієнт від майстра';
+}
+
 function getFilteredClients() {
     const query = normalize(state.adminClientsSearchQuery);
 
@@ -256,7 +262,7 @@ export function renderAdminClients() {
                         </div>
 
                         <div class="text-[12px] font-bold text-slate-400 mt-1 truncate">
-                            ${hasTelegram ? 'Telegram-клієнт' : 'Ручний клієнт'}
+                            ${getClientSourceLabel(client)}
                         </div>
 
                         <div class="mt-3 space-y-1.5">
@@ -511,9 +517,7 @@ export function renderClientProfile(client = null) {
 
     setClientProfileText(
         'client-profile-source',
-        hasTelegram
-            ? 'Telegram-клієнт'
-            : 'Ручний клієнт'
+        getClientSourceLabel(currentClient)
     );
 
     setClientProfileText(
