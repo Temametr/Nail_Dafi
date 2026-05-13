@@ -1,7 +1,8 @@
 import { state, tg } from '../../state.js';
 
 import {
-    createBookingAPI
+    createBookingAPI,
+    fetchOccupiedSlotsAPI
 } from '../../api.js';
 
 import {
@@ -12,241 +13,505 @@ import {
     renderAdminStats
 } from '../../admin.js';
 
-export function openManualBookingModal() {
+const manualState = {
+    clientName: '',
+    clientPhone: '',
+    comment: '',
+    selectedService: null,
+    selectedMaster: null,
+    selectedDate: null,
+    selectedTime: null,
+    requestId: 0,
+    isSubmitting: false
+};
 
-    const modal =
-        document.getElementById(
-            'manual-booking-modal'
+function normalizePhone(value) {
+    return String(value || '')
+        .replace(/[^\d+]/g, '')
+        .trim();
+}
+
+function cleanPhoneForId(value) {
+    return String(value || '')
+        .replace(/\D/g, '')
+        .trim();
+}
+
+function setHtml(id, html) {
+    const element = document.getElementById(id);
+
+    if (!element) return;
+
+    element.innerHTML = html;
+}
+
+function setText(id, text) {
+    const element = document.getElementById(id);
+
+    if (!element) return;
+
+    element.textContent = text;
+}
+
+function showManualStep(stepId) {
+    document
+        .querySelectorAll('.manual-step')
+        .forEach(element => element.classList.add('hidden-step'));
+
+    const target = document.getElementById(stepId);
+
+    if (target) {
+        target.classList.remove('hidden-step');
+    }
+
+    const footer = document.getElementById('manual-booking-footer');
+
+    if (footer) {
+        footer.classList.toggle(
+            'hidden',
+            stepId !== 'manual-step-time' || !manualState.selectedTime
         );
+    }
+}
+
+function resetManualState() {
+    manualState.clientName = '';
+    manualState.clientPhone = '';
+    manualState.comment = '';
+    manualState.selectedService = null;
+    manualState.selectedMaster = null;
+    manualState.selectedDate = null;
+    manualState.selectedTime = null;
+    manualState.requestId++;
+    manualState.isSubmitting = false;
+}
+
+function resetManualForm() {
+    [
+        'manual-booking-name',
+        'manual-booking-phone',
+        'manual-booking-comment'
+    ].forEach(id => {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.value = '';
+        }
+    });
+
+    setHtml('manual-services-list', '');
+    setHtml('manual-masters-list', '');
+    setHtml('manual-date-scroll', '');
+    setHtml('manual-time-slots', '');
+}
+
+function getTodayYmd(offset = 0) {
+    const date = new Date();
+    date.setDate(date.getDate() + offset);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
+function getManualAvailableTimes() {
+    const workHours =
+        String(manualState.selectedMaster?.workHours || '10:00-20:00');
+
+    const match =
+        workHours.match(/(\d{1,2}):?(\d{2})?\s*[-–]\s*(\d{1,2}):?(\d{2})?/);
+
+    let startHour = 10;
+    let endHour = 20;
+
+    if (match) {
+        startHour = Number(match[1]) || 10;
+        endHour = Number(match[3]) || 20;
+    }
+
+    const times = [];
+
+    for (let hour = startHour; hour < endHour; hour++) {
+        times.push(`${String(hour).padStart(2, '0')}:00`);
+    }
+
+    return times;
+}
+
+function isManualWorkDay(dateYmd) {
+    const master = manualState.selectedMaster;
+
+    if (!master) return false;
+
+    const date = new Date(dateYmd);
+    const day = date.getDay();
+
+    return (master.workDays || []).includes(day);
+}
+
+function renderManualServices() {
+    setHtml(
+        'manual-services-list',
+        (state.services || []).map((service, index) => `
+            <button
+                onclick="window.appAPI.selectManualService('${service.id}')"
+                class="card-convex p-5 w-full text-left active:scale-95 transition-all animate-pop-in"
+                style="animation-delay: ${index * 35}ms"
+            >
+                <div class="flex justify-between gap-4">
+                    <div>
+                        <div class="text-base font-black text-slate-950">
+                            ${service.name}
+                        </div>
+
+                        <div class="text-xs font-semibold text-slate-400 mt-1">
+                            ${service.duration || 60} хв
+                        </div>
+                    </div>
+
+                    <div class="text-sm font-black text-blue-600">
+                        ${service.price || ''}
+                    </div>
+                </div>
+            </button>
+        `).join('')
+    );
+}
+
+function renderManualMasters() {
+    setHtml(
+        'manual-masters-list',
+        (state.masters || []).map((master, index) => `
+            <button
+                onclick="window.appAPI.selectManualMaster('${master.id}')"
+                class="card-convex p-5 w-full text-left active:scale-95 transition-all animate-pop-in"
+                style="animation-delay: ${index * 35}ms"
+            >
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                        <img
+                            src="${index === 1 ? 'media/IMG_0223.jpeg' : 'media/IMG_0222.jpeg'}"
+                            class="w-full h-full object-cover object-top"
+                            loading="lazy"
+                            decoding="async"
+                        >
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <div class="text-base font-black text-slate-950 truncate">
+                            ${master.name}
+                        </div>
+
+                        <div class="text-xs font-semibold text-slate-400 mt-1">
+                            ${master.workHours || ''}
+                        </div>
+                    </div>
+                </div>
+            </button>
+        `).join('')
+    );
+}
+
+function renderManualCalendar() {
+    const days = [];
+
+    for (let i = 0; i < 21; i++) {
+        const dateYmd = getTodayYmd(i);
+        const date = new Date(dateYmd);
+        const isWorkDay = isManualWorkDay(dateYmd);
+
+        const dayName = date.toLocaleDateString('uk-UA', {
+            weekday: 'short'
+        });
+
+        const dayNumber = date.getDate();
+
+        days.push(`
+            <button
+                ${isWorkDay ? `onclick="window.appAPI.selectManualDate('${dateYmd}', this)"` : 'disabled'}
+                class="manual-date-btn rounded-2xl py-3 text-center border text-xs font-black transition-all ${
+                    isWorkDay
+                        ? 'bg-white text-slate-700 border-white shadow-sm active:scale-95'
+                        : 'bg-slate-100 text-slate-300 border-slate-100 opacity-60'
+                }"
+            >
+                <div class="uppercase text-[9px] opacity-60">
+                    ${dayName}
+                </div>
+                <div class="text-base mt-1">
+                    ${dayNumber}
+                </div>
+            </button>
+        `);
+    }
+
+    setHtml('manual-date-scroll', days.join(''));
+}
+
+function renderManualTimeSlots(occupiedSlots = []) {
+    const occupied = new Set(occupiedSlots || []);
+    const times = getManualAvailableTimes();
+
+    if (!times.length) {
+        setHtml(
+            'manual-time-slots',
+            `
+            <div class="col-span-4 text-center text-slate-400 py-6 font-medium bg-white rounded-2xl">
+                Немає доступного часу
+            </div>
+            `
+        );
+        return;
+    }
+
+    setHtml(
+        'manual-time-slots',
+        times.map(time => {
+            const disabled = occupied.has(time);
+
+            return `
+                <button
+                    ${disabled ? 'disabled' : `onclick="window.appAPI.selectManualTime('${time}', this)"`}
+                    class="manual-time-btn rounded-2xl py-3 text-sm font-black border transition-all ${
+                        disabled
+                            ? 'bg-slate-100 text-slate-300 border-slate-100 opacity-60'
+                            : 'bg-white text-slate-700 border-white shadow-sm active:scale-95'
+                    }"
+                >
+                    ${time}
+                </button>
+            `;
+        }).join('')
+    );
+}
+
+export function openManualBookingModal() {
+    const modal = document.getElementById('manual-booking-modal');
 
     if (!modal) return;
 
-    fillManualBookingData();
+    resetManualState();
+    resetManualForm();
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+
+    showManualStep('manual-step-client');
 }
 
 export function closeManualBookingModal() {
-
-    const modal =
-        document.getElementById(
-            'manual-booking-modal'
-        );
+    const modal = document.getElementById('manual-booking-modal');
 
     if (!modal) return;
 
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+
+    resetManualState();
 }
 
-function fillManualBookingData() {
+export function manualBookingNextFromClient() {
+    const name = String(
+        document.getElementById('manual-booking-name')?.value || ''
+    ).trim();
 
-    const masterSelect =
-        document.getElementById(
-            'manual-booking-master'
-        );
+    const phone = normalizePhone(
+        document.getElementById('manual-booking-phone')?.value
+    );
 
-    const serviceSelect =
-        document.getElementById(
-            'manual-booking-service'
-        );
+    const comment = String(
+        document.getElementById('manual-booking-comment')?.value || ''
+    ).trim();
 
-    if (masterSelect) {
-
-        masterSelect.innerHTML =
-            (state.masters || []).map(master => `
-
-                <option value="${master.id}">
-                    ${master.name}
-                </option>
-
-            `).join('');
+    if (!name) {
+        return tg.showAlert('Введіть імʼя клієнта');
     }
 
-    if (serviceSelect) {
+    if (!phone || phone.length < 10) {
+        return tg.showAlert('Введіть коректний номер телефону');
+    }
 
-        serviceSelect.innerHTML =
-            (state.services || []).map(service => `
+    manualState.clientName = name;
+    manualState.clientPhone = phone;
+    manualState.comment = comment;
 
-                <option value="${service.name}">
-                    ${service.name}
-                </option>
+    renderManualServices();
+    showManualStep('manual-step-service');
+}
 
-            `).join('');
+export function selectManualService(serviceId) {
+    manualState.selectedService = (state.services || []).find(
+        service => String(service.id) === String(serviceId)
+    );
+
+    if (!manualState.selectedService) {
+        return tg.showAlert('Послугу не знайдено');
+    }
+
+    renderManualMasters();
+    showManualStep('manual-step-master');
+}
+
+export function selectManualMaster(masterId) {
+    manualState.selectedMaster = (state.masters || []).find(
+        master => String(master.id) === String(masterId)
+    );
+
+    if (!manualState.selectedMaster) {
+        return tg.showAlert('Майстра не знайдено');
+    }
+
+    manualState.selectedDate = null;
+    manualState.selectedTime = null;
+    manualState.requestId++;
+
+    renderManualCalendar();
+    showManualStep('manual-step-date');
+}
+
+export async function selectManualDate(dateYmd, button) {
+    const requestId = ++manualState.requestId;
+
+    manualState.selectedDate = dateYmd;
+    manualState.selectedTime = null;
+
+    document.querySelectorAll('.manual-date-btn').forEach(item => {
+        item.classList.remove('selected-item');
+    });
+
+    if (button) {
+        button.classList.add('selected-item');
+    }
+
+    const date = new Date(dateYmd);
+
+    setText(
+        'manual-time-step-title',
+        `Час на ${date.toLocaleDateString('uk-UA', {
+            day: 'numeric',
+            month: 'long'
+        })}`
+    );
+
+    showManualStep('manual-step-time');
+
+    const loader = document.getElementById('manual-time-loader');
+
+    if (loader) {
+        loader.classList.remove('hidden');
+    }
+
+    setHtml('manual-time-slots', '');
+
+    try {
+        const data = await fetchOccupiedSlotsAPI(
+            dateYmd,
+            manualState.selectedMaster.id,
+            ''
+        );
+
+        if (requestId !== manualState.requestId) {
+            return;
+        }
+
+        renderManualTimeSlots(data.occupiedSlots || []);
+
+    } catch (error) {
+        setHtml(
+            'manual-time-slots',
+            `
+            <div class="col-span-4 text-center text-red-500 py-6 font-medium bg-white rounded-2xl border border-red-100">
+                Не вдалося завантажити час
+            </div>
+            `
+        );
+
+    } finally {
+        if (requestId === manualState.requestId && loader) {
+            loader.classList.add('hidden');
+        }
+    }
+}
+
+export function selectManualTime(time, button) {
+    manualState.selectedTime = time;
+
+    document.querySelectorAll('.manual-time-btn').forEach(item => {
+        item.classList.remove('selected-item');
+    });
+
+    if (button) {
+        button.classList.add('selected-item');
+    }
+
+    const footer = document.getElementById('manual-booking-footer');
+
+    if (footer) {
+        footer.classList.remove('hidden');
     }
 }
 
 export async function createManualBooking() {
+    if (manualState.isSubmitting) return;
 
-    const name =
-        document.getElementById(
-            'manual-booking-name'
-        )?.value?.trim();
-
-    const phone =
-        document.getElementById(
-            'manual-booking-phone'
-        )?.value?.trim();
-
-    const masterId =
-        document.getElementById(
-            'manual-booking-master'
-        )?.value;
-
-    const service =
-        document.getElementById(
-            'manual-booking-service'
-        )?.value;
-
-    const date =
-        document.getElementById(
-            'manual-booking-date'
-        )?.value;
-
-    const time =
-        document.getElementById(
-            'manual-booking-time'
-        )?.value;
-
-    const comment =
-        document.getElementById(
-            'manual-booking-comment'
-        )?.value?.trim() || '';
-
-    const button =
-        document.getElementById(
-            'manual-booking-submit'
-        );
-
-    if (!name) {
-        return tg.showAlert(
-            'Введіть імʼя клієнта'
-        );
+    if (
+        !manualState.clientName ||
+        !manualState.clientPhone ||
+        !manualState.selectedService ||
+        !manualState.selectedMaster ||
+        !manualState.selectedDate ||
+        !manualState.selectedTime
+    ) {
+        return tg.showAlert('Заповніть всі дані запису');
     }
 
-    if (!phone) {
-        return tg.showAlert(
-            'Введіть номер телефону'
-        );
-    }
-
-    if (!masterId) {
-        return tg.showAlert(
-            'Оберіть майстра'
-        );
-    }
-
-    if (!service) {
-        return tg.showAlert(
-            'Оберіть послугу'
-        );
-    }
-
-    if (!date) {
-        return tg.showAlert(
-            'Оберіть дату'
-        );
-    }
-
-    if (!time) {
-        return tg.showAlert(
-            'Оберіть час'
-        );
-    }
-
-    const normalizedPhone =
-        phone.replace(/\D/g, '');
+    const button = document.getElementById('manual-booking-submit');
 
     const manualClientId =
-        `MANUAL-${normalizedPhone}`;
+        `MANUAL-${cleanPhoneForId(manualState.clientPhone)}`;
 
     try {
+        manualState.isSubmitting = true;
 
         if (button) {
             button.disabled = true;
-            button.textContent =
-                'Створюємо...';
+            button.textContent = 'Створюємо...';
         }
 
-        const response =
-            await createBookingAPI({
+        const response = await createBookingAPI({
+            clientId: manualClientId,
+            clientName: manualState.clientName,
+            clientPhone: manualState.clientPhone,
+            masterId: manualState.selectedMaster.id,
+            service: manualState.selectedService.name,
+            date: manualState.selectedDate,
+            time: manualState.selectedTime,
+            comment: manualState.comment
+        });
 
-                clientId: manualClientId,
-
-                clientName: name,
-
-                clientPhone: phone,
-
-                masterId,
-
-                service,
-
-                date,
-
-                time,
-
-                comment
-            });
-
-        if (
-            response.status !== 'success'
-        ) {
-            throw new Error(
-                response.message ||
-                'Не вдалося створити запис'
-            );
+        if (response.status !== 'success') {
+            throw new Error(response.message || 'Не вдалося створити запис');
         }
 
-        await loadBookings(
-            'admin',
-            true
-        );
+        await loadBookings('admin', true);
 
-        renderAdminStats(
-            state.adminStatsPeriod
-        );
+        renderAdminStats(state.adminStatsPeriod || 'today');
 
         closeManualBookingModal();
 
-        clearManualBookingForm();
-
-        tg.showAlert(
-            'Запис створено ✅'
-        );
+        tg.showAlert('Запис створено ✅');
 
     } catch (error) {
-
-        tg.showAlert(
-            error.message ||
-            'Помилка створення запису'
-        );
+        tg.showAlert(error.message || 'Помилка створення запису');
 
     } finally {
+        manualState.isSubmitting = false;
 
         if (button) {
             button.disabled = false;
-            button.textContent =
-                'Створити запис';
+            button.textContent = 'Створити запис';
         }
     }
-}
-
-function clearManualBookingForm() {
-
-    [
-        'manual-booking-name',
-        'manual-booking-phone',
-        'manual-booking-date',
-        'manual-booking-time',
-        'manual-booking-comment'
-    ].forEach(id => {
-
-        const element =
-            document.getElementById(id);
-
-        if (!element) return;
-
-        element.value = '';
-    });
 }
