@@ -531,9 +531,9 @@ export function renderClientProfile(client = null) {
     );
 
     setClientProfileText(
-        'client-profile-total',
-        String(currentClient.totalBookings || 0)
-    );
+    'client-profile-total',
+    '...'
+);
 
     setClientProfileText(
         'client-profile-last-booking',
@@ -661,6 +661,12 @@ function renderClientBookingsHistory() {
     if (count) {
         count.textContent = String(activeClientBookings.length || 0);
     }
+    
+    const profileTotal = document.getElementById('client-profile-total');
+
+if (profileTotal) {
+    profileTotal.textContent = String(activeClientBookings.length || 0);
+}
 
     if (activeClientBookingsLoading) {
         container.innerHTML = `
