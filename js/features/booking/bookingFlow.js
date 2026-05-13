@@ -4,6 +4,7 @@ import { APP_CONFIG } from '../../config/appConfig.js';
 import {
     fetchOccupiedSlotsAPI,
     submitBookingAPI
+    fetchClientContactAPI
 } from '../../api/bookingsApi.js';
 
 import {
@@ -478,4 +479,22 @@ export function selectTime(time, btn) {
         },
         currentSubmitHandler
     );
+}
+
+async function waitForTelegramPhone(clientId, attempts = 10) {
+    for (let i = 0; i < attempts; i++) {
+        const response = await fetchClientContactAPI(clientId);
+
+        if (
+            response.status === 'success' &&
+            response.phone &&
+            response.phone !== 'TELEGRAM_CONTACT_REQUESTED'
+        ) {
+            return response.phone;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 800));
+    }
+
+    return '';
 }
