@@ -30,11 +30,14 @@ function normalizePhone(phone) {
 function isValidPhone(phone) {
     const normalized = normalizePhone(phone);
 
-    return normalized.length >= 10;
+    return normalized.replace(/\D/g, '').length >= 10;
 }
 
 function setGateLoading(isLoading) {
-    const button = document.getElementById('client-contact-share-button');
+    const button =
+        document.getElementById(
+            'client-contact-share-button'
+        );
 
     if (!button) return;
 
@@ -52,9 +55,29 @@ export function hasVerifiedClientPhone() {
 }
 
 export function showClientContactGate() {
-    const gate = document.getElementById('client-contact-gate');
-    const clientScreen = document.getElementById('client-screen');
-    const clientNav = document.getElementById('client-bottom-nav');
+    const gate =
+        document.getElementById(
+            'client-contact-gate'
+        );
+
+    const clientScreen =
+        document.getElementById(
+            'client-screen'
+        );
+
+    const clientNav =
+        document.getElementById(
+            'client-bottom-nav'
+        );
+
+    const loader =
+        document.getElementById(
+            'loader'
+        );
+
+    if (loader) {
+        loader.classList.add('hidden-step');
+    }
 
     if (clientScreen) {
         clientScreen.classList.add('hidden-step');
@@ -70,7 +93,10 @@ export function showClientContactGate() {
 }
 
 export function hideClientContactGate() {
-    const gate = document.getElementById('client-contact-gate');
+    const gate =
+        document.getElementById(
+            'client-contact-gate'
+        );
 
     if (gate) {
         gate.classList.add('hidden-step');
@@ -85,9 +111,10 @@ export async function checkClientPhoneFast() {
         return false;
     }
 
-    const cachedPhone = localStorage.getItem(
-        getPhoneCacheKey(clientId)
-    );
+    const cachedPhone =
+        localStorage.getItem(
+            getPhoneCacheKey(clientId)
+        );
 
     if (isValidPhone(cachedPhone)) {
         state.clientPhone = normalizePhone(cachedPhone);
@@ -97,13 +124,15 @@ export async function checkClientPhoneFast() {
     }
 
     try {
-        const response = await fetchClientContactAPI(clientId);
+        const response =
+            await fetchClientContactAPI(clientId);
 
         if (
             response.status === 'success' &&
             isValidPhone(response.phone)
         ) {
-            const phone = normalizePhone(response.phone);
+            const phone =
+                normalizePhone(response.phone);
 
             state.clientPhone = phone;
             state.clientPhoneStatus = 'verified';
@@ -115,8 +144,26 @@ export async function checkClientPhoneFast() {
 
             return true;
         }
+
+        if (
+            response.status === 'success' &&
+            response.isBlocked
+        ) {
+            state.clientPhoneStatus = 'denied';
+
+            tg.showAlert(
+                response.blockReason ||
+                'Ваш профіль обмежено для запису.'
+            );
+
+            return false;
+        }
+
     } catch (error) {
-        console.warn('checkClientPhoneFast error:', error);
+        console.warn(
+            'checkClientPhoneFast error:',
+            error
+        );
     }
 
     state.clientPhoneStatus = 'required';
@@ -124,10 +171,15 @@ export async function checkClientPhoneFast() {
     return false;
 }
 
-async function waitForPhoneFromBackend(clientId, attempts = 8, delayMs = 700) {
+async function waitForPhoneFromBackend(
+    clientId,
+    attempts = 8,
+    delayMs = 700
+) {
     for (let i = 0; i < attempts; i++) {
         try {
-            const response = await fetchClientContactAPI(clientId);
+            const response =
+                await fetchClientContactAPI(clientId);
 
             if (
                 response.status === 'success' &&
@@ -136,7 +188,10 @@ async function waitForPhoneFromBackend(clientId, attempts = 8, delayMs = 700) {
                 return normalizePhone(response.phone);
             }
         } catch (error) {
-            console.warn('waitForPhoneFromBackend:', error);
+            console.warn(
+                'waitForPhoneFromBackend:',
+                error
+            );
         }
 
         await new Promise(resolve =>
@@ -157,11 +212,12 @@ export async function syncClientPhoneInBackground() {
     state.clientPhoneSyncing = true;
 
     try {
-        const phone = await waitForPhoneFromBackend(
-            clientId,
-            20,
-            1000
-        );
+        const phone =
+            await waitForPhoneFromBackend(
+                clientId,
+                20,
+                1000
+            );
 
         if (!phone) {
             state.clientPhoneStatus = 'syncing';
@@ -182,16 +238,27 @@ export async function syncClientPhoneInBackground() {
 }
 
 export async function requestClientContactAtLaunch(onSuccess) {
-    const webApp = window.Telegram?.WebApp || tg;
+    const webApp =
+        window.Telegram?.WebApp || tg;
+
     const clientId = getClientId();
 
     if (!clientId) {
-        tg.showAlert('Не вдалося визначити Telegram ID. Відкрийте додаток через Telegram.');
+        tg.showAlert(
+            'Не вдалося визначити Telegram ID. Відкрийте додаток через Telegram.'
+        );
+
         return;
     }
 
-    if (!webApp || typeof webApp.requestContact !== 'function') {
-        tg.showAlert('Ваш Telegram не підтримує швидку передачу номера. Оновіть Telegram або спробуйте пізніше.');
+    if (
+        !webApp ||
+        typeof webApp.requestContact !== 'function'
+    ) {
+        tg.showAlert(
+            'Ваш Telegram не підтримує швидку передачу номера. Оновіть Telegram або спробуйте пізніше.'
+        );
+
         return;
     }
 
@@ -230,7 +297,9 @@ export async function requestClientContactAtLaunch(onSuccess) {
     } catch (error) {
         setGateLoading(false);
 
-        tg.showAlert('Не вдалося запросити номер. Спробуйте ще раз.');
+        tg.showAlert(
+            'Не вдалося запросити номер. Спробуйте ще раз.'
+        );
     }
 }
 
@@ -242,14 +311,17 @@ export async function ensureClientPhoneBeforeBooking() {
     const clientId = getClientId();
 
     if (!clientId) {
-        throw new Error('Telegram user не визначений.');
+        throw new Error(
+            'Telegram user не визначений.'
+        );
     }
 
-    const phone = await waitForPhoneFromBackend(
-        clientId,
-        5,
-        500
-    );
+    const phone =
+        await waitForPhoneFromBackend(
+            clientId,
+            6,
+            500
+        );
 
     if (phone) {
         state.clientPhone = phone;
