@@ -349,8 +349,7 @@
 </div>
 
             <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
-                <div id="admin-booking-tabs" class="flex px-1 pb-4 gap-2 mt-2 overflow-x-auto hide-scrollbar">
-                    <section class="mx-1 mb-5">
+                 <section class="mx-1 mb-5">
 
     <button
         onclick="window.appAPI.openManualBookingModal()"
@@ -381,6 +380,8 @@
     </button>
 
 </section>
+                <div id="admin-booking-tabs" class="flex px-1 pb-4 gap-2 mt-2 overflow-x-auto hide-scrollbar">
+                   
     <button onclick="window.appAPI.switchBookingTab('pending', 'admin')" id="admin-subtab-pending" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-amber-100">
         Очікування
     </button>
