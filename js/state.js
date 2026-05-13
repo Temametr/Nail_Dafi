@@ -37,11 +37,13 @@ export const state = {
     selectedTime: null,
     
     clientPhone: '',
+    clientPhoneStatus: 'unknown',
+    clientPhoneSyncing: false,
 
     viewedMasterId: null,
     
     adminStatsPeriod: localStorage.getItem('adminStatsPeriod') || 'today',
-adminStatsCustomDate: localStorage.getItem('adminStatsCustomDate') || '',
+    adminStatsCustomDate: localStorage.getItem('adminStatsCustomDate') || '',
 
     editingBookingId: null,
 
@@ -52,7 +54,7 @@ adminStatsCustomDate: localStorage.getItem('adminStatsCustomDate') || '',
     adminBookings: [],
     
     adminClients: [],
-adminClientsSearchQuery: '',
+    adminClientsSearchQuery: '',
 
     currentBookingFilter: 'confirmed',
 
