@@ -3,7 +3,8 @@ import { state, tg } from '../../state.js';
 import {
     fetchClientsAPI,
     updateClientStatusAPI,
-    deleteClientAPI
+    deleteClientAPI,
+    fetchClientBookingsAPI
 } from '../../api.js';
 
 import {
@@ -17,6 +18,8 @@ import {
 
 let pendingClientActionId = null;
 let activeClientProfileId = null;
+let activeClientBookings = [];
+let activeClientBookingsLoading = false;
 const CLIENTS_CACHE_KEY = 'nail_dafi_admin_clients';
 const CLIENTS_CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -476,6 +479,8 @@ export function openClientProfile(clientId) {
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    
+    loadClientBookingsHistory(clientId);
 }
 
 export function closeClientProfile() {
@@ -618,4 +623,123 @@ export async function deleteClientFromProfile() {
     await deleteAdminClient(client.id);
 
     closeClientProfile();
+}
+
+function getClientHistoryContainer() {
+    return document.getElementById('client-profile-history');
+}
+
+function getStatusLabel(status) {
+    if (status === 'В очереди') return 'Очікує';
+    if (status === 'Подтверждено') return 'Підтверджено';
+    if (status === 'Выполнено') return 'Виконано';
+    if (status === 'Отменено') return 'Скасовано';
+
+    return status || 'Невідомо';
+}
+
+function getStatusClass(status) {
+    if (status === 'В очереди') return 'bg-amber-50 text-amber-700 border-amber-100';
+    if (status === 'Подтверждено') return 'bg-blue-50 text-blue-700 border-blue-100';
+    if (status === 'Выполнено') return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+    if (status === 'Отменено') return 'bg-red-50 text-red-700 border-red-100';
+
+    return 'bg-slate-50 text-slate-600 border-slate-100';
+}
+
+function renderClientBookingsHistory() {
+    const container = getClientHistoryContainer();
+    const count = document.getElementById('client-profile-history-count');
+
+    if (!container) return;
+
+    if (count) {
+        count.textContent = String(activeClientBookings.length || 0);
+    }
+
+    if (activeClientBookingsLoading) {
+        container.innerHTML = `
+            <div class="text-sm font-medium text-slate-400 text-center py-4">
+                Завантажуємо історію...
+            </div>
+        `;
+        return;
+    }
+
+    if (!activeClientBookings.length) {
+        container.innerHTML = `
+            <div class="text-sm font-medium text-slate-400 text-center py-4">
+                Історії візитів поки немає
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = activeClientBookings.map(booking => `
+        <div class="rounded-2xl bg-rose-50/70 border border-rose-100 p-4">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm font-black text-slate-950 truncate">
+                        ${sanitize(booking.service || 'Послуга')}
+                    </div>
+
+                    <div class="text-xs font-bold text-slate-500 mt-1">
+                        ${sanitize(booking.date || '')} • ${sanitize(booking.time || '')}
+                    </div>
+
+                    <div class="text-xs font-semibold text-slate-400 mt-2 truncate">
+                        ${sanitize(booking.masterName || 'Майстер')}
+                    </div>
+                </div>
+
+                <span class="text-[9px] font-black px-2.5 py-1.5 rounded-full border shrink-0 ${getStatusClass(booking.status)}">
+                    ${sanitize(getStatusLabel(booking.status))}
+                </span>
+            </div>
+
+            ${
+                booking.cancelReason
+                    ? `
+                        <div class="mt-3 text-xs font-bold text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                            ${sanitize(booking.cancelReason)}
+                        </div>
+                    `
+                    : ''
+            }
+        </div>
+    `).join('');
+}
+
+async function loadClientBookingsHistory(clientId) {
+    activeClientBookingsLoading = true;
+    activeClientBookings = [];
+
+    renderClientBookingsHistory();
+
+    try {
+        const response = await fetchClientBookingsAPI(clientId);
+
+        if (response.status !== 'success') {
+            throw new Error(response.message || 'Не вдалося завантажити історію');
+        }
+
+        activeClientBookings = response.bookings || [];
+
+    } catch (error) {
+        const container = getClientHistoryContainer();
+
+        if (container) {
+            container.innerHTML = `
+                <div class="text-sm font-bold text-red-500 text-center py-4">
+                    Не вдалося завантажити історію
+                </div>
+            `;
+        }
+
+        return;
+
+    } finally {
+        activeClientBookingsLoading = false;
+        renderClientBookingsHistory();
+    }
 }
