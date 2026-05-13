@@ -100,6 +100,10 @@ export function switchTab({
         });
     } else if (tabId === 'clients') {
     loadAdminClients();
+
+    startPollingManager(() => {
+        loadAdminClients(true);
+    }, 60000);
 }
 }
 
