@@ -284,6 +284,8 @@ export async function requestClientContactAtLaunch(onSuccess) {
     try {
         webApp.requestContact(async (shared) => {
             setGateLoading(false);
+            
+            console.log('[contactGate] requestContact result:', shared);
 
             if (!shared) {
                 state.clientPhoneStatus = 'denied';
@@ -302,13 +304,37 @@ export async function requestClientContactAtLaunch(onSuccess) {
 
             state.clientPhoneStatus = 'syncing';
 
-            hideClientContactGate();
+const phone = await waitForPhoneFromBackend(
+    clientId,
+    5,
+    600
+);
 
-            if (typeof onSuccess === 'function') {
-                onSuccess();
-            }
+if (phone) {
+    state.clientPhone = phone;
+    state.clientPhoneStatus = 'verified';
 
-            syncClientPhoneInBackground();
+    localStorage.setItem(
+        getPhoneCacheKey(clientId),
+        phone
+    );
+
+    hideClientContactGate();
+
+    if (typeof onSuccess === 'function') {
+        onSuccess();
+    }
+
+    return;
+}
+
+tg.showAlert(
+    'Telegram підтвердив передачу номера, але номер ще не зʼявився в базі. Натисніть “Поділитися номером” ще раз або відкрийте чат з ботом і надішліть контакт.'
+);
+
+state.clientPhoneStatus = 'required';
+
+showClientContactGate();
         });
 
     } catch (error) {
