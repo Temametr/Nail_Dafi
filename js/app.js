@@ -14,6 +14,8 @@ import {
     selectService,
     selectMaster,
     confirmClientPhone,
+    requestTelegramContact,
+    showManualPhoneInput,
     selectDate,
     selectTime,
     resetDateTimeSelection,
@@ -114,6 +116,8 @@ window.appAPI = {
     selectDate,
     selectTime,
     confirmClientPhone,
+    requestTelegramContact,
+    showManualPhoneInput,
 
     changeBookingStatus,
     
