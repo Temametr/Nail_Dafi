@@ -116,3 +116,12 @@ export async function deleteClientAPI(clientId) {
         }
     });
 }
+
+export async function fetchClientBookingsAPI(clientId) {
+    return await requestJson(API_URL, {
+        params: {
+            action: 'getClientBookings',
+            clientId
+        }
+    });
+}
