@@ -640,90 +640,112 @@
                 </p>
             </div>
 
-            <div class="space-y-3">
-                <div class="card-convex p-4">
+            <div class="space-y-4">
+
+    <div class="card-convex p-5">
+        <div class="space-y-3">
+
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
+                    📞
+                </div>
+
+                <div class="min-w-0">
                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                         Телефон
                     </div>
 
-                    <div id="client-profile-phone" class="text-sm font-extrabold text-slate-900 mt-1">
+                    <div id="client-profile-phone" class="text-sm font-extrabold text-slate-900 mt-0.5 truncate">
                         —
                     </div>
                 </div>
+            </div>
 
-                <div id="client-profile-telegram-row" class="card-convex p-4 hidden">
+            <div id="client-profile-telegram-row" class="hidden items-center gap-3">
+                <div class="w-9 h-9 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                    ✈️
+                </div>
+
+                <div class="min-w-0">
                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                         Telegram
                     </div>
 
-                    <div id="client-profile-telegram" class="text-sm font-extrabold text-sky-600 mt-1">
+                    <div id="client-profile-telegram" class="text-sm font-extrabold text-sky-600 mt-0.5 truncate">
                         —
                     </div>
                 </div>
+            </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="card-convex p-4">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                            Візитів
-                        </div>
-
-                        <div id="client-profile-total" class="text-2xl font-black text-slate-950 mt-1">
-                            0
-                        </div>
-                    </div>
-
-                    <div class="card-convex p-4">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                            Джерело
-                        </div>
-
-                        <div id="client-profile-source-card" class="text-sm font-extrabold text-slate-900 mt-2">
-                            —
-                        </div>
-                    </div>
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+                    💅
                 </div>
 
-                <div class="card-convex p-4">
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                        Візити
+                    </div>
+
+                    <div class="text-sm font-extrabold text-slate-900 mt-0.5">
+                        <span id="client-profile-total">0</span> всього
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                    🕒
+                </div>
+
+                <div class="min-w-0">
                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                         Останній запис
                     </div>
 
-                    <div id="client-profile-last-booking" class="text-sm font-extrabold text-slate-900 mt-1">
+                    <div id="client-profile-last-booking" class="text-sm font-extrabold text-slate-900 mt-0.5 truncate">
                         —
                     </div>
                 </div>
+            </div>
 
-                <div id="client-profile-block-reason-card" class="card-convex p-4 hidden border border-red-100">
-                    <div class="text-[10px] font-bold text-red-400 uppercase tracking-wide">
-                        Причина ЧС
-                    </div>
+        </div>
+    </div>
 
-                    <div id="client-profile-block-reason" class="text-sm font-bold text-red-600 mt-1">
-                        —
-                    </div>
+    <div id="client-profile-block-reason-card" class="card-convex p-4 hidden border border-red-100">
+        <div class="text-[10px] font-bold text-red-400 uppercase tracking-wide">
+            Причина ЧС
+        </div>
+
+        <div id="client-profile-block-reason" class="text-sm font-bold text-red-600 mt-1">
+            —
+        </div>
+    </div>
+
+    <div class="card-convex p-5">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                    Історія візитів
                 </div>
-                
-                <div class="card-convex p-5">
-    <div class="flex items-center justify-between mb-4">
-        <div>
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                Історія візитів
+
+                <div class="text-xs font-medium text-slate-400 mt-1">
+                    Останні записи клієнта
+                </div>
             </div>
-            <div class="text-xs font-medium text-slate-400 mt-1">
-                Останні записи клієнта
+
+            <div id="client-profile-history-count" class="text-xs font-black text-slate-400">
+                0
             </div>
         </div>
 
-        <div id="client-profile-history-count" class="text-xs font-black text-slate-400">
-            0
+        <div id="client-profile-history" class="space-y-3">
+            <div class="text-sm font-medium text-slate-400 text-center py-4">
+                Завантажуємо історію...
+            </div>
         </div>
     </div>
 
-    <div id="client-profile-history" class="space-y-3">
-        <div class="text-sm font-medium text-slate-400 text-center py-4">
-            Завантажуємо історію...
-        </div>
-    </div>
 </div>
             </div>
         </div>
