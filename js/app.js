@@ -174,7 +174,7 @@ contactClientFromProfile,
 toggleClientBlockedFromProfile,
 deleteClientFromProfile,
 
-    openMap
+    openMap,
     
     requestClientContactAtLaunch: () => {
     requestClientContactAtLaunch(async () => {
