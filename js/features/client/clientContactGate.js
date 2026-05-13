@@ -111,21 +111,27 @@ export async function checkClientPhoneFast() {
         return false;
     }
 
-    const cachedPhone =
-        localStorage.getItem(
-            getPhoneCacheKey(clientId)
-        );
-
-    if (isValidPhone(cachedPhone)) {
-        state.clientPhone = normalizePhone(cachedPhone);
-        state.clientPhoneStatus = 'verified';
-
-        return true;
-    }
-
     try {
         const response =
             await fetchClientContactAPI(clientId);
+
+        if (
+            response.status === 'success' &&
+            response.isBlocked
+        ) {
+            state.clientPhoneStatus = 'denied';
+
+            localStorage.removeItem(
+                getPhoneCacheKey(clientId)
+            );
+
+            tg.showAlert(
+                response.blockReason ||
+                'Ваш профіль обмежено для запису.'
+            );
+
+            return false;
+        }
 
         if (
             response.status === 'success' &&
@@ -145,27 +151,30 @@ export async function checkClientPhoneFast() {
             return true;
         }
 
-        if (
-            response.status === 'success' &&
-            response.isBlocked
-        ) {
-            state.clientPhoneStatus = 'denied';
-
-            tg.showAlert(
-                response.blockReason ||
-                'Ваш профіль обмежено для запису.'
-            );
-
-            return false;
-        }
+        localStorage.removeItem(
+            getPhoneCacheKey(clientId)
+        );
 
     } catch (error) {
         console.warn(
             'checkClientPhoneFast error:',
             error
         );
+
+        const cachedPhone =
+            localStorage.getItem(
+                getPhoneCacheKey(clientId)
+            );
+
+        if (isValidPhone(cachedPhone)) {
+            state.clientPhone = normalizePhone(cachedPhone);
+            state.clientPhoneStatus = 'verified';
+
+            return true;
+        }
     }
 
+    state.clientPhone = '';
     state.clientPhoneStatus = 'required';
 
     return false;
