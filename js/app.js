@@ -178,6 +178,8 @@ deleteClientFromProfile,
     
     requestClientContactAtLaunch: () => {
     requestClientContactAtLaunch(async () => {
+        hideClientContactGate();
+
         await bootstrapClient();
 
         switchTab('client', 'home');
@@ -207,43 +209,80 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadApp() {
+    try {
+        await loadInitialData();
 
-    await loadInitialData();
+        hideLoader();
 
-    hideLoader();
+        if (state.isAdmin) {
+            await bootstrapAdmin();
 
-    if (state.isAdmin) {
+            switchTab('admin', 'home');
 
-    await bootstrapAdmin();
+            setTimeout(() => {
+                loadBookings('admin', true);
+            }, 300);
 
-    switchTab('admin', 'home');
+            setTimeout(() => {
+                loadAdminClients(true);
+            }, 800);
 
-    setTimeout(() => {
-        loadBookings('admin', true);
-    }, 300);
-    
-    setTimeout(() => {
-    loadAdminClients(true);
-}, 800);
+            return;
+        }
 
-} else {
-    const hasPhone = await checkClientPhoneFast();
+        const hasPhone =
+            await checkClientPhoneFast();
 
-    if (!hasPhone) {
-        showClientContactGate();
-        return;
+        if (!hasPhone) {
+            showClientContactGate();
+            return;
+        }
+
+        hideClientContactGate();
+
+        await bootstrapClient();
+
+        switchTab('client', 'home');
+
+        setTimeout(() => {
+            loadBookings('client', true);
+        }, 300);
+
+    } catch (error) {
+        console.error('loadApp failed:', error);
+
+        hideLoader();
+
+        const app = document.getElementById('app');
+
+        if (app) {
+            app.insertAdjacentHTML(
+                'afterbegin',
+                `
+                <div class="min-h-[75vh] flex items-center justify-center px-6 text-center">
+                    <div class="card-convex p-7 w-full max-w-sm">
+                        <div class="text-4xl mb-4">⚠️</div>
+
+                        <h2 class="text-xl font-black text-slate-950">
+                            Не вдалося запустити додаток
+                        </h2>
+
+                        <p class="text-sm font-medium text-slate-500 mt-3 leading-relaxed">
+                            ${error.message || 'Помилка завантаження'}
+                        </p>
+
+                        <button
+                            onclick="location.reload()"
+                            class="w-full py-4 bg-slate-950 text-white rounded-3xl text-sm font-black shadow-lg active:scale-95 transition-all mt-6"
+                        >
+                            Спробувати ще раз
+                        </button>
+                    </div>
+                </div>
+                `
+            );
+        }
     }
-
-    hideClientContactGate();
-
-    await bootstrapClient();
-
-    switchTab('client', 'home');
-
-    setTimeout(() => {
-        loadBookings('client', true);
-    }, 300);
-}
 }
 
 function handleBack() {
