@@ -552,12 +552,12 @@ export function requestTelegramContact() {
                 return;
             }
 
-            const phone = await waitForTelegramPhone(String(clientId), 10);
+            const phone = await waitForTelegramPhone(String(clientId), 12);
 
             setContactButtonLoading(false);
 
             if (!phone) {
-                tg.showAlert('Telegram підтвердив передачу контакту, але номер ще не отримано. Введіть номер вручну або спробуйте ще раз.');
+                tg.showAlert('Telegram підтвердив передачу контакту, але номер ще не встиг зʼявитися в базі. Введіть номер вручну або спробуйте ще раз.');
                 showManualPhoneInput();
                 return;
             }
