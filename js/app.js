@@ -310,6 +310,28 @@ async function loadApp() {
 }
 
 function handleBack() {
+    
+        const adminProfileEditModal =
+        document.getElementById('admin-profile-edit-modal');
+
+    if (
+        adminProfileEditModal &&
+        !adminProfileEditModal.classList.contains('hidden')
+    ) {
+        closeAdminProfileEdit();
+        return;
+    }
+
+    const adminProfileModal =
+        document.getElementById('admin-profile-modal');
+
+    if (
+        adminProfileModal &&
+        !adminProfileModal.classList.contains('hidden')
+    ) {
+        closeAdminProfile();
+        return;
+    }
 
     const cancelModal =
         document.getElementById('cancel-modal');
