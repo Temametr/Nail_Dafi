@@ -7,10 +7,54 @@ import {
 } from '../../api.js';
 
 import {
+    getCache,
+    setCache
+} from '../../core/cache/localCache.js';
+
+import {
     openTelegramChat
 } from '../../utils/telegramChat.js';
 
 let pendingClientActionId = null;
+const CLIENTS_CACHE_KEY = 'nail_dafi_admin_clients';
+const CLIENTS_CACHE_TTL_MS = 5 * 60 * 1000;
+
+function areClientsEqual(currentClients, nextClients) {
+    try {
+        return JSON.stringify(currentClients || []) === JSON.stringify(nextClients || []);
+    } catch (_) {
+        return false;
+    }
+}
+
+function applyClients(clients, forceRender = false) {
+    const nextClients = Array.isArray(clients)
+        ? clients
+        : [];
+
+    const hasChanged =
+        !areClientsEqual(state.adminClients, nextClients);
+
+    state.adminClients = nextClients;
+
+    if (!hasChanged && !forceRender) {
+        return;
+    }
+
+    renderAdminClients();
+}
+
+function hydrateClientsFromCache() {
+    const cachedClients = getCache(CLIENTS_CACHE_KEY);
+
+    if (!Array.isArray(cachedClients)) {
+        return false;
+    }
+
+    applyClients(cachedClients, true);
+
+    return true;
+}
 
 function normalize(value) {
     return String(value || '')
@@ -93,7 +137,9 @@ function getActionButtonClass(extra = '') {
 export async function loadAdminClients(silent = false) {
     const container = document.getElementById('admin-clients-list');
 
-    if (!silent && container) {
+    const usedCache = hydrateClientsFromCache();
+
+    if (!silent && !usedCache && container) {
         container.innerHTML = `
             <div class="text-center text-sm font-medium text-slate-400 py-10">
                 Завантажуємо клієнтів...
@@ -108,12 +154,21 @@ export async function loadAdminClients(silent = false) {
             throw new Error(response.message || 'Не вдалося завантажити клієнтів');
         }
 
-        state.adminClients = response.clients || [];
+        const freshClients = response.clients || [];
 
-        renderAdminClients();
+        setCache(
+            CLIENTS_CACHE_KEY,
+            freshClients,
+            CLIENTS_CACHE_TTL_MS
+        );
+
+        applyClients(
+            freshClients,
+            false
+        );
 
     } catch (error) {
-        if (container) {
+        if (!silent && !usedCache && container) {
             container.innerHTML = `
                 <div class="card-convex p-8 text-center">
                     <div class="text-4xl mb-3">⚠️</div>
@@ -326,9 +381,15 @@ export async function toggleClientBlocked(clientId, shouldBlock) {
         tg.showAlert(error.message || 'Помилка оновлення клієнта');
 
     } finally {
-        pendingClientActionId = null;
-        renderAdminClients();
-    }
+    setCache(
+        CLIENTS_CACHE_KEY,
+        state.adminClients,
+        CLIENTS_CACHE_TTL_MS
+    );
+
+    pendingClientActionId = null;
+    renderAdminClients();
+}
 }
 
 export async function deleteAdminClient(clientId) {
@@ -359,7 +420,13 @@ export async function deleteAdminClient(clientId) {
         tg.showAlert(error.message || 'Помилка видалення клієнта');
 
     } finally {
-        pendingClientActionId = null;
-        renderAdminClients();
-    }
+    setCache(
+        CLIENTS_CACHE_KEY,
+        state.adminClients,
+        CLIENTS_CACHE_TTL_MS
+    );
+
+    pendingClientActionId = null;
+    renderAdminClients();
+}
 }
