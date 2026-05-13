@@ -350,6 +350,37 @@
 
             <div id="admin-tab-bookings" class="admin-tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
                 <div id="admin-booking-tabs" class="flex px-1 pb-4 gap-2 mt-2 overflow-x-auto hide-scrollbar">
+                    <section class="mx-1 mb-5">
+
+    <button
+        onclick="window.appAPI.openManualBookingModal()"
+        class="w-full card-convex p-5 flex items-center justify-between active:scale-[0.98] transition-all"
+    >
+
+        <div class="flex items-center gap-4">
+
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 text-white flex items-center justify-center text-2xl shadow-lg">
+                ✨
+            </div>
+
+            <div class="text-left">
+                <div class="text-sm font-black text-slate-950">
+                    Записати клієнта
+                </div>
+
+                <div class="text-xs font-medium text-slate-400 mt-1">
+                    Швидке ручне створення запису
+                </div>
+            </div>
+        </div>
+
+        <div class="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl font-black">
+            +
+        </div>
+
+    </button>
+
+</section>
     <button onclick="window.appAPI.switchBookingTab('pending', 'admin')" id="admin-subtab-pending" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-amber-100">
         Очікування
     </button>
@@ -453,6 +484,141 @@
                 <button onclick="window.appAPI.bookFromProfile()" class="w-full py-4 bg-blue-500 text-white rounded-2xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">ЗАПИСАТИСЯ ДО МАЙСТРА</button>
             </div>
         </div>
+        
+        <div
+    id="manual-booking-modal"
+    class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-end justify-center z-[95]"
+>
+
+    <div class="bg-rose-50 rounded-t-[2.8rem] w-full max-w-md max-h-[92dvh] overflow-hidden animate-sheet-up">
+
+        <div class="px-6 pt-6 pb-4 border-b border-rose-100 flex items-center justify-between">
+
+            <div>
+                <h2 class="text-xl font-black text-slate-950">
+                    Новий запис
+                </h2>
+
+                <p class="text-xs font-medium text-slate-400 mt-1">
+                    Ручне створення запису клієнта
+                </p>
+            </div>
+
+            <button
+                onclick="window.appAPI.closeManualBookingModal()"
+                class="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-sm active:scale-90 transition-all"
+            >
+                ✕
+            </button>
+        </div>
+
+        <div class="overflow-y-auto max-h-[calc(92dvh-90px)] px-6 py-6">
+
+            <div class="space-y-4">
+
+                <div>
+                    <label class="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                        Імʼя клієнта
+                    </label>
+
+                    <input
+                        id="manual-booking-name"
+                        type="text"
+                        placeholder="Наприклад: Анна"
+                        class="mt-2 w-full h-14 px-5 rounded-2xl border border-rose-100 bg-white outline-none text-sm font-semibold"
+                    >
+                </div>
+
+                <div>
+                    <label class="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                        Телефон
+                    </label>
+
+                    <input
+                        id="manual-booking-phone"
+                        type="tel"
+                        placeholder="+380..."
+                        class="mt-2 w-full h-14 px-5 rounded-2xl border border-rose-100 bg-white outline-none text-sm font-semibold"
+                    >
+                </div>
+
+                <div>
+                    <label class="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                        Майстер
+                    </label>
+
+                    <select
+                        id="manual-booking-master"
+                        class="mt-2 w-full h-14 px-5 rounded-2xl border border-rose-100 bg-white outline-none text-sm font-semibold"
+                    ></select>
+                </div>
+
+                <div>
+                    <label class="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                        Послуга
+                    </label>
+
+                    <select
+                        id="manual-booking-service"
+                        class="mt-2 w-full h-14 px-5 rounded-2xl border border-rose-100 bg-white outline-none text-sm font-semibold"
+                    ></select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+
+                    <div>
+                        <label class="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                            Дата
+                        </label>
+
+                        <input
+                            id="manual-booking-date"
+                            type="date"
+                            class="mt-2 w-full h-14 px-4 rounded-2xl border border-rose-100 bg-white outline-none text-sm font-semibold"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                            Час
+                        </label>
+
+                        <input
+                            id="manual-booking-time"
+                            type="time"
+                            class="mt-2 w-full h-14 px-4 rounded-2xl border border-rose-100 bg-white outline-none text-sm font-semibold"
+                        >
+                    </div>
+
+                </div>
+
+                <div>
+                    <label class="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                        Коментар
+                    </label>
+
+                    <textarea
+                        id="manual-booking-comment"
+                        placeholder="Наприклад: перший візит"
+                        class="mt-2 w-full min-h-[120px] p-5 rounded-2xl border border-rose-100 bg-white outline-none text-sm font-medium resize-none"
+                    ></textarea>
+                </div>
+
+                <button
+                    id="manual-booking-submit"
+                    onclick="window.appAPI.createManualBooking()"
+                    class="w-full h-14 rounded-2xl bg-slate-950 text-white font-black text-sm shadow-xl active:scale-[0.98] transition-all mt-3"
+                >
+                    Створити запис
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
         
         <div id="admin-profile-modal" class="fixed inset-0 bg-rose-50 z-[85] hidden flex-col w-full max-w-md mx-auto h-[100dvh] overflow-hidden">
     <button
