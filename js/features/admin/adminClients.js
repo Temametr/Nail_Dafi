@@ -16,6 +16,7 @@ import {
 } from '../../utils/telegramChat.js';
 
 let pendingClientActionId = null;
+let activeClientProfileId = null;
 const CLIENTS_CACHE_KEY = 'nail_dafi_admin_clients';
 const CLIENTS_CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -214,11 +215,14 @@ export function renderAdminClients() {
         const isPending = pendingClientActionId === String(client.id);
 
         return `
-            <div class="
-                bg-white rounded-3xl border border-white shadow-sm
-                px-4 py-4 transition-all
-                ${blocked ? 'opacity-75' : ''}
-            ">
+           <div
+    onclick="window.appAPI.openClientProfile('${client.id}')"
+    class="
+        bg-white rounded-3xl border border-white shadow-sm
+        px-4 py-4 transition-all active:scale-[0.99]
+        ${blocked ? 'opacity-75' : ''}
+    "
+>
                 <div class="flex items-start justify-between gap-3">
 
                     <div class="flex-1 min-w-0">
@@ -286,7 +290,7 @@ export function renderAdminClients() {
                                 ? `
                                     <button
                                         title="Написати"
-                                        onclick="window.appAPI.openClientTelegram('${client.telegram || client.id}')"
+                                        onclick="event.stopPropagation(); window.appAPI.openClientTelegram('${client.telegram || client.id}')"
                                         class="${getActionButtonClass('bg-sky-50 text-sky-600')}"
                                     >
                                         💬
@@ -294,6 +298,7 @@ export function renderAdminClients() {
                                 `
                                 : `
                                     <a
+                                          onclick="event.stopPropagation()"
                                         title="Подзвонити"
                                         href="tel:${sanitize(client.phone || '')}"
                                         class="${getActionButtonClass('bg-emerald-50 text-emerald-600')}"
@@ -305,7 +310,7 @@ export function renderAdminClients() {
 
                         <button
                             title="${blocked ? 'Прибрати з ЧС' : 'В ЧС'}"
-                            onclick="window.appAPI.toggleClientBlocked('${client.id}', ${blocked ? 'false' : 'true'})"
+                            onclick="event.stopPropagation(); window.appAPI.toggleClientBlocked('${client.id}', ${blocked ? 'false' : 'true'})"
                             class="${getActionButtonClass(blocked ? 'bg-slate-100 text-slate-500' : 'bg-amber-50 text-amber-600')}"
                             ${isPending ? 'disabled' : ''}
                         >
@@ -320,7 +325,7 @@ export function renderAdminClients() {
 
                         <button
                             title="Видалити"
-                            onclick="window.appAPI.deleteAdminClient('${client.id}')"
+                            onclick="event.stopPropagation(); window.appAPI.deleteAdminClient('${client.id}')"
                             class="${getActionButtonClass('bg-red-50 text-red-600')}"
                             ${isPending ? 'disabled' : ''}
                         >
@@ -429,4 +434,188 @@ export async function deleteAdminClient(clientId) {
     pendingClientActionId = null;
     renderAdminClients();
 }
+}
+
+function getClientById(clientId) {
+    return (state.adminClients || []).find(client =>
+        String(client.id) === String(clientId)
+    );
+}
+
+function setClientProfileText(id, value) {
+    const element = document.getElementById(id);
+
+    if (!element) return;
+
+    element.textContent = value || '—';
+}
+
+function toggleClientProfileElement(id, shouldShow, displayClass = 'block') {
+    const element = document.getElementById(id);
+
+    if (!element) return;
+
+    element.classList.toggle('hidden', !shouldShow);
+
+    if (shouldShow) {
+        element.classList.add(displayClass);
+    } else {
+        element.classList.remove(displayClass);
+    }
+}
+
+export function openClientProfile(clientId) {
+    const client = getClientById(clientId);
+    const modal = document.getElementById('client-profile-modal');
+
+    if (!client || !modal) return;
+
+    activeClientProfileId = String(clientId);
+
+    renderClientProfile(client);
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+export function closeClientProfile() {
+    const modal = document.getElementById('client-profile-modal');
+
+    if (!modal) return;
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+
+    activeClientProfileId = null;
+}
+
+export function renderClientProfile(client = null) {
+    const currentClient =
+        client ||
+        getClientById(activeClientProfileId);
+
+    if (!currentClient) return;
+
+    const hasTelegram = isTelegramClient(currentClient);
+    const blocked = Boolean(currentClient.isBlocked);
+
+    setClientProfileText(
+        'client-profile-name',
+        currentClient.name || 'Клієнт'
+    );
+
+    setClientProfileText(
+        'client-profile-source',
+        hasTelegram
+            ? 'Telegram-клієнт'
+            : 'Ручний клієнт'
+    );
+
+    setClientProfileText(
+        'client-profile-phone',
+        currentClient.phone || 'Телефон не вказано'
+    );
+
+    setClientProfileText(
+        'client-profile-total',
+        String(currentClient.totalBookings || 0)
+    );
+
+    setClientProfileText(
+        'client-profile-source-card',
+        hasTelegram ? 'Telegram' : 'Manual'
+    );
+
+    setClientProfileText(
+        'client-profile-last-booking',
+        currentClient.lastBookingAt || '—'
+    );
+
+    toggleClientProfileElement(
+        'client-profile-telegram-badge',
+        hasTelegram,
+        'flex'
+    );
+
+    toggleClientProfileElement(
+        'client-profile-blocked-badge',
+        blocked,
+        'inline-flex'
+    );
+
+    toggleClientProfileElement(
+        'client-profile-telegram-row',
+        Boolean(currentClient.telegram)
+    );
+
+    setClientProfileText(
+        'client-profile-telegram',
+        currentClient.telegram
+            ? '@' + currentClient.telegram
+            : ''
+    );
+
+    toggleClientProfileElement(
+        'client-profile-block-reason-card',
+        Boolean(currentClient.blockReason)
+    );
+
+    setClientProfileText(
+        'client-profile-block-reason',
+        currentClient.blockReason || ''
+    );
+
+    const contactButton =
+        document.getElementById('client-profile-contact-btn');
+
+    if (contactButton) {
+        contactButton.textContent = hasTelegram ? '💬' : '📞';
+    }
+
+    const blockButton =
+        document.getElementById('client-profile-block-btn');
+
+    if (blockButton) {
+        blockButton.textContent = blocked ? '✅' : '🚫';
+        blockButton.className = blocked
+            ? 'py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-black active:scale-95 transition-all'
+            : 'py-4 bg-amber-50 text-amber-700 rounded-2xl text-sm font-black active:scale-95 transition-all';
+    }
+}
+
+export function contactClientFromProfile() {
+    const client = getClientById(activeClientProfileId);
+
+    if (!client) return;
+
+    if (isTelegramClient(client)) {
+        return openClientTelegram(client.telegram || client.id);
+    }
+
+    if (client.phone) {
+        window.location.href = `tel:${client.phone}`;
+    }
+}
+
+export async function toggleClientBlockedFromProfile() {
+    const client = getClientById(activeClientProfileId);
+
+    if (!client) return;
+
+    await toggleClientBlocked(
+        client.id,
+        !Boolean(client.isBlocked)
+    );
+
+    renderClientProfile();
+}
+
+export async function deleteClientFromProfile() {
+    const client = getClientById(activeClientProfileId);
+
+    if (!client) return;
+
+    await deleteAdminClient(client.id);
+
+    closeClientProfile();
 }
