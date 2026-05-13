@@ -93,7 +93,13 @@ import {
     renderAdminClients,
     openClientTelegram,
     toggleClientBlocked,
-    deleteAdminClient
+    deleteAdminClient,
+    openClientProfile,
+    closeClientProfile,
+    renderClientProfile,
+    contactClientFromProfile,
+    toggleClientBlockedFromProfile,
+    deleteClientFromProfile
 } from './features/admin/adminClients.js';
 
 window.appAPI = {
@@ -149,6 +155,13 @@ closeAdminProfile,
 openAdminProfileEdit,
 closeAdminProfileEdit,
 saveAdminProfileField,
+
+openClientProfile,
+closeClientProfile,
+renderClientProfile,
+contactClientFromProfile,
+toggleClientBlockedFromProfile,
+deleteClientFromProfile,
 
     openMap
 };
