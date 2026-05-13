@@ -116,6 +116,12 @@ function getTodayYmd(offset = 0) {
     return `${year}-${month}-${day}`;
 }
 
+function createDateString(date) {
+    return new Date(
+        date.getTime() - date.getTimezoneOffset() * 60000
+    ).toISOString().split('T')[0];
+}
+
 function getManualAvailableTimes() {
     const workHours =
         String(manualState.selectedMaster?.workHours || '10:00-20:00');
@@ -124,17 +130,29 @@ function getManualAvailableTimes() {
         workHours.match(/(\d{1,2}):?(\d{2})?\s*[-–]\s*(\d{1,2}):?(\d{2})?/);
 
     let startHour = 10;
+    let startMinute = 0;
     let endHour = 20;
+    let endMinute = 0;
 
     if (match) {
         startHour = Number(match[1]) || 10;
+        startMinute = Number(match[2]) || 0;
         endHour = Number(match[3]) || 20;
+        endMinute = Number(match[4]) || 0;
     }
+
+    const startTotal = startHour * 60 + startMinute;
+    const endTotal = endHour * 60 + endMinute;
 
     const times = [];
 
-    for (let hour = startHour; hour < endHour; hour++) {
-        times.push(`${String(hour).padStart(2, '0')}:00`);
+    for (let total = startTotal; total < endTotal; total += 30) {
+        const hour = Math.floor(total / 60);
+        const minute = total % 60;
+
+        times.push(
+            `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+        );
     }
 
     return times;
@@ -155,27 +173,31 @@ function renderManualServices() {
     setHtml(
         'manual-services-list',
         (state.services || []).map((service, index) => `
-            <button
+            <div
                 onclick="window.appAPI.selectManualService('${service.id}')"
-                class="card-convex p-5 w-full text-left active:scale-95 transition-all animate-pop-in"
-                style="animation-delay: ${index * 35}ms"
+                class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 transition-all shadow-convex animate-pop-in border border-white"
+                style="animation-delay: ${index * 40}ms"
             >
-                <div class="flex justify-between gap-4">
-                    <div>
-                        <div class="text-base font-black text-slate-950">
+                <div class="flex items-center gap-4 flex-1 min-w-0 pr-2">
+                    <div class="shrink-0 w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 text-2xl border border-blue-100">
+                        💅
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <div class="font-extrabold text-slate-950 text-lg leading-tight break-words tracking-tight">
                             ${service.name}
                         </div>
 
-                        <div class="text-xs font-semibold text-slate-400 mt-1">
-                            ${service.duration || 60} хв
+                        <div class="text-xs font-semibold text-slate-500 mt-1 flex items-center gap-1.5">
+                            🕒 ${service.duration || 60} хв
                         </div>
                     </div>
-
-                    <div class="text-sm font-black text-blue-600">
-                        ${service.price || ''}
-                    </div>
                 </div>
-            </button>
+
+                <div class="text-slate-950 font-black text-xl whitespace-nowrap">
+                    ${service.price || ''} ₴
+                </div>
+            </div>
         `).join('')
     );
 }
@@ -254,6 +276,18 @@ function renderManualTimeSlots(occupiedSlots = []) {
     const occupied = new Set(occupiedSlots || []);
     const times = getManualAvailableTimes();
 
+    const now = new Date();
+    const todayStr = createDateString(now);
+
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    const requiredBlocks = Math.ceil(
+        (manualState.selectedService?.duration || 30) / 30
+    );
+
+    let availableCount = 0;
+
     if (!times.length) {
         setHtml(
             'manual-time-slots',
@@ -268,23 +302,66 @@ function renderManualTimeSlots(occupiedSlots = []) {
 
     setHtml(
         'manual-time-slots',
-        times.map(time => {
-            const disabled = occupied.has(time);
+        times.map((time, index) => {
+            let available = true;
 
-            return `
-                <button
-                    ${disabled ? 'disabled' : `onclick="window.appAPI.selectManualTime('${time}', this)"`}
-                    class="manual-time-btn rounded-2xl py-3 text-sm font-black border transition-all ${
+            if (index + requiredBlocks > times.length) {
+                available = false;
+            } else {
+                for (let i = 0; i < requiredBlocks; i++) {
+                    if (occupied.has(times[index + i])) {
+                        available = false;
+                        break;
+                    }
+                }
+            }
+
+            if (available && manualState.selectedDate === todayStr) {
+                const [hour, minute] = time.split(':').map(Number);
+
+                if (
+                    hour < currentHour ||
+                    (hour === currentHour && minute <= currentMinute)
+                ) {
+                    available = false;
+                }
+            }
+
+            if (available) {
+                availableCount++;
+            }
+
+            return available
+                ? `
+                    <button
+                        onclick="window.appAPI.selectManualTime('${time}', this)"
+                        class="manual-time-btn card-convex-sm shadow-convex-sm py-3.5 bg-white text-slate-950 text-[13px] font-black active:scale-90 transition-all duration-300 animate-pop-in"
+                        style="animation-delay: ${index * 10}ms"
+                    >
+                        ${time}
+                    </button>
+                `
+                : `
+                    <button
                         disabled
-                            ? 'bg-slate-100 text-slate-300 border-slate-100 opacity-60'
-                            : 'bg-white text-slate-700 border-white shadow-sm active:scale-95'
-                    }"
-                >
-                    ${time}
-                </button>
-            `;
+                        class="py-3.5 rounded-xl bg-slate-100 text-slate-300 line-through text-[13px] font-bold cursor-not-allowed border border-slate-200"
+                    >
+                        ${time}
+                    </button>
+                `;
         }).join('')
     );
+
+    if (availableCount === 0) {
+        setHtml(
+            'manual-time-slots',
+            `
+            <div class="col-span-4 text-center text-slate-500 py-6 font-medium bg-white rounded-2xl border border-slate-100 shadow-convex-sm">
+                На жаль, вільного часу немає 😔
+            </div>
+            `
+        );
+    }
 }
 
 export function openManualBookingModal() {
