@@ -63,16 +63,29 @@ export function updateHeaderTitle(role, tabId) {
         .replace(/^(Майстер|Мастер)\s+/i, '')
         .trim();
 
+    if (tabId === 'clients') {
     title.innerHTML = `
-    <div class="flex flex-col leading-tight">
-        <span class="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
-            Привітик 👋
-        </span>
-        <span class="text-[20px] font-black text-slate-900 truncate">
-            ${cleanName}
-        </span>
-    </div>
-`;
+        <div class="flex flex-col leading-tight">
+            <span class="text-[20px] font-black text-slate-900 truncate">
+                Клієнти
+            </span>
+            <span class="text-[12px] font-bold text-slate-400">
+                База клієнтів салону
+            </span>
+        </div>
+    `;
+} else {
+    title.innerHTML = `
+        <div class="flex flex-col leading-tight">
+            <span class="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
+                Привітик 👋
+            </span>
+            <span class="text-[20px] font-black text-slate-900 truncate">
+                ${cleanName}
+            </span>
+        </div>
+    `;
+}
 updateAdminAvatar();
 }
 function getAdminAvatarImage() {
