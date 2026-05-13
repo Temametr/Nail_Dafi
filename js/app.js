@@ -111,6 +111,26 @@ import {
     requestClientContactAtLaunch
 } from './features/client/clientContactGate.js';
 
+function prepareTelegramViewport() {
+    try {
+        tg.ready();
+
+        if (typeof tg.expand === 'function') {
+            tg.expand();
+        }
+
+        if (typeof tg.requestFullscreen === 'function') {
+            tg.requestFullscreen();
+        }
+
+        if (typeof tg.disableVerticalSwipes === 'function') {
+            tg.disableVerticalSwipes();
+        }
+    } catch (error) {
+        console.warn('prepareTelegramViewport failed:', error);
+    }
+}
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -192,6 +212,7 @@ deleteClientFromProfile,
 };
 
 window.addEventListener('DOMContentLoaded', async () => {
+    prepareTelegramViewport();
 
     tg.MainButton.color = '#3b82f6';
 
