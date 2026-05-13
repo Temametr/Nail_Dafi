@@ -185,6 +185,10 @@ async function loadApp() {
     setTimeout(() => {
         loadBookings('admin', true);
     }, 300);
+    
+    setTimeout(() => {
+    loadAdminClients(true);
+}, 800);
 
 } else {
 
