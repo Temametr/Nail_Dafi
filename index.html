@@ -402,19 +402,43 @@
             </div>
         </div>
         <div id="admin-tab-clients" class="admin-tab-content hidden-step pt-[110px] px-4 animate-fade-in-up">
-    <div class="mx-1 mt-2">
-        <div class="card-convex p-8 text-center">
-            <div class="text-5xl mb-4">💎</div>
 
-            <h2 class="text-xl font-black text-slate-950">
-                Клієнти
-            </h2>
+    <div class="mx-1 mt-2 mb-5">
+        <div class="card-convex p-5">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 text-white flex items-center justify-center text-2xl shadow-lg">
+                    💎
+                </div>
 
-            <p class="text-sm font-medium text-slate-400 mt-2 leading-relaxed">
-                Тут скоро буде база клієнтів, історія візитів, телефони, улюблені послуги та аналітика.
-            </p>
+                <div>
+                    <h2 class="text-xl font-black text-slate-950">
+                        Клієнти
+                    </h2>
+
+                    <p class="text-xs font-medium text-slate-400 mt-1">
+                        База клієнтів салону
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <input
+                    id="admin-clients-search"
+                    type="text"
+                    placeholder="Пошук: імʼя, телефон, Telegram..."
+                    oninput="window.appAPI.searchAdminClients(this.value)"
+                    class="w-full h-14 px-5 rounded-2xl bg-rose-50 border border-rose-100 outline-none text-sm font-bold text-slate-900 placeholder:text-slate-300"
+                >
+            </div>
         </div>
     </div>
+
+    <div id="admin-clients-list" class="space-y-4 px-1 pb-8">
+        <div class="text-center text-sm font-medium text-slate-400 py-10">
+            Завантажуємо клієнтів...
+        </div>
+    </div>
+
 </div>
 
         <div id="client-bottom-nav" class="hidden-step fixed bottom-6 left-5 right-5 z-50 max-w-md mx-auto">
