@@ -87,6 +87,15 @@ import {
     createManualBooking
 } from './features/admin/manualBooking.js';
 
+import {
+    loadAdminClients,
+    searchAdminClients,
+    renderAdminClients,
+    openClientTelegram,
+    toggleClientBlocked,
+    deleteAdminClient
+} from './features/admin/adminClients.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -125,6 +134,13 @@ selectManualMaster,
 selectManualDate,
 selectManualTime,
 createManualBooking,
+
+loadAdminClients,
+searchAdminClients,
+renderAdminClients,
+openClientTelegram,
+toggleClientBlocked,
+deleteAdminClient,
     
     openTelegramChat,
     
