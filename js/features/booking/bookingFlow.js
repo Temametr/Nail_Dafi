@@ -33,6 +33,10 @@ import {
     setHtml
 } from '../../core/ui/modalManager.js';
 
+import {
+    ensureClientPhoneBeforeBooking
+} from '../client/clientContactGate.js';
+
 let currentSubmitHandler = null;
 let isSubmittingBooking = false;
 let lastDateRequestId = 0;
@@ -246,11 +250,12 @@ export function selectService(id) {
     }
 
     if (state.selectedMaster) {
-    showStep('step-phone');
+    renderCalendar();
+    showStep('step-date');
 } else {
-        renderMasters();
-        showStep('step-master');
-    }
+    renderMasters();
+    showStep('step-master');
+}
 }
 
 export function confirmClientPhone() {
@@ -282,7 +287,8 @@ export function selectMaster(id) {
         return tg.showAlert('Майстра не знайдено');
     }
 
-    showStep('step-phone');
+    renderCalendar();
+showStep('step-date');
 }
 
 export async function selectDate(date, btn) {
