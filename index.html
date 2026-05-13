@@ -125,6 +125,34 @@
             Магія налаштовується...
         </p>
     </div>
+    
+    <div id="client-contact-gate" class="hidden-step min-h-[75vh] flex flex-col items-center justify-center px-6 text-center">
+    <div class="card-convex p-7 w-full max-w-sm animate-pop-in">
+        <div class="w-20 h-20 mx-auto rounded-[2rem] bg-green-50 text-green-600 flex items-center justify-center text-4xl border border-green-100 shadow-inner">
+            📞
+        </div>
+
+        <h1 class="text-2xl font-black text-slate-950 mt-6 leading-tight">
+            Потрібен номер телефону
+        </h1>
+
+        <p class="text-sm font-medium text-slate-500 leading-relaxed mt-3">
+            Щоб створювати записи та отримувати повідомлення від майстра, поділіться номером телефону з Telegram.
+        </p>
+
+        <button
+            id="client-contact-share-button"
+            onclick="window.appAPI.requestClientContactAtLaunch()"
+            class="w-full py-4 bg-slate-950 text-white rounded-3xl text-sm font-black shadow-lg active:scale-95 transition-all disabled:opacity-60 mt-6"
+        >
+            Поділитися номером
+        </button>
+
+        <div class="text-[11px] font-medium text-slate-400 mt-4 leading-relaxed">
+            Без номера телефону користування додатком недоступне.
+        </div>
+    </div>
+</div>
 
     <div id="client-screen" class="hidden-step">
         <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-5 flex justify-between items-center">
