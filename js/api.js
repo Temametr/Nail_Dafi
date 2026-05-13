@@ -125,3 +125,12 @@ export async function fetchClientBookingsAPI(clientId) {
         }
     });
 }
+
+export async function fetchClientContactAPI(clientId) {
+    return await requestJson(API_URL, {
+        params: {
+            action: 'getClientContact',
+            clientId
+        }
+    });
+}
