@@ -1,10 +1,6 @@
 import { state, tg, modalState } from './state.js';
 
 import {
-    renderHomeMasters
-} from './client.js';
-
-import {
     renderAdminStats
 } from './admin.js';
 
@@ -13,9 +9,6 @@ import {
     startReschedule,
     selectService,
     selectMaster,
-    confirmClientPhone,
-    requestTelegramContact,
-    showManualPhoneInput,
     selectDate,
     selectTime,
     resetDateTimeSelection,
@@ -142,9 +135,6 @@ window.appAPI = {
     selectMaster,
     selectDate,
     selectTime,
-    confirmClientPhone,
-    requestTelegramContact,
-    showManualPhoneInput,
 
     changeBookingStatus,
     
