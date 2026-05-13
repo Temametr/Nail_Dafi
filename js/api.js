@@ -86,3 +86,33 @@ export async function createBookingAPI(data) {
         }
     });
 }
+
+export async function fetchClientsAPI() {
+    return await requestJson(API_URL, {
+        params: {
+            action: 'getClients'
+        }
+    });
+}
+
+export async function updateClientStatusAPI(clientId, isBlocked, reason = '') {
+    return await requestJson(API_URL, {
+        method: 'POST',
+        body: {
+            action: 'updateClientStatus',
+            clientId,
+            isBlocked,
+            reason
+        }
+    });
+}
+
+export async function deleteClientAPI(clientId) {
+    return await requestJson(API_URL, {
+        method: 'POST',
+        body: {
+            action: 'deleteClient',
+            clientId
+        }
+    });
+}
