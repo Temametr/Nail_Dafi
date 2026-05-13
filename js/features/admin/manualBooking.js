@@ -481,15 +481,16 @@ export async function createManualBooking() {
         }
 
         const response = await createBookingAPI({
-            clientId: manualClientId,
-            clientName: manualState.clientName,
-            clientPhone: manualState.clientPhone,
-            masterId: manualState.selectedMaster.id,
-            service: manualState.selectedService.name,
-            date: manualState.selectedDate,
-            time: manualState.selectedTime,
-            comment: manualState.comment
-        });
+    createdByRole: 'admin',
+    clientId: manualClientId,
+    clientName: manualState.clientName,
+    clientPhone: manualState.clientPhone,
+    masterId: manualState.selectedMaster.id,
+    service: manualState.selectedService.name,
+    date: manualState.selectedDate,
+    time: manualState.selectedTime,
+    comment: manualState.comment
+});
 
         if (response.status !== 'success') {
             throw new Error(response.message || 'Не вдалося створити запис');
