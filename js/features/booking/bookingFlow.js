@@ -422,6 +422,9 @@ export function selectTime(time, btn) {
                         'Telegram user не визначений'
                     );
                 }
+                
+                const verifiedPhone =
+                    await ensureClientPhoneBeforeBooking();
 
                 const response = await submitBookingAPI({
                     action: state.editingBookingId
@@ -436,7 +439,7 @@ export function selectTime(time, btn) {
                     clientId,
                     clientName,
                      clientTelegram: state.user?.username || '',
-                    clientPhone: state.clientPhone,
+                    clientPhone: verifiedPhone,
 
                     service: state.selectedService.name,
 
