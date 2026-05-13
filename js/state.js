@@ -50,6 +50,9 @@ adminStatsCustomDate: localStorage.getItem('adminStatsCustomDate') || '',
 
     clientBookings: [],
     adminBookings: [],
+    
+    adminClients: [],
+adminClientsSearchQuery: '',
 
     currentBookingFilter: 'confirmed',
 
