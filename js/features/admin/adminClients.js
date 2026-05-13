@@ -22,6 +22,11 @@ let activeClientBookings = [];
 let activeClientBookingsLoading = false;
 const CLIENTS_CACHE_KEY = 'nail_dafi_admin_clients';
 const CLIENTS_CACHE_TTL_MS = 5 * 60 * 1000;
+const CLIENT_HISTORY_CACHE_TTL_MS = 5 * 60 * 1000;
+
+function getClientHistoryCacheKey(clientId) {
+    return `nail_dafi_client_history_${clientId}`;
+}
 
 function areClientsEqual(currentClients, nextClients) {
     try {
@@ -531,11 +536,6 @@ export function renderClientProfile(client = null) {
     );
 
     setClientProfileText(
-        'client-profile-source-card',
-        hasTelegram ? 'Telegram' : 'Manual'
-    );
-
-    setClientProfileText(
         'client-profile-last-booking',
         currentClient.lastBookingAt || '—'
     );
@@ -553,9 +553,10 @@ export function renderClientProfile(client = null) {
     );
 
     toggleClientProfileElement(
-        'client-profile-telegram-row',
-        Boolean(currentClient.telegram)
-    );
+    'client-profile-telegram-row',
+    Boolean(currentClient.telegram),
+    'flex'
+);
 
     setClientProfileText(
         'client-profile-telegram',
@@ -715,10 +716,21 @@ function renderClientBookingsHistory() {
 }
 
 async function loadClientBookingsHistory(clientId) {
-    activeClientBookingsLoading = true;
-    activeClientBookings = [];
+    const cacheKey = getClientHistoryCacheKey(clientId);
 
-    renderClientBookingsHistory();
+    const cachedHistory = getCache(cacheKey);
+
+    if (Array.isArray(cachedHistory)) {
+        activeClientBookings = cachedHistory;
+        activeClientBookingsLoading = false;
+
+        renderClientBookingsHistory();
+    } else {
+        activeClientBookingsLoading = true;
+        activeClientBookings = [];
+
+        renderClientBookingsHistory();
+    }
 
     try {
         const response = await fetchClientBookingsAPI(clientId);
@@ -727,17 +739,34 @@ async function loadClientBookingsHistory(clientId) {
             throw new Error(response.message || 'Не вдалося завантажити історію');
         }
 
-        activeClientBookings = response.bookings || [];
+        const freshHistory = response.bookings || [];
+
+        const changed =
+            JSON.stringify(activeClientBookings || []) !== JSON.stringify(freshHistory || []);
+
+        activeClientBookings = freshHistory;
+
+        setCache(
+            cacheKey,
+            freshHistory,
+            CLIENT_HISTORY_CACHE_TTL_MS
+        );
+
+        if (changed || !Array.isArray(cachedHistory)) {
+            renderClientBookingsHistory();
+        }
 
     } catch (error) {
-        const container = getClientHistoryContainer();
+        if (!Array.isArray(cachedHistory)) {
+            const container = getClientHistoryContainer();
 
-        if (container) {
-            container.innerHTML = `
-                <div class="text-sm font-bold text-red-500 text-center py-4">
-                    Не вдалося завантажити історію
-                </div>
-            `;
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-sm font-bold text-red-500 text-center py-4">
+                        Не вдалося завантажити історію
+                    </div>
+                `;
+            }
         }
 
         return;
