@@ -3,7 +3,7 @@ import { APP_CONFIG } from '../../config/appConfig.js';
 
 import {
     fetchOccupiedSlotsAPI,
-    submitBookingAPI
+    submitBookingAPI,
     fetchClientContactAPI
 } from '../../api/bookingsApi.js';
 
@@ -497,4 +497,82 @@ async function waitForTelegramPhone(clientId, attempts = 10) {
     }
 
     return '';
+}
+
+export function showManualPhoneInput() {
+    const box = document.getElementById('manual-phone-box');
+
+    if (!box) return;
+
+    box.classList.remove('hidden');
+
+    setTimeout(() => {
+        document.getElementById('client-phone-input')?.focus();
+    }, 100);
+}
+
+function setContactButtonLoading(isLoading) {
+    const button = document.getElementById('telegram-contact-button');
+
+    if (!button) return;
+
+    button.disabled = isLoading;
+    button.textContent = isLoading
+        ? 'Очікуємо підтвердження...'
+        : 'Поділитися номером';
+}
+
+export function requestTelegramContact() {
+    const webApp = window.Telegram?.WebApp || tg;
+
+    if (!webApp || typeof webApp.requestContact !== 'function') {
+        tg.showAlert('Telegram не підтримує швидку передачу номера. Введіть номер вручну.');
+        showManualPhoneInput();
+        return;
+    }
+
+    const clientId =
+        state.user?.id ||
+        webApp.initDataUnsafe?.user?.id;
+
+    if (!clientId) {
+        tg.showAlert('Не вдалося визначити Telegram ID. Введіть номер вручну.');
+        showManualPhoneInput();
+        return;
+    }
+
+    setContactButtonLoading(true);
+
+    try {
+        webApp.requestContact(async (shared) => {
+            if (!shared) {
+                setContactButtonLoading(false);
+                tg.showAlert('Ви не поділилися номером. Можна ввести його вручну.');
+                showManualPhoneInput();
+                return;
+            }
+
+            const phone = await waitForTelegramPhone(String(clientId), 10);
+
+            setContactButtonLoading(false);
+
+            if (!phone) {
+                tg.showAlert('Telegram підтвердив передачу контакту, але номер ще не отримано. Введіть номер вручну або спробуйте ще раз.');
+                showManualPhoneInput();
+                return;
+            }
+
+            state.clientPhone = phone;
+
+            tg.showAlert('Номер отримано з Telegram ✅');
+
+            renderCalendar();
+            showStep('step-date');
+        });
+
+    } catch (error) {
+        setContactButtonLoading(false);
+        tg.showAlert('Не вдалося запросити контакт. Введіть номер вручну.');
+        showManualPhoneInput();
+    }
 }
