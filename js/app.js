@@ -79,6 +79,11 @@ import {
 import {
     openManualBookingModal,
     closeManualBookingModal,
+    manualBookingNextFromClient,
+    selectManualService,
+    selectManualMaster,
+    selectManualDate,
+    selectManualTime,
     createManualBooking
 } from './features/admin/manualBooking.js';
 
@@ -114,6 +119,11 @@ prepareAdminDatePicker,
     
     openManualBookingModal,
 closeManualBookingModal,
+manualBookingNextFromClient,
+selectManualService,
+selectManualMaster,
+selectManualDate,
+selectManualTime,
 createManualBooking,
     
     openTelegramChat,
