@@ -76,6 +76,12 @@ import {
     saveAdminProfileField
 } from './features/admin/adminProfile.js';
 
+import {
+    openManualBookingModal,
+    closeManualBookingModal,
+    createManualBooking
+} from './features/admin/manualBooking.js';
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -105,6 +111,10 @@ prepareAdminDatePicker,
     openMasterProfile,
     closeMasterProfile,
     bookFromProfile,
+    
+    openManualBookingModal,
+closeManualBookingModal,
+createManualBooking,
     
     openTelegramChat,
     
@@ -425,4 +435,14 @@ function prepareAdminDatePicker() {
             state.adminStatsCustomDate ||
             getTodayYmd();
     }
+}
+
+export async function createBookingAPI(data) {
+    return await requestJson(API_URL, {
+        method: 'POST',
+        body: {
+            action: 'createBooking',
+            ...data
+        }
+    });
 }
