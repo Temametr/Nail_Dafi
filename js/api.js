@@ -76,3 +76,13 @@ export async function updateMasterProfileFieldAPI(masterId, field, value) {
         }
     });
 }
+
+export async function createBookingAPI(data) {
+    return await requestJson(API_URL, {
+        method: 'POST',
+        body: {
+            action: 'createBooking',
+            ...data
+        }
+    });
+}
