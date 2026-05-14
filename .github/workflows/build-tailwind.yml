@@ -10,7 +10,10 @@ on:
       - 'src/input.css'
       - 'tailwind.config.js'
       - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/build-tailwind.yml'
+
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -33,7 +36,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build CSS
+      - name: Ensure dist folder exists
+        run: mkdir -p dist
+
+      - name: Build Tailwind CSS
         run: npm run build:css
 
       - name: Commit compiled CSS
