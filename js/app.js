@@ -476,7 +476,6 @@ function handleBack() {
 
 closeClientBookingFlow();
 }
-    }
 }
 
 function switchTab(role, tabId) {
