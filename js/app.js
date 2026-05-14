@@ -109,19 +109,48 @@ function prepareTelegramViewport() {
     try {
         tg.ready();
 
+        document.body.classList.remove(
+            'is-telegram-fullscreen',
+            'is-telegram-compact'
+        );
+
         if (typeof tg.expand === 'function') {
             tg.expand();
         }
 
         if (typeof tg.requestFullscreen === 'function') {
             tg.requestFullscreen();
+
+            document.body.classList.add(
+                'is-telegram-fullscreen'
+            );
+        } else {
+            document.body.classList.add(
+                'is-telegram-compact'
+            );
         }
 
         if (typeof tg.disableVerticalSwipes === 'function') {
             tg.disableVerticalSwipes();
         }
+
+        if (typeof tg.onEvent === 'function') {
+            tg.onEvent('viewportChanged', () => {
+                document.body.classList.add(
+                    'is-telegram-fullscreen'
+                );
+            });
+        }
+
     } catch (error) {
-        console.warn('prepareTelegramViewport failed:', error);
+        console.warn(
+            'prepareTelegramViewport failed:',
+            error
+        );
+
+        document.body.classList.add(
+            'is-telegram-compact'
+        );
     }
 }
 
