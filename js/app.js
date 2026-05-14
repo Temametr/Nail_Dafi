@@ -164,6 +164,7 @@ window.appAPI = {
 
     startClientBookingFlow,
     startReschedule,
+    closeClientBookingFlow,
 
     selectService,
     selectMaster,
@@ -486,6 +487,24 @@ function switchTab(role, tabId) {
         loadBookings
     });
 }
+
+function closeClientBookingFlow() {
+    document.body.classList.remove('booking-flow-hidden-shell');
+
+    const clientNav =
+        document.getElementById('client-bottom-nav');
+
+    if (clientNav) {
+        clientNav.classList.remove('hidden-step');
+    }
+
+    const returnTab =
+        state.bookingReturnTab || 'bookings';
+
+    state.bookingReturnTab = 'bookings';
+
+    switchTab('client', returnTab);
+} 
 
 function switchBookingTab(filter, role) {
 
