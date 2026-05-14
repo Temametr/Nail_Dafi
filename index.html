@@ -69,8 +69,15 @@ body.is-telegram-fullscreen {
 
 .booking-flow-screen {
     min-height: 100vh;
-    padding-top: calc(var(--app-safe-top) + 34px) !important;
-    padding-bottom: 120px;
+    padding-top: calc(var(--app-safe-top) + 24px) !important;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 108px);
+}
+
+.booking-step-service {
+    min-height: calc(100vh - var(--app-safe-top) - env(safe-area-inset-bottom, 0px) - 108px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .booking-service-carousel {
@@ -79,7 +86,7 @@ body.is-telegram-fullscreen {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-padding-left: calc((100vw - min(100vw, 448px)) / 2 + 56px);
-    padding: 18px max(24px, calc((100vw - min(100vw, 448px)) / 2 + 24px)) 26px;
+    padding: 22px max(24px, calc((100vw - min(100vw, 448px)) / 2 + 24px)) 30px;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -93,18 +100,28 @@ body.is-telegram-fullscreen {
     min-width: 230px;
     height: 230px;
     border-radius: 2.2rem;
-    transition: transform 180ms ease, opacity 180ms ease, box-shadow 180ms ease;
+    transition: transform 220ms ease, opacity 220ms ease, box-shadow 220ms ease;
 }
 
 .booking-service-card.is-focused {
-    transform: scale(1.04);
+    transform: scale(1.10);
     opacity: 1;
-    box-shadow: 0 24px 50px -18px rgba(37, 99, 235, 0.45);
+    z-index: 3;
+    box-shadow: 0 28px 60px -18px rgba(37, 99, 235, 0.55);
 }
 
 .booking-service-card:not(.is-focused) {
-    transform: scale(0.92);
-    opacity: 0.58;
+    transform: scale(0.88);
+    opacity: 0.48;
+}
+
+.booking-flow-bottom-action {
+    position: fixed;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
+    transform: translateX(-50%);
+    width: min(100% - 32px, 416px);
+    z-index: 60;
 }
 
 .booking-flow-hidden-shell #client-screen > header,
@@ -331,32 +348,6 @@ body.is-telegram-fullscreen {
 
         <div id="tab-booking-flow" class="tab-content hidden-step booking-flow-screen animate-fade-in-up">
             <div id="step-booking" class="step-content animate-pop-in">
-    <div class="px-6">
-        <div class="flex items-start justify-between gap-4 mb-5">
-            <div>
-                <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
-                    Новий візит
-                </div>
-
-                <h2 class="text-3xl font-black text-slate-950 tracking-tight leading-tight mt-1">
-                    Оберіть послугу
-                </h2>
-
-                <p class="text-sm font-semibold text-slate-400 mt-2 leading-relaxed">
-                    Проведіть карусель і натисніть “Далі”
-                </p>
-            </div>
-
-            <button
-                type="button"
-                onclick="window.appAPI.switchTab('client', window.appAPI.getBookingReturnTab ? window.appAPI.getBookingReturnTab() : 'home')"
-                class="w-11 h-11 rounded-full bg-white text-slate-500 flex items-center justify-center shadow-sm border border-white active:scale-90 transition-all shrink-0"
-                aria-label="Закрити"
-            >
-                ✕
-            </button>
-        </div>
-    </div>
 
     <div id="services-list" class="booking-service-carousel"></div>
 
