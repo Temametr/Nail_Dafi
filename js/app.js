@@ -33,7 +33,8 @@ import {
 
 import {
     switchTab as switchTabController,
-    switchBookingTab as switchBookingTabController
+    switchBookingTab as switchBookingTabController,
+    toggleBookingFilterMenu
 } from './features/navigation/tabsController.js';
 
 import {
@@ -127,6 +128,8 @@ function prepareTelegramViewport() {
 window.appAPI = {
     switchTab,
     switchBookingTab,
+    setBookingFilter: switchBookingTab,
+    toggleBookingFilterMenu,
 
     startClientBookingFlow,
     startReschedule,
