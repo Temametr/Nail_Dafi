@@ -9,10 +9,17 @@ function setFocusedService(serviceId) {
     document
         .querySelectorAll('.booking-service-card')
         .forEach(card => {
-            card.classList.toggle(
-                'is-focused',
-                String(card.dataset.serviceId) === String(serviceId)
-            );
+            const isFocused =
+                String(card.dataset.serviceId) === String(serviceId);
+
+            card.classList.toggle('is-focused', isFocused);
+
+            const check = card.querySelector('.service-check');
+
+            if (check) {
+                check.classList.toggle('hidden', !isFocused);
+                check.classList.toggle('flex', isFocused);
+            }
         });
 }
 
@@ -99,14 +106,16 @@ export function renderServices() {
                 </div>
 
                 <div class="flex items-end justify-between gap-3">
-                    <div class="text-2xl font-black text-slate-950">
-                        ${price} ₴
-                    </div>
+    <div class="text-2xl font-black text-slate-950">
+        ${price} ₴
+    </div>
 
-                    <div class="w-9 h-9 rounded-full bg-slate-950 text-white flex items-center justify-center text-sm">
-                        ✓
-                    </div>
-                </div>
+    <div
+        class="service-check w-9 h-9 rounded-full bg-slate-950 text-white items-center justify-center text-sm ${isFocused ? 'flex' : 'hidden'}"
+    >
+        ✓
+    </div>
+</div>
             </button>
         `;
     }).join('');
@@ -117,12 +126,18 @@ export function renderServices() {
         );
 
         if (activeCard) {
-            activeCard.scrollIntoView({
-                behavior: 'instant',
-                inline: 'center',
-                block: 'nearest'
-            });
-        }
+    const listRect = list.getBoundingClientRect();
+    const cardRect = activeCard.getBoundingClientRect();
+
+    const listCenter = listRect.width / 2;
+    const cardCenter =
+        activeCard.offsetLeft + cardRect.width / 2;
+
+    list.scrollTo({
+        left: cardCenter - listCenter,
+        behavior: 'auto'
+    });
+}
 
         updateFocusedServiceFromScroll(list);
     });
@@ -145,13 +160,19 @@ export function focusService(serviceId) {
         ? list.querySelector(`[data-service-id="${serviceId}"]`)
         : null;
 
-    if (card) {
-        card.scrollIntoView({
-            behavior: 'smooth',
-            inline: 'center',
-            block: 'nearest'
-        });
-    }
+    if (card && list) {
+    const listRect = list.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+
+    const listCenter = listRect.width / 2;
+    const cardCenter =
+        card.offsetLeft + cardRect.width / 2;
+
+    list.scrollTo({
+        left: cardCenter - listCenter,
+        behavior: 'smooth'
+    });
+}
 
     setFocusedService(serviceId);
 }
