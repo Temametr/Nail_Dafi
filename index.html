@@ -100,8 +100,9 @@ body.is-telegram-fullscreen {
     gap: 18px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    scroll-padding-left: calc((100vw - min(100vw, 448px)) / 2 + 56px);
-    padding: 22px max(24px, calc((100vw - min(100vw, 448px)) / 2 + 24px)) 30px;
+    scroll-padding-left: calc((100vw - min(100vw, 448px)) / 2 + 101px);
+    scroll-padding-right: calc((100vw - min(100vw, 448px)) / 2 + 101px);
+    padding: 22px calc((100vw - min(100vw, 448px)) / 2 + 101px) 30px;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -119,10 +120,10 @@ body.is-telegram-fullscreen {
 }
 
 .booking-service-card.is-focused {
-    transform: scale(1.08);
+    transform: scale(1.07);
     opacity: 1;
     z-index: 3;
-    box-shadow: 0 28px 60px -18px rgba(37, 99, 235, 0.55);
+    box-shadow: 0 16px 34px -18px rgba(37, 99, 235, 0.34);
 }
 
 .booking-service-card:not(.is-focused) {
