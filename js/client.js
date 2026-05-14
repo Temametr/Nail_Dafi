@@ -1,6 +1,9 @@
 import { state } from './state.js';
 
-import { renderServices } from './renderers/servicesRenderer.js';
+import {
+    renderServices,
+    focusService
+} from './renderers/servicesRenderer.js';
 import { renderClientBookings } from './renderers/clientBookingsRenderer.js';
 
 import {
@@ -15,6 +18,7 @@ import {
 
 export {
     renderServices,
+    focusService,
     renderClientBookings,
     renderHomeMasters,
     renderMasters,
