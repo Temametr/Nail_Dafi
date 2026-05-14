@@ -196,6 +196,13 @@ return isSameDay(bookingDate, customDate);
 
 function getFilteredAdminBookings() {
     return state.adminBookings.filter(booking => {
+        if (
+            !state.currentBookingFilter ||
+            state.currentBookingFilter === 'all'
+        ) {
+            return true;
+        }
+
         if (state.currentBookingFilter === 'pending') {
             return booking.status === STATUS_PENDING;
         }
@@ -208,32 +215,18 @@ function getFilteredAdminBookings() {
             return booking.status === STATUS_DONE;
         }
 
-        return booking.status === STATUS_CANCELLED;
+        if (state.currentBookingFilter === 'cancelled') {
+            return booking.status === STATUS_CANCELLED;
+        }
+
+        return true;
     });
-}
-
-function syncAdminBookingTabsVisibility() {
-    const hasPending = state.adminBookings.some(
-        booking => booking.status === STATUS_PENDING
-    );
-
-    const pendingTab = document.getElementById('admin-subtab-pending');
-
-    if (pendingTab) {
-        pendingTab.classList.toggle('hidden', !hasPending);
-    }
-
-    if (!hasPending && state.currentBookingFilter === 'pending') {
-        state.currentBookingFilter = 'confirmed';
-    }
 }
 
 export function renderAdminBookings() {
     const container = document.getElementById('admin-bookings-list');
 
     if (!container) return;
-
-    syncAdminBookingTabsVisibility();
 
     const filtered = getFilteredAdminBookings();
 
