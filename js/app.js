@@ -212,7 +212,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     setBackButtonHandler(handleBack);
 
     setBookingSuccessHandler(() => {
-    state.currentBookingFilter = 'pending';
+    state.currentBookingFilter = 'all';
 
     switchTab('client', 'bookings');
 
@@ -490,7 +490,7 @@ const role =
         booking.status = 'Отменено';
         booking.cancelReason = reason;
 
-        switchBookingTab('cancelled', role);
+        switchBookingTab(state.currentBookingFilter || 'all', role);
 
         if (role === 'admin') {
             renderAdminStats(state.adminStatsPeriod || 'today');
