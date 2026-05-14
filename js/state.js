@@ -31,6 +31,7 @@ export const state = {
     masters: [],
 
     selectedService: null,
+    focusedServiceId: null,
     selectedMaster: null,
 
     selectedDate: null,
