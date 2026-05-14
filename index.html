@@ -82,6 +82,20 @@ body.is-telegram-fullscreen {
     justify-content: center;
 }
 
+.booking-step-master {
+    min-height: 100vh;
+    padding-top: calc(var(--app-safe-top) + 32px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.booking-master-list {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
 .booking-service-header {
     margin-bottom: 10px;
 }
@@ -382,13 +396,23 @@ body.is-telegram-fullscreen {
     </div>
 </div>
 
-            <div id="step-master" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
-                <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">
-                    Оберіть майстра
-                </h3>
+            <div id="step-master" class="step-content hidden-step animate-pop-in booking-step-master">
+    <div class="px-6 text-center mb-5">
+        <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
+            Новий візит
+        </div>
 
-                <div id="masters-list" class="space-y-4 px-1"></div>
-            </div>
+        <h2 class="text-3xl font-black text-slate-950 tracking-tight leading-tight mt-1">
+            Оберіть майстра
+        </h2>
+
+        <p class="text-sm font-semibold text-slate-400 mt-2 leading-relaxed">
+            Виберіть спеціаліста, до якого хочете записатися
+        </p>
+    </div>
+
+    <div id="masters-list" class="booking-master-list space-y-4"></div>
+</div>
 
             <div id="step-date" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
                 <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">
