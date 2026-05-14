@@ -76,6 +76,13 @@ export function startClientBookingFlow() {
     state.selectedMaster = null;
     state.viewedMasterId = null;
     state.clientPhone = '';
+    
+    const headerTitle =
+    document.getElementById('client-header-title');
+
+if (headerTitle) {
+    headerTitle.innerHTML = 'Створюємо візит ✨';
+}
 
     isSubmittingBooking = false;
 
@@ -120,6 +127,13 @@ export function startReschedule(id) {
     }
 
     state.editingBookingId = id;
+    
+    const headerTitle =
+    document.getElementById('client-header-title');
+
+if (headerTitle) {
+    headerTitle.innerHTML = 'Переносимо візит 🔁';
+}
 
     const bookingServiceName = String(
         booking.service || ''
