@@ -8,6 +8,8 @@ import {
     startClientBookingFlow,
     startReschedule,
     selectService,
+    focusBookingService,
+    confirmSelectedService,
     selectMaster,
     selectDate,
     selectTime,
@@ -167,6 +169,9 @@ window.appAPI = {
     selectMaster,
     selectDate,
     selectTime,
+    
+    focusService: focusBookingService,
+    confirmSelectedService,
 
     changeBookingStatus,
     
@@ -473,6 +478,17 @@ if (clientNav) {
 }
 
 function switchTab(role, tabId) {
+    
+    if (role === 'client') {
+    document.body.classList.remove('booking-flow-hidden-shell');
+
+    const clientNav =
+        document.getElementById('client-bottom-nav');
+
+    if (clientNav) {
+        clientNav.classList.remove('hidden-step');
+    }
+}
 
     return switchTabController({
         role,
