@@ -185,12 +185,21 @@ body.is-telegram-fullscreen {
                 <h1 class="text-[19px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5" id="client-header-title"></h1>
             </div>
 
-            <div class="relative z-10 w-11 h-11 bg-white/80 rounded-full flex items-center justify-center shadow-sm text-slate-600 border border-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                </svg>
-                <div class="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
-            </div>
+            <button
+    type="button"
+    onclick="window.appAPI.startClientBookingFlow()"
+    class="relative z-10 w-12 h-12 bg-white/85 rounded-full flex items-center justify-center shadow-sm text-blue-500 border border-white active:scale-90 transition-all shrink-0"
+    aria-label="Створити новий візит"
+>
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.8"
+            d="M12 5v14M5 12h14"
+        ></path>
+    </svg>
+</button>
         </header>
 
         <div id="tab-home" class="tab-content app-top-content px-4 animate-fade-in-up">
@@ -339,13 +348,8 @@ body.is-telegram-fullscreen {
         </div>
 
         <div id="tab-bookings" class="tab-content hidden-step app-top-content px-4 animate-fade-in-up">
-            <div class="mb-5 px-1 mt-2">
-                <button onclick="window.appAPI.startClientBookingFlow()" class="w-full py-4 bg-blue-500 text-white rounded-3xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">
-                    СТВОРИТИ НОВИЙ ВІЗИТ
-                </button>
-            </div>
 
-            <div class="px-1 pb-4 mt-2">
+            <div class="px-1 pb-4 mt-3">
     <button
         onclick="window.appAPI.toggleBookingFilterMenu('client')"
         class="w-full card-convex px-5 py-4 flex items-center justify-between active:scale-[0.98] transition-all"
