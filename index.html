@@ -67,6 +67,51 @@ body.is-telegram-fullscreen {
     padding-top: calc(var(--app-content-top) + var(--app-safe-top)) !important;
 }
 
+.booking-flow-screen {
+    min-height: 100vh;
+    padding-top: calc(var(--app-safe-top) + 34px) !important;
+    padding-bottom: 120px;
+}
+
+.booking-service-carousel {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: calc((100vw - min(100vw, 448px)) / 2 + 56px);
+    padding: 18px max(24px, calc((100vw - min(100vw, 448px)) / 2 + 24px)) 26px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.booking-service-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+.booking-service-card {
+    scroll-snap-align: center;
+    width: 230px;
+    min-width: 230px;
+    height: 230px;
+    border-radius: 2.2rem;
+    transition: transform 180ms ease, opacity 180ms ease, box-shadow 180ms ease;
+}
+
+.booking-service-card.is-focused {
+    transform: scale(1.04);
+    opacity: 1;
+    box-shadow: 0 24px 50px -18px rgba(37, 99, 235, 0.45);
+}
+
+.booking-service-card:not(.is-focused) {
+    transform: scale(0.92);
+    opacity: 0.58;
+}
+
+.booking-flow-hidden-shell #client-screen > header,
+.booking-flow-hidden-shell #client-bottom-nav {
+    display: none !important;
+}
+
         .floating-nav {
             background-color: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(15px);
@@ -284,14 +329,51 @@ body.is-telegram-fullscreen {
             </div>
         </div>
 
-        <div id="tab-booking-flow" class="tab-content hidden-step app-top-content px-4 animate-fade-in-up">
-            <div id="step-booking" class="step-content space-y-4 animate-pop-in mt-2">
-                <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">
-                    Оберіть послугу
-                </h3>
+        <div id="tab-booking-flow" class="tab-content hidden-step booking-flow-screen animate-fade-in-up">
+            <div id="step-booking" class="step-content animate-pop-in">
+    <div class="px-6">
+        <div class="flex items-start justify-between gap-4 mb-5">
+            <div>
+                <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
+                    Новий візит
+                </div>
 
-                <div id="services-list" class="space-y-4 px-1"></div>
+                <h2 class="text-3xl font-black text-slate-950 tracking-tight leading-tight mt-1">
+                    Оберіть послугу
+                </h2>
+
+                <p class="text-sm font-semibold text-slate-400 mt-2 leading-relaxed">
+                    Проведіть карусель і натисніть “Далі”
+                </p>
             </div>
+
+            <button
+                type="button"
+                onclick="window.appAPI.switchTab('client', window.appAPI.getBookingReturnTab ? window.appAPI.getBookingReturnTab() : 'home')"
+                class="w-11 h-11 rounded-full bg-white text-slate-500 flex items-center justify-center shadow-sm border border-white active:scale-90 transition-all shrink-0"
+                aria-label="Закрити"
+            >
+                ✕
+            </button>
+        </div>
+    </div>
+
+    <div id="services-list" class="booking-service-carousel"></div>
+
+    <div class="px-6 mt-2">
+        <button
+            id="booking-service-next-button"
+            onclick="window.appAPI.confirmSelectedService()"
+            class="w-full py-4 bg-slate-950 text-white rounded-3xl text-sm font-black shadow-lg active:scale-95 transition-all disabled:opacity-40"
+        >
+            Далі
+        </button>
+
+        <div id="booking-service-hint" class="text-center text-[11px] font-bold text-slate-400 mt-4">
+            Послуга в центрі каруселі буде обрана автоматично
+        </div>
+    </div>
+</div>
 
             <div id="step-master" class="step-content hidden-step space-y-4 animate-pop-in mt-2">
                 <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">
