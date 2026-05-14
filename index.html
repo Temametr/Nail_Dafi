@@ -69,15 +69,30 @@ body.is-telegram-fullscreen {
 
 .booking-flow-screen {
     min-height: 100vh;
-    padding-top: calc(var(--app-safe-top) + 24px) !important;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 108px);
+    padding-top: 0 !important;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 104px);
 }
 
 .booking-step-service {
-    min-height: calc(100vh - var(--app-safe-top) - env(safe-area-inset-bottom, 0px) - 108px);
+    min-height: 100vh;
+    padding-top: calc(var(--app-safe-top) + 32px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+
+.booking-service-header {
+    margin-bottom: 10px;
+}
+
+.booking-flow-bottom-action {
+    position: fixed;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
+    transform: translateX(-50%);
+    width: min(100% - 32px, 416px);
+    z-index: 60;
 }
 
 .booking-service-carousel {
@@ -104,24 +119,15 @@ body.is-telegram-fullscreen {
 }
 
 .booking-service-card.is-focused {
-    transform: scale(1.10);
+    transform: scale(1.08);
     opacity: 1;
     z-index: 3;
     box-shadow: 0 28px 60px -18px rgba(37, 99, 235, 0.55);
 }
 
 .booking-service-card:not(.is-focused) {
-    transform: scale(0.88);
+    transform: scale(0.90);
     opacity: 0.48;
-}
-
-.booking-flow-bottom-action {
-    position: fixed;
-    left: 50%;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
-    transform: translateX(-50%);
-    width: min(100% - 32px, 416px);
-    z-index: 60;
 }
 
 .booking-flow-hidden-shell #client-screen > header,
@@ -347,11 +353,24 @@ body.is-telegram-fullscreen {
         </div>
 
         <div id="tab-booking-flow" class="tab-content hidden-step booking-flow-screen animate-fade-in-up">
-            <div id="step-booking" class="step-content animate-pop-in">
+            <div id="step-booking" class="step-content animate-pop-in booking-step-service">
+    <div class="booking-service-header px-6 text-center">
+        <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
+            Новий візит
+        </div>
+
+        <h2 class="text-3xl font-black text-slate-950 tracking-tight leading-tight mt-1">
+            Оберіть послугу
+        </h2>
+
+        <p class="text-sm font-semibold text-slate-400 mt-2 leading-relaxed">
+            Проведіть карусель. Послуга в центрі буде обрана автоматично
+        </p>
+    </div>
 
     <div id="services-list" class="booking-service-carousel"></div>
 
-    <div class="px-6 mt-2">
+    <div class="booking-flow-bottom-action">
         <button
             id="booking-service-next-button"
             onclick="window.appAPI.confirmSelectedService()"
@@ -359,10 +378,6 @@ body.is-telegram-fullscreen {
         >
             Далі
         </button>
-
-        <div id="booking-service-hint" class="text-center text-[11px] font-bold text-slate-400 mt-4">
-            Послуга в центрі каруселі буде обрана автоматично
-        </div>
     </div>
 </div>
 
