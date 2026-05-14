@@ -8,6 +8,13 @@ const STATUS_CANCELLED = 'Отменено';
 
 function getFilteredBookings() {
     return state.clientBookings.filter(booking => {
+        if (
+            !state.currentBookingFilter ||
+            state.currentBookingFilter === 'all'
+        ) {
+            return true;
+        }
+
         if (state.currentBookingFilter === 'pending') {
             return booking.status === STATUS_PENDING;
         }
@@ -24,32 +31,16 @@ function getFilteredBookings() {
             return booking.status === STATUS_DONE;
         }
 
-        return booking.status === STATUS_CONFIRMED;
+        return true;
     });
 }
 
-function syncClientBookingTabsVisibility() {
-    const hasPending = state.clientBookings.some(
-        booking => booking.status === STATUS_PENDING
-    );
 
-    const pendingTab = document.getElementById('client-subtab-pending');
-
-    if (pendingTab) {
-        pendingTab.classList.toggle('hidden', !hasPending);
-    }
-
-    if (!hasPending && state.currentBookingFilter === 'pending') {
-        state.currentBookingFilter = 'confirmed';
-    }
-}
 
 export function renderClientBookings() {
     const container = document.getElementById('my-bookings-list');
 
     if (!container) return;
-
-    syncClientBookingTabsVisibility();
 
     const filtered = getFilteredBookings();
 
