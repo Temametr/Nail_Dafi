@@ -77,6 +77,15 @@ export function startClientBookingFlow() {
     state.selectedMaster = null;
     state.viewedMasterId = null;
     state.clientPhone = '';
+    const activeClientTab = document.querySelector(
+    '.tab-content:not(.hidden-step)'
+);
+
+if (activeClientTab && activeClientTab.id) {
+    state.bookingReturnTab = activeClientTab.id.replace('tab-', '');
+} else {
+    state.bookingReturnTab = 'bookings';
+}
     state.focusedServiceId =
     state.services && state.services.length
         ? state.services[0].id
