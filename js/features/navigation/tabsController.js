@@ -107,45 +107,56 @@ export function switchTab({
 }
 }
 
+const BOOKING_FILTER_LABELS = {
+    all: 'Всі',
+    pending: 'Очікують',
+    confirmed: 'Підтверджені',
+    cancelled: 'Скасовані',
+    done: 'Виконані'
+};
+
 export function switchBookingTab({
     filter,
     role
 }) {
-    state.currentBookingFilter = filter;
+    state.currentBookingFilter = filter || 'all';
 
-    const filters = [
-        'pending',
-        'confirmed',
-        'cancelled',
-        'done'
-    ];
-
-    filters.forEach(item => {
-        const button = document.getElementById(
-            `${role}-subtab-${item}`
-        );
-
-        if (!button) return;
-
-        const isActive = item === filter;
-
-        button.className = isActive
-            ? 'shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300'
-            : getInactiveBookingTabClass(item);
-    });
+    updateBookingFilterTitle(role);
+    closeBookingFilterMenu(role);
 
     role === 'admin'
         ? renderAdminBookings()
         : renderClientBookings();
 }
 
-function getInactiveBookingTabClass(filter) {
-    const borderMap = {
-        pending: 'border-amber-100',
-        confirmed: 'border-blue-100',
-        cancelled: 'border-rose-100',
-        done: 'border-emerald-100'
-    };
+export function toggleBookingFilterMenu(role) {
+    const menu = document.getElementById(
+        `${role}-booking-filter-menu`
+    );
 
-    return `shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border ${borderMap[filter] || 'border-slate-100'}`;
+    if (!menu) return;
+
+    menu.classList.toggle('hidden');
+}
+
+export function closeBookingFilterMenu(role) {
+    const menu = document.getElementById(
+        `${role}-booking-filter-menu`
+    );
+
+    if (!menu) return;
+
+    menu.classList.add('hidden');
+}
+
+export function updateBookingFilterTitle(role) {
+    const title = document.getElementById(
+        `${role}-booking-filter-title`
+    );
+
+    if (!title) return;
+
+    title.textContent =
+        BOOKING_FILTER_LABELS[state.currentBookingFilter] ||
+        BOOKING_FILTER_LABELS.all;
 }
