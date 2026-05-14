@@ -247,7 +247,17 @@ window.addEventListener('DOMContentLoaded', async () => {
     setBackButtonHandler(handleBack);
 
     setBookingSuccessHandler(() => {
+    document.body.classList.remove('booking-flow-hidden-shell');
+
+    const clientNav =
+        document.getElementById('client-bottom-nav');
+
+    if (clientNav) {
+        clientNav.classList.remove('hidden-step');
+    }
+
     state.currentBookingFilter = 'all';
+    state.bookingReturnTab = 'bookings';
 
     switchTab('client', 'bookings');
 
