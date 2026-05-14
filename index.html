@@ -345,23 +345,48 @@ body.is-telegram-fullscreen {
                 </button>
             </div>
 
-            <div id="client-booking-tabs" class="flex pb-4 gap-2 px-1 mt-2 overflow-x-auto hide-scrollbar">
-                <button onclick="window.appAPI.switchBookingTab('pending', 'client')" id="client-subtab-pending" class="hidden shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-amber-100">
-                    Очікування
-                </button>
-
-                <button onclick="window.appAPI.switchBookingTab('confirmed', 'client')" id="client-subtab-confirmed" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">
-                    Підтверджені
-                </button>
-
-                <button onclick="window.appAPI.switchBookingTab('cancelled', 'client')" id="client-subtab-cancelled" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">
-                    Скасовані
-                </button>
-
-                <button onclick="window.appAPI.switchBookingTab('done', 'client')" id="client-subtab-done" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-emerald-100">
-                    Виконані
-                </button>
+            <div class="px-1 pb-4 mt-2">
+    <button
+        onclick="window.appAPI.toggleBookingFilterMenu('client')"
+        class="w-full card-convex px-5 py-4 flex items-center justify-between active:scale-[0.98] transition-all"
+    >
+        <div class="text-left">
+            <div class="text-[10px] font-black text-rose-400 uppercase tracking-[0.18em]">
+                Фільтр візитів
             </div>
+
+            <div id="client-booking-filter-title" class="text-lg font-black text-slate-950 mt-1">
+                Всі
+            </div>
+        </div>
+
+        <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500">
+            ⌄
+        </div>
+    </button>
+
+    <div id="client-booking-filter-menu" class="hidden mt-2 bg-white rounded-[1.7rem] shadow-floating border border-slate-100 p-2 space-y-1">
+        <button onclick="window.appAPI.setBookingFilter('all', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+            Всі
+        </button>
+
+        <button onclick="window.appAPI.setBookingFilter('pending', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+            Очікують
+        </button>
+
+        <button onclick="window.appAPI.setBookingFilter('confirmed', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+            Підтверджені
+        </button>
+
+        <button onclick="window.appAPI.setBookingFilter('cancelled', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+            Скасовані
+        </button>
+
+        <button onclick="window.appAPI.setBookingFilter('done', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+            Виконані
+        </button>
+    </div>
+</div>
 
             <div id="my-bookings-list" class="space-y-5 px-1"></div>
         </div>
@@ -541,23 +566,48 @@ body.is-telegram-fullscreen {
                 </button>
             </section>
 
-            <div id="admin-booking-tabs" class="flex px-1 pb-4 gap-2 mt-2 overflow-x-auto hide-scrollbar">
-                <button onclick="window.appAPI.switchBookingTab('pending', 'admin')" id="admin-subtab-pending" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-amber-100">
-                    Очікування
-                </button>
-
-                <button onclick="window.appAPI.switchBookingTab('confirmed', 'admin')" id="admin-subtab-confirmed" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-slate-950 text-white rounded-xl shadow-lg transition-all duration-300">
-                    Підтверджені
-                </button>
-
-                <button onclick="window.appAPI.switchBookingTab('cancelled', 'admin')" id="admin-subtab-cancelled" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-rose-100">
-                    Скасовані
-                </button>
-
-                <button onclick="window.appAPI.switchBookingTab('done', 'admin')" id="admin-subtab-done" class="shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider bg-white text-slate-500 rounded-xl transition-all duration-300 border border-emerald-100">
-                    Виконані
-                </button>
+            <div class="px-1 pb-4 mt-2">
+    <button
+        onclick="window.appAPI.toggleBookingFilterMenu('admin')"
+        class="w-full card-convex px-5 py-4 flex items-center justify-between active:scale-[0.98] transition-all"
+    >
+        <div class="text-left">
+            <div class="text-[10px] font-black text-rose-400 uppercase tracking-[0.18em]">
+                Фільтр записів
             </div>
+
+            <div id="admin-booking-filter-title" class="text-lg font-black text-slate-950 mt-1">
+                Всі
+            </div>
+        </div>
+
+        <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500">
+            ⌄
+        </div>
+    </button>
+
+    <div id="admin-booking-filter-menu" class="hidden mt-2 bg-white rounded-[1.7rem] shadow-floating border border-slate-100 p-2 space-y-1">
+        <button onclick="window.appAPI.setBookingFilter('all', 'admin')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+            Всі
+        </button>
+
+        <button onclick="window.appAPI.setBookingFilter('pending', 'admin')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+            Очікують
+        </button>
+
+        <button onclick="window.appAPI.setBookingFilter('confirmed', 'admin')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+            Підтверджені
+        </button>
+
+        <button onclick="window.appAPI.setBookingFilter('cancelled', 'admin')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+            Скасовані
+        </button>
+
+        <button onclick="window.appAPI.setBookingFilter('done', 'admin')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+            Виконані
+        </button>
+    </div>
+</div>
 
             <div id="admin-bookings-list" class="space-y-5 px-1"></div>
         </div>
