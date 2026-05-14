@@ -8,6 +8,7 @@ import {
 
 import {
     renderServices,
+    focusService,
     renderMasters,
     renderCalendar,
     renderTimeSlots
@@ -76,6 +77,19 @@ export function startClientBookingFlow() {
     state.selectedMaster = null;
     state.viewedMasterId = null;
     state.clientPhone = '';
+    state.focusedServiceId =
+    state.services && state.services.length
+        ? state.services[0].id
+        : null;
+
+document.body.classList.add('booking-flow-hidden-shell');
+
+const clientNav =
+    document.getElementById('client-bottom-nav');
+
+if (clientNav) {
+    clientNav.classList.add('hidden-step');
+}
     
     const headerTitle =
     document.getElementById('client-header-title');
@@ -269,6 +283,22 @@ export function selectService(id) {
     renderMasters();
     showStep('step-master');
 }
+}
+
+export function focusBookingService(id) {
+    focusService(id);
+}
+
+export function confirmSelectedService() {
+    const serviceId =
+        state.focusedServiceId ||
+        (state.services[0] && state.services[0].id);
+
+    if (!serviceId) {
+        return tg.showAlert('Оберіть послугу');
+    }
+
+    selectService(serviceId);
 }
 
 
