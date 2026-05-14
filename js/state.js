@@ -47,6 +47,7 @@ export const state = {
     adminStatsCustomDate: localStorage.getItem('adminStatsCustomDate') || '',
 
     editingBookingId: null,
+    bookingReturnTab: 'bookings',
 
     isAdmin: false,
     adminMasterInfo: null,
