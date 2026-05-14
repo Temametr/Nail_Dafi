@@ -457,13 +457,14 @@ function handleBack() {
         }
 
         if (state.viewedMasterId) {
-
-            switchTab('client', 'home');
-
-            openMasterProfile(state.viewedMasterId);
-
-        } else {
     closeClientBookingFlow();
+
+    openMasterProfile(state.viewedMasterId);
+
+    return;
+}
+
+closeClientBookingFlow();
 }
     }
 }
