@@ -178,29 +178,42 @@ body.is-telegram-fullscreen {
 
     <div id="client-screen" class="hidden-step">
         <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-5 flex justify-between items-center">
-            <div class="absolute top-[-1rem] right-[-1rem] w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+    <div class="absolute top-[-1rem] right-[-1rem] w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
-            <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-4">
-                <img src="media/fe3010af-51aa-45b3-a20e-6cd526642666.png" alt="Logo" class="w-14 h-14 object-contain drop-shadow-md shrink-0">
-                <h1 class="text-[19px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5" id="client-header-title"></h1>
-            </div>
+    <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-4">
+        <img
+            src="media/fe3010af-51aa-45b3-a20e-6cd526642666.png"
+            alt="Logo"
+            class="w-14 h-14 object-contain drop-shadow-md shrink-0"
+        >
 
-            <button
-    type="button"
-    onclick="window.appAPI.startClientBookingFlow()"
-    class="relative z-10 w-12 h-12 bg-white/85 rounded-full flex items-center justify-center shadow-sm text-blue-500 border border-white active:scale-90 transition-all shrink-0"
-    aria-label="Створити новий візит"
->
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2.8"
-            d="M12 5v14M5 12h14"
-        ></path>
-    </svg>
-</button>
-        </header>
+        <h1
+            class="text-[19px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5"
+            id="client-header-title"
+        ></h1>
+    </div>
+
+    <button
+        type="button"
+        onclick="window.appAPI.startClientBookingFlow()"
+        class="relative z-10 w-12 h-12 rounded-full bg-white/90 border border-white shadow-sm flex items-center justify-center text-blue-500 active:scale-90 transition-all shrink-0"
+        aria-label="Створити новий візит"
+    >
+        <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.8"
+                d="M12 5v14M5 12h14"
+            ></path>
+        </svg>
+    </button>
+</header>
 
         <div id="tab-home" class="tab-content app-top-content px-4 animate-fade-in-up">
             <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em] mb-3 mt-2 text-center">
@@ -348,52 +361,54 @@ body.is-telegram-fullscreen {
         </div>
 
         <div id="tab-bookings" class="tab-content hidden-step app-top-content px-4 animate-fade-in-up">
+    <div class="px-1 pb-4 mt-3">
+        <button
+            onclick="window.appAPI.toggleBookingFilterMenu('client')"
+            class="w-full card-convex px-5 py-4 flex items-center justify-between active:scale-[0.98] transition-all"
+        >
+            <div class="text-left">
+                <div class="text-[10px] font-black text-rose-400 uppercase tracking-[0.18em]">
+                    Фільтр візитів
+                </div>
 
-            <div class="px-1 pb-4 mt-3">
-    <button
-        onclick="window.appAPI.toggleBookingFilterMenu('client')"
-        class="w-full card-convex px-5 py-4 flex items-center justify-between active:scale-[0.98] transition-all"
-    >
-        <div class="text-left">
-            <div class="text-[10px] font-black text-rose-400 uppercase tracking-[0.18em]">
-                Фільтр візитів
+                <div id="client-booking-filter-title" class="text-lg font-black text-slate-950 mt-1">
+                    Всі
+                </div>
             </div>
 
-            <div id="client-booking-filter-title" class="text-lg font-black text-slate-950 mt-1">
+            <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500">
+                ⌄
+            </div>
+        </button>
+
+        <div
+            id="client-booking-filter-menu"
+            class="hidden mt-2 bg-white rounded-[1.7rem] shadow-floating border border-slate-100 p-2 space-y-1"
+        >
+            <button onclick="window.appAPI.setBookingFilter('all', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
                 Всі
-            </div>
+            </button>
+
+            <button onclick="window.appAPI.setBookingFilter('pending', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+                Очікують
+            </button>
+
+            <button onclick="window.appAPI.setBookingFilter('confirmed', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+                Підтверджені
+            </button>
+
+            <button onclick="window.appAPI.setBookingFilter('cancelled', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+                Скасовані
+            </button>
+
+            <button onclick="window.appAPI.setBookingFilter('done', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
+                Виконані
+            </button>
         </div>
-
-        <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500">
-            ⌄
-        </div>
-    </button>
-
-    <div id="client-booking-filter-menu" class="hidden mt-2 bg-white rounded-[1.7rem] shadow-floating border border-slate-100 p-2 space-y-1">
-        <button onclick="window.appAPI.setBookingFilter('all', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
-            Всі
-        </button>
-
-        <button onclick="window.appAPI.setBookingFilter('pending', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
-            Очікують
-        </button>
-
-        <button onclick="window.appAPI.setBookingFilter('confirmed', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
-            Підтверджені
-        </button>
-
-        <button onclick="window.appAPI.setBookingFilter('cancelled', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
-            Скасовані
-        </button>
-
-        <button onclick="window.appAPI.setBookingFilter('done', 'client')" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-slate-700 active:bg-slate-50">
-            Виконані
-        </button>
     </div>
-</div>
 
-            <div id="my-bookings-list" class="space-y-5 px-1"></div>
-        </div>
+    <div id="my-bookings-list" class="space-y-5 px-1"></div>
+</div>
 
         <div id="tab-profile" class="tab-content hidden-step app-top-content px-4 animate-fade-in-up pb-10"></div>
     </div>
