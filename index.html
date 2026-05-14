@@ -57,15 +57,21 @@
         
         :root {
     --app-safe-top: env(safe-area-inset-top, 0px);
+    --tg-top-offset: 64px;
+    --app-header-height: 114px;
+    --app-content-top: 164px;
+}
+
+body.is-telegram-compact {
     --tg-top-offset: 54px;
     --app-header-height: 104px;
     --app-content-top: 150px;
 }
 
 body.is-telegram-fullscreen {
-    --tg-top-offset: 74px;
-    --app-header-height: 124px;
-    --app-content-top: 176px;
+    --tg-top-offset: 78px;
+    --app-header-height: 128px;
+    --app-content-top: 184px;
 }
 
         .card-convex {
@@ -180,7 +186,7 @@ body.is-telegram-fullscreen {
         <header class="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto ios-header px-5 py-5 flex justify-between items-center">
     <div class="absolute top-[-1rem] right-[-1rem] w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
-    <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-4">
+   <div class="relative z-10 flex items-center gap-3 flex-1 min-w-0 pr-3 overflow-hidden">
         <img
             src="media/fe3010af-51aa-45b3-a20e-6cd526642666.png"
             alt="Logo"
@@ -188,31 +194,34 @@ body.is-telegram-fullscreen {
         >
 
         <h1
-            class="text-[19px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5"
-            id="client-header-title"
-        ></h1>
+    id="client-header-title"
+    class="text-[18px] font-extrabold text-slate-900 tracking-tight truncate leading-tight mt-0.5 min-w-0"
+></h1>
     </div>
 
     <button
-        type="button"
-        onclick="window.appAPI.startClientBookingFlow()"
-        class="relative z-10 w-12 h-12 rounded-full bg-white/90 border border-white shadow-sm flex items-center justify-center text-blue-500 active:scale-90 transition-all shrink-0"
-        aria-label="Створити новий візит"
+    id="client-header-create-button"
+    type="button"
+    onclick="window.appAPI.startClientBookingFlow()"
+    class="relative z-10 w-11 h-11 min-w-11 rounded-full bg-white/90 border border-white shadow-sm flex items-center justify-center text-blue-500 active:scale-90 transition-all shrink-0"
+    aria-label="Створити новий візит"
+>
+    <svg
+        class="w-5.5 h-5.5"
+        width="22"
+        height="22"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
     >
-        <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-        >
-            <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.8"
-                d="M12 5v14M5 12h14"
-            ></path>
-        </svg>
-    </button>
+        <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.8"
+            d="M12 5v14M5 12h14"
+        ></path>
+    </svg>
+</button>
 </header>
 
         <div id="tab-home" class="tab-content app-top-content px-4 animate-fade-in-up">
