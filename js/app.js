@@ -166,6 +166,19 @@ function prepareTelegramViewport() {
     }
 }
 
+function openWorkPhotosModalByBookingId(bookingId) {
+    const booking = state.adminBookings.find(
+        item => String(item.id) === String(bookingId)
+    );
+
+    if (!booking) {
+        tg.showAlert('Запис не знайдено');
+        return;
+    }
+
+    openWorkPhotosModal(booking);
+}
+
 window.appAPI = {
     switchTab,
     switchBookingTab,
@@ -199,6 +212,7 @@ window.appAPI = {
     confirmCancel,
     
     openWorkPhotosModal,
+    openWorkPhotosModalByBookingId,
     closeWorkPhotosModal,
     handleWorkPhotoInputChange,
     publishCurrentWorkPhotos,
