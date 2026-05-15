@@ -604,11 +604,49 @@ const role =
     });
 }
 
-function changeBookingStatus(id, status) {
+function isDoneBookingStatus(status) {
+    const value = String(status || '').trim().toLowerCase();
 
+    return (
+        value === 'выполнено' ||
+        value === 'виконано' ||
+        value === 'done'
+    );
+}
+
+function askToAddWorkPhotos(booking) {
+    if (!booking) return;
+
+    try {
+        tg.showConfirm(
+            'Додати фото роботи в галерею?',
+            (confirmed) => {
+                if (!confirmed) return;
+
+                openWorkPhotosModal(booking);
+            }
+        );
+    } catch (error) {
+        console.warn('showConfirm failed:', error);
+
+        const confirmed = window.confirm(
+            'Додати фото роботи в галерею?'
+        );
+
+        if (confirmed) {
+            openWorkPhotosModal(booking);
+        }
+    }
+}
+
+function changeBookingStatus(id, status) {
     const booking = state.adminBookings.find(
         item => String(item.id) === String(id)
     );
+
+    const previousStatus = booking
+        ? booking.status
+        : '';
 
     if (booking) {
         booking.status = status;
@@ -624,11 +662,27 @@ function changeBookingStatus(id, status) {
     return changeBookingStatusAction(
         id,
         status,
-        () => {
-            loadBookings('admin', true);
+        async () => {
+            await loadBookings('admin', true);
+
+            if (
+                booking &&
+                isDoneBookingStatus(status) &&
+                !isDoneBookingStatus(previousStatus)
+            ) {
+                const freshBooking = state.adminBookings.find(
+                    item => String(item.id) === String(id)
+                );
+
+                askToAddWorkPhotos({
+                    ...(freshBooking || booking),
+                    status
+                });
+            }
         }
     );
 }
+
 function toggleAdminPeriodMenu() {
     const menu = document.getElementById('admin-period-menu');
 
