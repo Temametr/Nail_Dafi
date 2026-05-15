@@ -9,6 +9,7 @@ import {
 import {
     renderServices,
     focusService,
+    moveFocusedService,
     renderMasters,
     renderCalendar,
     renderTimeSlots
@@ -289,6 +290,10 @@ export function selectService(id) {
 
 export function focusBookingService(id) {
     focusService(id);
+}
+
+export function moveBookingService(direction) {
+    moveFocusedService(direction);
 }
 
 export function confirmSelectedService() {
