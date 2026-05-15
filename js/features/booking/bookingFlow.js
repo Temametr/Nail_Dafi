@@ -72,6 +72,7 @@ export function startClientBookingFlow() {
     state.selectedMaster = null;
     state.viewedMasterId = null;
     state.clientPhone = '';
+    state.calendarMonthOffset = 0;
     const activeClientTab = document.querySelector(
     '.tab-content:not(.hidden-step)'
 );
@@ -325,7 +326,8 @@ export function selectMaster(id) {
     if (!state.selectedMaster) {
         return tg.showAlert('Майстра не знайдено');
     }
-
+    
+    state.calendarMonthOffset = 0;
     renderCalendar();
 showStep('step-date');
 }
