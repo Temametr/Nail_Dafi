@@ -6,21 +6,37 @@ let serviceFocusTimer = null;
 function setFocusedService(serviceId) {
     state.focusedServiceId = serviceId;
 
-    document
-        .querySelectorAll('.booking-service-card')
-        .forEach(card => {
-            const isFocused =
-                String(card.dataset.serviceId) === String(serviceId);
+    const cards = Array.from(
+        document.querySelectorAll('.booking-service-card')
+    );
 
-            card.classList.toggle('is-focused', isFocused);
+    const focusedIndex = cards.findIndex(card =>
+        String(card.dataset.serviceId) === String(serviceId)
+    );
 
-            const check = card.querySelector('.service-check');
+    cards.forEach((card, index) => {
+        const isFocused = index === focusedIndex;
+        const distance = index - focusedIndex;
 
-            if (check) {
-                check.classList.toggle('hidden', !isFocused);
-                check.classList.toggle('flex', isFocused);
-            }
-        });
+        card.classList.toggle('is-focused', isFocused);
+        card.classList.toggle('is-side-left', distance === -1);
+        card.classList.toggle('is-side-right', distance === 1);
+        card.classList.toggle('is-far', Math.abs(distance) > 1);
+
+        if (isFocused) {
+            card.style.transform =
+                'translateX(0) translateY(0) scale(1) rotateY(0deg)';
+        } else {
+            card.style.transform = '';
+        }
+
+        const check = card.querySelector('.service-check');
+
+        if (check) {
+            check.classList.toggle('hidden', !isFocused);
+            check.classList.toggle('flex', isFocused);
+        }
+    });
 }
 
 function getClosestServiceToCenter(container) {
@@ -50,12 +66,53 @@ function getClosestServiceToCenter(container) {
     return closest;
 }
 
+function applyCoverflowGeometry(container) {
+    const cards = Array.from(
+        container.querySelectorAll('.booking-service-card')
+    );
+
+    if (!cards.length) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const centerX = containerRect.left + containerRect.width / 2;
+
+    cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const cardCenterX = rect.left + rect.width / 2;
+        const rawDistance = (cardCenterX - centerX) / rect.width;
+        const clamped = Math.max(-2, Math.min(2, rawDistance));
+        const abs = Math.abs(clamped);
+
+        const scale = 1 - Math.min(abs * 0.18, 0.32);
+        const translateX = clamped * -42;
+        const translateY = abs * 12;
+        const rotateY = clamped * -10;
+        const blur = Math.min(abs * 4.5, 7);
+        const opacity = Math.max(1 - abs * 0.42, 0.18);
+
+        card.style.transform =
+            `translateX(${translateX}px) translateY(${translateY}px) scale(${scale}) rotateY(${rotateY}deg)`;
+
+        card.style.filter =
+            `blur(${blur}px)`;
+
+        card.style.opacity =
+            String(opacity);
+
+        card.style.zIndex =
+            String(100 - Math.round(abs * 40));
+    });
+}
+
 function updateFocusedServiceFromScroll(container) {
+    applyCoverflowGeometry(container);
+
     const closest = getClosestServiceToCenter(container);
 
     if (!closest) return;
 
     setFocusedService(closest.dataset.serviceId);
+    applyCoverflowGeometry(container);
 }
 
 export function renderServices() {
@@ -88,7 +145,7 @@ export function renderServices() {
                 type="button"
                 data-service-id="${sanitizeHtml(service.id)}"
                 onclick="window.appAPI.focusService('${sanitizeHtml(service.id)}')"
-                class="booking-service-card ${isFocused ? 'is-focused' : ''} card-convex p-5 flex flex-col justify-between text-left border border-white animate-pop-in"
+                class="booking-service-card ${isFocused ? 'is-focused' : ''} card-convex p-5 flex flex-col justify-between text-center border border-white"
                 style="animation-delay: ${index * 45}ms"
             >
                 <div>
@@ -96,9 +153,9 @@ export function renderServices() {
                         💅
                     </div>
 
-                    <div class="font-black text-slate-950 text-lg leading-tight tracking-tight mt-5">
-                        ${name}
-                    </div>
+                    <div class="font-black text-slate-950 text-2xl leading-tight tracking-tight mt-6 text-center">
+    ${name}
+</div>
 
                     <div class="text-xs font-bold text-slate-400 mt-2">
                         🕒 ${duration} хв
@@ -140,15 +197,18 @@ export function renderServices() {
 }
 
         updateFocusedServiceFromScroll(list);
+        applyCoverflowGeometry(list);
     });
 
     list.onscroll = () => {
-        clearTimeout(serviceFocusTimer);
+    applyCoverflowGeometry(list);
 
-        serviceFocusTimer = setTimeout(() => {
-            updateFocusedServiceFromScroll(list);
-        }, 80);
-    };
+    clearTimeout(serviceFocusTimer);
+
+    serviceFocusTimer = setTimeout(() => {
+        updateFocusedServiceFromScroll(list);
+    }, 80);
+};
 }
 
 export function focusService(serviceId) {
