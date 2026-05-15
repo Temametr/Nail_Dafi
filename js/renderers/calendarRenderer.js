@@ -75,10 +75,48 @@ export function renderCalendar() {
     let html = '';
 
     html += `
-        <div class="col-span-7 text-center text-[11px] font-black text-slate-900 mt-2 mb-3 uppercase tracking-[0.2em] bg-white/70 py-2.5 rounded-2xl border border-white shadow-sm">
-            ${monthNames[firstOfMonth.getMonth()]} ${firstOfMonth.getFullYear()}
+    <div class="calendar-month-toolbar">
+        <button
+            id="calendar-arrow-left"
+            type="button"
+            onclick="window.appAPI.moveCalendarMonth(-1)"
+            class="calendar-month-arrow"
+            aria-label="Попередній місяць"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M15 19l-7-7 7-7"
+                ></path>
+            </svg>
+        </button>
+
+        <div class="calendar-month-title">
+            <span class="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em]">
+                ${monthNames[firstOfMonth.getMonth()]} ${firstOfMonth.getFullYear()}
+            </span>
         </div>
-    `;
+
+        <button
+            id="calendar-arrow-right"
+            type="button"
+            onclick="window.appAPI.moveCalendarMonth(1)"
+            class="calendar-month-arrow"
+            aria-label="Наступний місяць"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M9 5l7 7-7 7"
+                ></path>
+            </svg>
+        </button>
+    </div>
+`;
 
     dayLabels.forEach(label => {
         html += `
