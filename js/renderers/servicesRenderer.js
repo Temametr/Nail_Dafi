@@ -1,13 +1,11 @@
 import { state } from '../state.js';
 import { sanitizeHtml } from '../utils.js';
 
-let serviceFocusTimer = null;
 let coverflowFrame = null;
-let serviceSnapTimer = null;
-let isProgrammaticScroll = false;
 
 function setFocusedService(serviceId) {
     if (String(state.focusedServiceId) === String(serviceId)) {
+        updateServiceArrows();
         return;
     }
 
@@ -21,6 +19,8 @@ function setFocusedService(serviceId) {
                 String(card.dataset.serviceId) === String(serviceId)
             );
         });
+
+    updateServiceArrows();
 }
 
 function getClosestServiceToCenter(container) {
@@ -66,34 +66,38 @@ function centerCard(container, card, behavior = 'smooth') {
         Math.min(maxLeft, targetLeft)
     );
 
-    const distance =
-        Math.abs(container.scrollLeft - nextLeft);
-
-    if (distance < 2) {
-        return;
-    }
-
-    isProgrammaticScroll = true;
-
     container.scrollTo({
         left: nextLeft,
         behavior
     });
-
-    window.setTimeout(() => {
-        isProgrammaticScroll = false;
-        scheduleCoverflowGeometry(container);
-        updateFocusedServiceFromScroll(container);
-    }, behavior === 'smooth' ? 260 : 0);
 }
 
-function snapClosestServiceToCenter(container) {
-    const closest = getClosestServiceToCenter(container);
+function getFocusedServiceIndex() {
+    return state.services.findIndex(service =>
+        String(service.id) === String(state.focusedServiceId)
+    );
+}
 
-    if (!closest) return;
+function updateServiceArrows() {
+    const left = document.getElementById('service-arrow-left');
+    const right = document.getElementById('service-arrow-right');
 
-    setFocusedService(closest.dataset.serviceId);
-    centerCard(container, closest, 'smooth');
+    const index = getFocusedServiceIndex();
+    const lastIndex = state.services.length - 1;
+
+    if (left) {
+        left.classList.toggle(
+            'is-hidden',
+            index <= 0
+        );
+    }
+
+    if (right) {
+        right.classList.toggle(
+            'is-hidden',
+            index < 0 || index >= lastIndex
+        );
+    }
 }
 
 function applyCoverflowGeometry(container) {
@@ -233,40 +237,63 @@ export function renderServices() {
     centerCard(list, activeCard, 'auto');
 }
 
-        updateFocusedServiceFromScroll(list);
-        applyCoverflowGeometry(list);
+setFocusedService(state.focusedServiceId);
+applyCoverflowGeometry(list);
+updateServiceArrows();
     });
 
     list.onscroll = () => {
     scheduleCoverflowGeometry(list);
-
-    clearTimeout(serviceFocusTimer);
-    clearTimeout(serviceSnapTimer);
-
-    serviceFocusTimer = setTimeout(() => {
-        updateFocusedServiceFromScroll(list);
-    }, 90);
-
-    if (!isProgrammaticScroll) {
-        serviceSnapTimer = setTimeout(() => {
-            snapClosestServiceToCenter(list);
-        }, 170);
-    }
 };
 }
 
 export function focusService(serviceId) {
     const list = document.getElementById('services-list');
 
-    state.focusedServiceId = serviceId;
-
     const card = list
         ? list.querySelector(`[data-service-id="${serviceId}"]`)
         : null;
 
-    if (card && list) {
+    if (!card || !list) return;
+
     setFocusedService(serviceId);
     centerCard(list, card, 'smooth');
-    scheduleCoverflowGeometry(list);
+
+    requestAnimationFrame(() => {
+        scheduleCoverflowGeometry(list);
+    });
+
+    window.setTimeout(() => {
+        scheduleCoverflowGeometry(list);
+    }, 240);
 }
+
+export function moveFocusedService(direction) {
+    if (!state.services.length) return;
+
+    const currentIndex = getFocusedServiceIndex();
+
+    const safeIndex =
+        currentIndex >= 0
+            ? currentIndex
+            : 0;
+
+    const nextIndex = Math.max(
+        0,
+        Math.min(
+            state.services.length - 1,
+            safeIndex + Number(direction || 0)
+        )
+    );
+
+    if (nextIndex === safeIndex) {
+        updateServiceArrows();
+        return;
+    }
+
+    const nextService = state.services[nextIndex];
+
+    if (!nextService) return;
+
+    focusService(nextService.id);
 }
