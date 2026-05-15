@@ -12,6 +12,7 @@ import {
     moveFocusedService,
     renderMasters,
     renderCalendar,
+    moveCalendarMonth,
     renderTimeSlots
 } from '../../client.js';
 
@@ -294,6 +295,10 @@ export function focusBookingService(id) {
 
 export function moveBookingService(direction) {
     moveFocusedService(direction);
+}
+
+export function moveBookingCalendarMonth(direction) {
+    moveCalendarMonth(direction);
 }
 
 export function confirmSelectedService() {
