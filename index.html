@@ -70,7 +70,8 @@ body.is-telegram-fullscreen {
 .booking-flow-screen {
     min-height: 100vh;
     padding-top: 0 !important;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 104px);
+    padding-bottom: 0 !important;
+    overflow: hidden;
 }
 
 .booking-flow-step {
@@ -79,21 +80,32 @@ body.is-telegram-fullscreen {
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .booking-flow-header {
-    padding-left: 24px;
-    padding-right: 24px;
+    position: fixed;
+    left: 50%;
+    top: calc(var(--app-safe-top) + 58px);
+    transform: translateX(-50%);
+    width: min(100% - 32px, 416px);
+    z-index: 70;
     text-align: center;
-    flex-shrink: 0;
+    pointer-events: none;
 }
 
 .booking-flow-body {
     flex: 1;
     min-height: 0;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    -webkit-overflow-scrolling: touch;
+}
+
+.booking-flow-body::-webkit-scrollbar {
+    display: none;
 }
 
 .booking-service-carousel {
@@ -143,7 +155,7 @@ body.is-telegram-fullscreen {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
     transform: translateX(-50%);
     width: min(100% - 32px, 416px);
-    z-index: 60;
+    z-index: 70;
 }
 
 .booking-flow-hidden-shell #client-screen > header,
