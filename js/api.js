@@ -134,3 +134,13 @@ export async function fetchClientContactAPI(clientId) {
         }
     });
 }
+
+export async function publishWorkPhotosAPI(data) {
+    return await requestJson(API_URL, {
+        method: 'POST',
+        body: {
+            action: 'publishWorkPhotos',
+            ...data
+        }
+    });
+}
