@@ -1,3 +1,4 @@
+const MAX_PHOTOS = 5;
 const MAX_WIDTH = 1280;
 const MAX_HEIGHT = 1280;
 const JPEG_QUALITY = 0.8;
@@ -9,14 +10,14 @@ export async function compressWorkPhotos(files) {
         throw new Error('Додайте хоча б одне фото');
     }
 
-    if (list.length > 5) {
-        throw new Error('Можна додати максимум 5 фото');
+    if (list.length > MAX_PHOTOS) {
+        throw new Error(`Можна додати максимум ${MAX_PHOTOS} фото`);
     }
 
     const result = [];
 
     for (const file of list) {
-        if (!file.type.startsWith('image/')) {
+        if (!file.type || !file.type.startsWith('image/')) {
             throw new Error('Можна завантажувати тільки фото');
         }
 
@@ -49,6 +50,10 @@ async function compressImageFile(file) {
     canvas.height = height;
 
     const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+        throw new Error('Canvas недоступний');
+    }
 
     ctx.drawImage(image, 0, 0, width, height);
 
@@ -114,4 +119,18 @@ function blobToBase64(blob) {
 
         reader.readAsDataURL(blob);
     });
+}
+
+export function formatBytes(bytes) {
+    const value = Number(bytes) || 0;
+
+    if (value < 1024) {
+        return `${value} Б`;
+    }
+
+    if (value < 1024 * 1024) {
+        return `${(value / 1024).toFixed(1)} КБ`;
+    }
+
+    return `${(value / 1024 / 1024).toFixed(1)} МБ`;
 }
