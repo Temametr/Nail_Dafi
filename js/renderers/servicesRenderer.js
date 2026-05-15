@@ -3,6 +3,8 @@ import { sanitizeHtml } from '../utils.js';
 
 let serviceFocusTimer = null;
 let coverflowFrame = null;
+let serviceSnapTimer = null;
+let isProgrammaticScroll = false;
 
 function setFocusedService(serviceId) {
     if (String(state.focusedServiceId) === String(serviceId)) {
@@ -46,6 +48,52 @@ function getClosestServiceToCenter(container) {
     });
 
     return closest;
+}
+
+function centerCard(container, card, behavior = 'smooth') {
+    if (!container || !card) return;
+
+    const containerWidth = container.clientWidth;
+    const targetLeft =
+        card.offsetLeft -
+        (containerWidth - card.offsetWidth) / 2;
+
+    const maxLeft =
+        container.scrollWidth - container.clientWidth;
+
+    const nextLeft = Math.max(
+        0,
+        Math.min(maxLeft, targetLeft)
+    );
+
+    const distance =
+        Math.abs(container.scrollLeft - nextLeft);
+
+    if (distance < 2) {
+        return;
+    }
+
+    isProgrammaticScroll = true;
+
+    container.scrollTo({
+        left: nextLeft,
+        behavior
+    });
+
+    window.setTimeout(() => {
+        isProgrammaticScroll = false;
+        scheduleCoverflowGeometry(container);
+        updateFocusedServiceFromScroll(container);
+    }, behavior === 'smooth' ? 260 : 0);
+}
+
+function snapClosestServiceToCenter(container) {
+    const closest = getClosestServiceToCenter(container);
+
+    if (!closest) return;
+
+    setFocusedService(closest.dataset.serviceId);
+    centerCard(container, closest, 'smooth');
 }
 
 function applyCoverflowGeometry(container) {
@@ -182,17 +230,7 @@ export function renderServices() {
         );
 
         if (activeCard) {
-    const listRect = list.getBoundingClientRect();
-    const cardRect = activeCard.getBoundingClientRect();
-
-    const listCenter = listRect.width / 2;
-    const cardCenter =
-        activeCard.offsetLeft + cardRect.width / 2;
-
-    list.scrollTo({
-        left: cardCenter - listCenter,
-        behavior: 'auto'
-    });
+    centerCard(list, activeCard, 'auto');
 }
 
         updateFocusedServiceFromScroll(list);
@@ -203,11 +241,17 @@ export function renderServices() {
     scheduleCoverflowGeometry(list);
 
     clearTimeout(serviceFocusTimer);
+    clearTimeout(serviceSnapTimer);
 
     serviceFocusTimer = setTimeout(() => {
         updateFocusedServiceFromScroll(list);
-        scheduleCoverflowGeometry(list);
-    }, 120);
+    }, 90);
+
+    if (!isProgrammaticScroll) {
+        serviceSnapTimer = setTimeout(() => {
+            snapClosestServiceToCenter(list);
+        }, 170);
+    }
 };
 }
 
@@ -221,19 +265,8 @@ export function focusService(serviceId) {
         : null;
 
     if (card && list) {
-    const listRect = list.getBoundingClientRect();
-    const cardRect = card.getBoundingClientRect();
-
-    const listCenter = listRect.width / 2;
-    const cardCenter =
-        card.offsetLeft + cardRect.width / 2;
-
-    list.scrollTo({
-        left: cardCenter - listCenter,
-        behavior: 'smooth'
-    });
-}
-
     setFocusedService(serviceId);
+    centerCard(list, card, 'smooth');
     scheduleCoverflowGeometry(list);
+}
 }
