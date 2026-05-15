@@ -15,7 +15,8 @@ import {
 
 import {
     renderCalendar,
-    renderTimeSlots
+    renderTimeSlots,
+    moveCalendarMonth
 } from './renderers/calendarRenderer.js';
 
 export {
@@ -26,6 +27,7 @@ export {
     renderHomeMasters,
     renderMasters,
     renderCalendar,
+    moveCalendarMonth,
     renderTimeSlots
 };
 
