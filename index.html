@@ -68,19 +68,27 @@ body.is-telegram-fullscreen {
 }
 
 .booking-flow-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
     min-height: 100vh;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    background: #fff1f2;
     overflow: hidden;
+    padding: 0 !important;
+    transform: none !important;
+    animation: none !important;
 }
 
 .booking-flow-step {
+    height: 100vh;
     min-height: 100vh;
-    padding-top: calc(var(--app-safe-top) + 74px);
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
+    padding-top: calc(var(--app-safe-top) + 186px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 154px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    transform: none !important;
+    animation: none !important;
 }
 
 .booking-flow-header {
@@ -89,7 +97,7 @@ body.is-telegram-fullscreen {
     top: calc(var(--app-safe-top) + 58px);
     transform: translateX(-50%);
     width: min(100% - 32px, 416px);
-    z-index: 70;
+    z-index: 80;
     text-align: center;
     pointer-events: none;
 }
@@ -102,10 +110,20 @@ body.is-telegram-fullscreen {
     flex-direction: column;
     justify-content: center;
     -webkit-overflow-scrolling: touch;
+    padding-bottom: 20px;
 }
 
 .booking-flow-body::-webkit-scrollbar {
     display: none;
+}
+
+.booking-flow-bottom-action {
+    position: fixed;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
+    transform: translateX(-50%);
+    width: min(100% - 32px, 416px);
+    z-index: 90;
 }
 
 .booking-service-carousel {
@@ -147,15 +165,6 @@ body.is-telegram-fullscreen {
 .booking-master-list {
     padding-left: 24px;
     padding-right: 24px;
-}
-
-.booking-flow-bottom-action {
-    position: fixed;
-    left: 50%;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
-    transform: translateX(-50%);
-    width: min(100% - 32px, 416px);
-    z-index: 70;
 }
 
 .booking-flow-hidden-shell #client-screen > header,
@@ -380,8 +389,8 @@ body.is-telegram-fullscreen {
             </div>
         </div>
 
-        <div id="tab-booking-flow" class="tab-content hidden-step booking-flow-screen animate-fade-in-up">
-            <div id="step-booking" class="step-content animate-pop-in booking-flow-step">
+        <div id="tab-booking-flow" class="tab-content hidden-step booking-flow-screen">
+            <div id="step-booking" class="step-content booking-flow-step">
     <div class="booking-flow-header">
         <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
             Новий візит
@@ -411,7 +420,7 @@ body.is-telegram-fullscreen {
     </div>
 </div>
 
-<div id="step-master" class="step-content hidden-step animate-pop-in booking-flow-step">
+<div id="step-master" class="step-content hidden-step booking-flow-step">
     <div class="booking-flow-header">
         <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
             Новий візит
@@ -431,7 +440,7 @@ body.is-telegram-fullscreen {
     </div>
 </div>
 
-            <div id="step-date" class="step-content hidden-step animate-pop-in booking-flow-step">
+            <div id="step-date" class="step-content hidden-step booking-flow-step">
     <div class="booking-flow-header">
         <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
             Новий візит
@@ -451,7 +460,7 @@ body.is-telegram-fullscreen {
     </div>
 </div>
 
-<div id="step-time" class="step-content hidden-step animate-pop-in booking-flow-step">
+<div id="step-time" class="step-content hidden-step booking-flow-step">
     <div class="booking-flow-header">
         <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
             Новий візит
@@ -476,6 +485,7 @@ body.is-telegram-fullscreen {
 
         <div id="time-slots" class="grid grid-cols-4 gap-2 px-1"></div>
     </div>
+</div>
 </div>
 
         <div id="tab-bookings" class="tab-content hidden-step app-top-content px-4 animate-fade-in-up">
