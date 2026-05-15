@@ -726,12 +726,20 @@ function renderTodaySchedule() {
                                 </div>
                             `
                             : `
-                                <div class="mt-4 pt-4 border-t border-slate-100">
-                                    <div class="py-3 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-black text-center">
-                                        ✅ Послуга виконана
-                                    </div>
-                                </div>
-                            `
+    <div class="mt-4 pt-4 border-t border-slate-100 space-y-2">
+        <div class="py-3 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-black text-center">
+            ✅ Послуга виконана
+        </div>
+
+        <button
+            type="button"
+            onclick="window.appAPI.openWorkPhotosModalByBookingId('${booking.id}')"
+            class="w-full py-3 bg-slate-950 text-white rounded-xl text-xs font-black shadow-lg active:scale-95 transition-all"
+        >
+            📸 Додати фото роботи
+        </button>
+    </div>
+`
                     }
                 </div>
             `;
