@@ -2,8 +2,10 @@ import { state } from './state.js';
 
 import {
     renderServices,
-    focusService
+    focusService,
+    moveFocusedService
 } from './renderers/servicesRenderer.js';
+
 import { renderClientBookings } from './renderers/clientBookingsRenderer.js';
 
 import {
@@ -19,6 +21,7 @@ import {
 export {
     renderServices,
     focusService,
+    moveFocusedService,
     renderClientBookings,
     renderHomeMasters,
     renderMasters,
