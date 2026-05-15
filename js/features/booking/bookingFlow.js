@@ -15,13 +15,7 @@ import {
 } from '../../client.js';
 
 import {
-    showMainButton,
-    hideMainButton,
-    enableMainButton,
-    disableMainButton,
-    showMainButtonProgress,
-    hideMainButtonProgress,
-    setMainButtonHandler
+    hideMainButton
 } from '../../core/telegram/mainButton.js';
 
 import { showBackButton } from '../../core/telegram/backButton.js';
@@ -37,7 +31,6 @@ import {
     ensureClientPhoneBeforeBooking
 } from '../client/clientContactGate.js';
 
-let currentSubmitHandler = null;
 let isSubmittingBooking = false;
 let lastDateRequestId = 0;
 let onBookingSuccessCallback = null;
@@ -362,6 +355,7 @@ export async function selectDate(date, btn) {
     );
 
     showStep('step-time');
+    updateBookingSubmitButton();
 
     const loader = document.getElementById('time-loader');
 
@@ -411,6 +405,24 @@ export async function selectDate(date, btn) {
     }
 }
 
+function updateBookingSubmitButton() {
+    const button = document.getElementById('booking-submit-button');
+
+    if (!button) return;
+
+    if (!state.selectedTime) {
+        button.disabled = true;
+        button.textContent = 'Оберіть час';
+        return;
+    }
+
+    button.disabled = false;
+
+    button.textContent = state.editingBookingId
+        ? `Перенести на ${state.selectedTime}`
+        : `Записатися на ${state.selectedTime}`;
+}
+
 export function selectTime(time, btn) {
     state.selectedTime = time;
 
@@ -428,101 +440,107 @@ export function selectTime(time, btn) {
         'border-transparent'
     );
 
-    const buttonText = state.editingBookingId
-        ? `Перенести на ${time}`
-        : `Записатися на ${time}`;
+    hideMainButton();
 
-    showMainButton(buttonText);
+    updateBookingSubmitButton();
+}
 
-    currentSubmitHandler = setMainButtonHandler(
-        async () => {
-            if (isSubmittingBooking) {
-                return;
-            }
+export async function submitSelectedBookingTime() {
+    if (isSubmittingBooking) {
+        return;
+    }
 
-            isSubmittingBooking = true;
+    if (!state.selectedTime) {
+        return tg.showAlert('Оберіть час');
+    }
 
-            disableMainButton();
+    if (!state.selectedDate || !state.selectedMaster || !state.selectedService) {
+        return tg.showAlert('Не всі дані для запису обрані');
+    }
 
-            showMainButtonProgress();
+    const button = document.getElementById('booking-submit-button');
 
-            try {
-                const clientName =
-                    state.user?.first_name || 'Гість';
+    isSubmittingBooking = true;
 
-                const clientId =
-                    state.user?.id?.toString() || '';
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Створюємо запис...';
+    }
 
-                if (!clientId) {
-                    throw new Error(
-                        'Telegram user не визначений'
-                    );
-                }
-                
-                const verifiedPhone =
-                    await ensureClientPhoneBeforeBooking();
+    try {
+        const clientName =
+            state.user?.first_name || 'Гість';
 
-                const response = await submitBookingAPI({
-                    action: state.editingBookingId
-                        ? 'rescheduleBooking'
-                        : 'createBooking',
+        const clientId =
+            state.user?.id?.toString() || '';
 
-                    date: state.selectedDate,
-                    time: state.selectedTime,
-
-                    masterId: state.selectedMaster.id,
-
-                    clientId,
-                    clientName,
-                     clientTelegram: state.user?.username || '',
-                    clientPhone: verifiedPhone,
-
-                    service: state.selectedService.name,
-
-                    bookingId: state.editingBookingId
-                });
-
-                if (response.status === 'success') {
-    notifySuccess();
-
-    tg.showAlert(
-        state.editingBookingId
-            ? 'Запит на перенесення надіслано!'
-            : 'Ура! Ти записалася на манікюр 🎉',
-        () => {
-            if (typeof onBookingSuccessCallback === 'function') {
-                onBookingSuccessCallback();
-            }
+        if (!clientId) {
+            throw new Error('Telegram user не визначений');
         }
-    );
-} else {
-                    tg.showAlert(
-                        'Помилка: ' +
-                            (
-                                response.message ||
-                                'невідома помилка'
-                            )
-                    );
+
+        const verifiedPhone =
+            await ensureClientPhoneBeforeBooking();
+
+        const response = await submitBookingAPI({
+            action: state.editingBookingId
+                ? 'rescheduleBooking'
+                : 'createBooking',
+
+            date: state.selectedDate,
+            time: state.selectedTime,
+
+            masterId: state.selectedMaster.id,
+
+            clientId,
+            clientName,
+            clientTelegram: state.user?.username || '',
+            clientPhone: verifiedPhone,
+
+            service: state.selectedService.name,
+
+            bookingId: state.editingBookingId
+        });
+
+        if (response.status === 'success') {
+            notifySuccess();
+
+            tg.showAlert(
+                state.editingBookingId
+                    ? 'Запит на перенесення надіслано!'
+                    : 'Ура! Ти записалася на манікюр 🎉',
+                () => {
+                    if (typeof onBookingSuccessCallback === 'function') {
+                        onBookingSuccessCallback();
+                    }
                 }
-            } catch (error) {
-                console.error(
-                    'Помилка створення запису:',
-                    error
-                );
+            );
 
-                tg.showAlert(
-                    error.message ||
-                    'Не вдалося створити запис.'
-                );
-            } finally {
-                hideMainButtonProgress();
+            return;
+        }
 
-                enableMainButton();
+        tg.showAlert(
+            'Помилка: ' +
+                (
+                    response.message ||
+                    'невідома помилка'
+                )
+        );
 
-                isSubmittingBooking = false;
-            }
-        },
-        currentSubmitHandler
-    );
+    } catch (error) {
+        console.error(
+            'Помилка створення запису:',
+            error
+        );
+
+        tg.showAlert(
+            error.message ||
+            'Не вдалося створити запис.'
+        );
+
+    } finally {
+        isSubmittingBooking = false;
+
+        updateBookingSubmitButton();
+    }
 }
 
