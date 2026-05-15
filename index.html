@@ -154,10 +154,8 @@ body.is-telegram-fullscreen {
     transform-origin: center center;
     will-change: transform, opacity, filter;
     transition:
-        transform 220ms ease,
-        opacity 220ms ease,
-        filter 220ms ease,
-        box-shadow 220ms ease;
+        box-shadow 180ms ease,
+        background-color 180ms ease;
 }
 
 .booking-service-card.is-focused {
@@ -171,20 +169,6 @@ body.is-telegram-fullscreen {
     opacity: 0.42;
     filter: blur(3.5px);
     z-index: 1;
-}
-
-.booking-service-card.is-side-left {
-    transform: translateX(42px) translateY(10px) scale(0.82) rotateY(10deg);
-}
-
-.booking-service-card.is-side-right {
-    transform: translateX(-42px) translateY(10px) scale(0.82) rotateY(-10deg);
-}
-
-.booking-service-card.is-far {
-    opacity: 0.18;
-    filter: blur(7px);
-    transform: scale(0.72);
 }
 
 .booking-master-list {
