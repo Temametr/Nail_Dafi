@@ -132,11 +132,18 @@ body.is-telegram-fullscreen {
     gap: 0;
     overflow-x: auto;
     overflow-y: visible;
-    scroll-snap-type: x mandatory;
+
+    scroll-snap-type: none;
+    scroll-behavior: auto;
+
     scroll-padding-left: calc((100vw - min(100vw, 448px)) / 2 + 82px);
     scroll-padding-right: calc((100vw - min(100vw, 448px)) / 2 + 82px);
     padding: 46px calc((100vw - min(100vw, 448px)) / 2 + 82px) 56px;
+
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+
     perspective: 900px;
 }
 
@@ -146,7 +153,7 @@ body.is-telegram-fullscreen {
 
 .booking-service-card {
     position: relative;
-    scroll-snap-align: center;
+    scroll-snap-align: none;
     width: 268px;
     min-width: 268px;
     height: 300px;
