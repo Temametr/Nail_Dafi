@@ -316,6 +316,16 @@ function renderAdminTelegramButton(booking) {
     `;
 }
 
+function isDoneBookingStatus(status) {
+    const value = String(status || '').trim().toLowerCase();
+
+    return (
+        value === 'выполнено' ||
+        value === 'виконано' ||
+        value === 'done'
+    );
+}
+
 function renderAdminActions(booking) {
     if (booking.status === STATUS_PENDING) {
         return `
