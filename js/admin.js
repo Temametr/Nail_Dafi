@@ -367,8 +367,23 @@ function renderAdminActions(booking) {
         `;
     }
 
+    if (isDoneBookingStatus(booking.status)) {
+        return `
+            <div class="grid grid-cols-1 gap-3 mt-4 pt-4 border-t border-slate-100">
+                <button
+                    type="button"
+                    onclick="window.appAPI.openWorkPhotosModalByBookingId('${booking.id}')"
+                    class="card-convex-sm py-3.5 bg-slate-950 text-white rounded-xl text-sm font-black shadow-lg active:scale-95 transition-all"
+                >
+                    📸 Додати фото роботи
+                </button>
+            </div>
+        `;
+    }
+
     return '';
 }
+
 function renderNearestBooking() {
 
     const container =
