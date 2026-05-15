@@ -15,6 +15,36 @@ function cleanMasterName(name) {
     );
 }
 
+function formatMasterWorkDays(workDays) {
+    const daysMap = {
+        0: 'Нд',
+        1: 'Пн',
+        2: 'Вт',
+        3: 'Ср',
+        4: 'Чт',
+        5: 'Пт',
+        6: 'Сб'
+    };
+
+    const days = Array.isArray(workDays)
+        ? workDays
+        : String(workDays || '')
+            .match(/\d+/g)
+            ?.map(Number) || [];
+
+    const uniqueDays = [...new Set(days)]
+        .filter(day => daysMap[day] !== undefined)
+        .sort((a, b) => a - b);
+
+    if (!uniqueDays.length) {
+        return 'Дні не вказані';
+    }
+
+    return uniqueDays
+        .map(day => daysMap[day])
+        .join(', ');
+}
+
 export function renderHomeMasters() {
     const list = document.getElementById('home-masters-list');
 
@@ -82,9 +112,15 @@ export function renderMasters() {
                             ${cleanMasterName(master.name)}
                         </div>
 
-                        <div class="text-[10px] font-bold text-slate-500 mt-1">
-                            Графік: ${sanitizeHtml(master.workHours)}
-                        </div>
+                        <div class="space-y-1 mt-1">
+    <div class="text-[10px] font-bold text-slate-500">
+        Графік: ${sanitizeHtml(master.workHours)}
+    </div>
+
+    <div class="text-[10px] font-bold text-slate-400">
+        Робочі дні: ${sanitizeHtml(formatMasterWorkDays(master.workDays))}
+    </div>
+</div>
                     </div>
                 </div>
 
