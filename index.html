@@ -1486,6 +1486,96 @@ body.is-telegram-fullscreen {
 
 </div>
 
+<div
+    id="work-photos-modal"
+    class="hidden fixed inset-0 z-[120] bg-slate-950/40 backdrop-blur-sm flex items-end justify-center"
+>
+    <div class="w-full max-w-md bg-rose-50 rounded-t-[2.25rem] p-5 pb-8 shadow-2xl animate-pop-in">
+        <div class="w-12 h-1.5 rounded-full bg-slate-300 mx-auto mb-5"></div>
+
+        <div class="flex items-start justify-between gap-4 mb-5">
+            <div class="min-w-0">
+                <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
+                    Галерея робіт
+                </div>
+
+                <h2 class="text-2xl font-black text-slate-950 tracking-tight mt-1">
+                    Додати фото роботи
+                </h2>
+
+                <p
+                    id="work-photos-booking-title"
+                    class="text-sm font-black text-slate-700 mt-2 truncate"
+                ></p>
+
+                <p
+                    id="work-photos-booking-subtitle"
+                    class="text-xs font-bold text-slate-400 mt-1"
+                ></p>
+            </div>
+
+            <button
+                type="button"
+                onclick="window.appAPI.closeWorkPhotosModal()"
+                class="w-11 h-11 rounded-full bg-white text-slate-500 flex items-center justify-center shadow-sm border border-white active:scale-90 transition-all shrink-0"
+                aria-label="Закрити"
+            >
+                ✕
+            </button>
+        </div>
+
+        <label
+            for="work-photos-input"
+            class="block rounded-[2rem] bg-white border border-white shadow-sm p-5 active:scale-[0.98] transition-all cursor-pointer"
+        >
+            <div class="w-16 h-16 rounded-[1.4rem] bg-blue-50 text-blue-500 flex items-center justify-center text-3xl border border-blue-100 shadow-inner mx-auto">
+                📸
+            </div>
+
+            <div class="text-center mt-4">
+                <div class="text-sm font-black text-slate-950">
+                    Обрати фото
+                </div>
+
+                <div class="text-xs font-bold text-slate-400 mt-1">
+                    До 5 фото · JPEG 0.8 · 1280px
+                </div>
+            </div>
+        </label>
+
+        <input
+            id="work-photos-input"
+            type="file"
+            accept="image/*"
+            multiple
+            class="hidden"
+            onchange="window.appAPI.handleWorkPhotoInputChange(this)"
+        >
+
+        <div
+            id="work-photos-preview"
+            class="grid grid-cols-3 gap-2 mt-4"
+        ></div>
+
+        <div
+            id="work-photos-status"
+            class="text-center text-[11px] font-bold text-slate-400 mt-4 leading-relaxed"
+        >
+            Оберіть від 1 до 5 фото.
+        </div>
+
+        <button
+            id="work-photos-publish-button"
+            type="button"
+            onclick="window.appAPI.publishCurrentWorkPhotos()"
+            disabled
+            class="w-full py-4 bg-slate-950 text-white rounded-3xl text-sm font-black shadow-lg active:scale-95 transition-all disabled:opacity-40 disabled:active:scale-100 mt-5"
+        >
+            Оберіть фото
+        </button>
+    </div>
+</div>
+
 <script type="module" src="js/app.js"></script>
 </body>
 </html>
