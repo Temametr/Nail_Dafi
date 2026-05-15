@@ -156,25 +156,35 @@ body.is-telegram-fullscreen {
     top: 50%;
     transform: translateY(-50%);
     z-index: 95;
-    width: 54px;
-    height: 54px;
+    width: 50px;
+    height: 50px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.76);
-    border: 1px solid rgba(255, 255, 255, 0.92);
-    box-shadow: 0 16px 34px -22px rgba(15, 23, 42, 0.42);
-    backdrop-filter: blur(14px);
-    color: rgba(15, 23, 42, 0.72);
+
+    background: #020617;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
+    box-shadow:
+        0 18px 34px -18px rgba(15, 23, 42, 0.65),
+        0 8px 16px -12px rgba(15, 23, 42, 0.7);
+
     transition:
         transform 140ms ease,
         opacity 140ms ease,
-        background-color 140ms ease;
+        background-color 140ms ease,
+        box-shadow 140ms ease;
 }
 
 .booking-service-arrow:active {
     transform: translateY(-50%) scale(0.92);
+    background: #0f172a;
+    box-shadow:
+        0 10px 24px -18px rgba(15, 23, 42, 0.65),
+        0 4px 10px -10px rgba(15, 23, 42, 0.7);
 }
 
 .booking-service-arrow-left {
@@ -188,6 +198,7 @@ body.is-telegram-fullscreen {
 .booking-service-arrow.is-hidden {
     opacity: 0;
     pointer-events: none;
+    transform: translateY(-50%) scale(0.86);
 }
 
 .booking-service-carousel::-webkit-scrollbar {
