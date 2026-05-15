@@ -13,6 +13,7 @@ import {
     selectMaster,
     selectDate,
     selectTime,
+    submitSelectedBookingTime,
     resetDateTimeSelection,
     showStep,
     setBookingSuccessHandler
@@ -170,6 +171,7 @@ window.appAPI = {
     selectMaster,
     selectDate,
     selectTime,
+    submitSelectedBookingTime,
     
     focusService: focusBookingService,
     confirmSelectedService,
