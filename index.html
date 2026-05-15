@@ -130,7 +130,7 @@ body.is-telegram-fullscreen {
     position: relative;
     display: flex;
     gap: 0;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: visible;
 
     scroll-snap-type: none;
@@ -140,9 +140,9 @@ body.is-telegram-fullscreen {
     scroll-padding-right: calc((100vw - min(100vw, 448px)) / 2 + 82px);
     padding: 46px calc((100vw - min(100vw, 448px)) / 2 + 82px) 56px;
 
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: auto;
     overscroll-behavior-x: contain;
-    touch-action: pan-x;
+    touch-action: none;
 
     perspective: 900px;
 }
@@ -461,8 +461,59 @@ body.is-telegram-fullscreen {
         </p>
     </div>
 
+    <div id="step-booking" class="step-content booking-flow-step">
+    <div class="booking-flow-header">
+        <div class="text-[11px] font-black text-rose-400 uppercase tracking-[0.2em]">
+            Новий візит
+        </div>
+
+        <h2 class="text-3xl font-black text-slate-950 tracking-tight leading-tight mt-1">
+            Оберіть послугу
+        </h2>
+
+        <p class="text-sm font-semibold text-slate-400 mt-2 leading-relaxed">
+            Оберіть послугу стрілками та натисніть “Далі”
+        </p>
+    </div>
+
     <div class="booking-flow-body">
-        <div id="services-list" class="booking-service-carousel"></div>
+        <div class="booking-service-stage">
+            <button
+                id="service-arrow-left"
+                type="button"
+                onclick="window.appAPI.moveFocusedService(-1)"
+                class="booking-service-arrow booking-service-arrow-left is-hidden"
+                aria-label="Попередня послуга"
+            >
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="3"
+                        d="M15 19l-7-7 7-7"
+                    ></path>
+                </svg>
+            </button>
+
+            <div id="services-list" class="booking-service-carousel"></div>
+
+            <button
+                id="service-arrow-right"
+                type="button"
+                onclick="window.appAPI.moveFocusedService(1)"
+                class="booking-service-arrow booking-service-arrow-right"
+                aria-label="Наступна послуга"
+            >
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="3"
+                        d="M9 5l7 7-7 7"
+                    ></path>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <div class="booking-flow-bottom-action">
@@ -491,45 +542,9 @@ body.is-telegram-fullscreen {
         </p>
     </div>
 
-    <<div class="booking-flow-body">
-    <div class="booking-service-stage">
-        <button
-            id="service-arrow-left"
-            type="button"
-            onclick="window.appAPI.moveFocusedService(-1)"
-            class="booking-service-arrow booking-service-arrow-left is-hidden"
-            aria-label="Попередня послуга"
-        >
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="3"
-                    d="M15 19l-7-7 7-7"
-                ></path>
-            </svg>
-        </button>
-
-        <div id="services-list" class="booking-service-carousel"></div>
-
-        <button
-            id="service-arrow-right"
-            type="button"
-            onclick="window.appAPI.moveFocusedService(1)"
-            class="booking-service-arrow booking-service-arrow-right"
-            aria-label="Наступна послуга"
-        >
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="3"
-                    d="M9 5l7 7-7 7"
-                ></path>
-            </svg>
-        </button>
+    <div class="booking-flow-body">
+        <div id="masters-list" class="booking-master-list space-y-4"></div>
     </div>
-</div>
 </div>
 
             <div id="step-date" class="step-content hidden-step booking-flow-step">
