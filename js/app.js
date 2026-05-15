@@ -110,6 +110,13 @@ import {
     requestClientContactAtLaunch
 } from './features/client/clientContactGate.js';
 
+import {
+    openWorkPhotosModal,
+    closeWorkPhotosModal,
+    handleWorkPhotoInputChange,
+    publishCurrentWorkPhotos
+} from './features/works/workPhotosModal.js';
+
 function prepareTelegramViewport() {
     try {
         tg.ready();
@@ -190,6 +197,11 @@ window.appAPI = {
     openCancelModal,
     closeCancelModal,
     confirmCancel,
+    
+    openWorkPhotosModal,
+    closeWorkPhotosModal,
+    handleWorkPhotoInputChange,
+    publishCurrentWorkPhotos,
 
     renderAdminStats,
 
@@ -354,6 +366,17 @@ async function loadApp() {
 }
 
 function handleBack() {
+    
+        const workPhotosModal =
+        document.getElementById('work-photos-modal');
+
+    if (
+        workPhotosModal &&
+        !workPhotosModal.classList.contains('hidden')
+    ) {
+        closeWorkPhotosModal();
+        return;
+    }
     
         const adminProfileEditModal =
         document.getElementById('admin-profile-edit-modal');
