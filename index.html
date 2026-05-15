@@ -239,6 +239,54 @@ body.is-telegram-fullscreen {
     display: none !important;
 }
 
+.calendar-month-toolbar {
+    grid-column: span 7 / span 7;
+    display: grid;
+    grid-template-columns: 42px 1fr 42px;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0 12px;
+}
+
+.calendar-month-title {
+    height: 42px;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid #ffffff;
+    box-shadow: 0 6px 14px -10px rgba(15, 23, 42, 0.24);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.calendar-month-arrow {
+    width: 42px;
+    height: 42px;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid #ffffff;
+    box-shadow: 0 6px 14px -10px rgba(15, 23, 42, 0.24);
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        transform 140ms ease,
+        opacity 140ms ease,
+        background-color 140ms ease;
+}
+
+.calendar-month-arrow:active {
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.calendar-month-arrow.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
         .floating-nav {
             background-color: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(15px);
@@ -560,41 +608,7 @@ body.is-telegram-fullscreen {
 
     <div class="booking-flow-body px-5">
     <div class="booking-service-stage">
-        <button
-            id="calendar-arrow-left"
-            type="button"
-            onclick="window.appAPI.moveCalendarMonth(-1)"
-            class="booking-service-arrow booking-service-arrow-left is-hidden"
-            aria-label="Попередній місяць"
-        >
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="3"
-                    d="M15 19l-7-7 7-7"
-                ></path>
-            </svg>
-        </button>
-
         <div id="date-scroll" class="grid grid-cols-7 gap-1.5 pb-4 px-1"></div>
-
-        <button
-            id="calendar-arrow-right"
-            type="button"
-            onclick="window.appAPI.moveCalendarMonth(1)"
-            class="booking-service-arrow booking-service-arrow-right"
-            aria-label="Наступний місяць"
-        >
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="3"
-                    d="M9 5l7 7-7 7"
-                ></path>
-            </svg>
-        </button>
     </div>
 </div>
 </div>
