@@ -3,7 +3,8 @@ import {
     updateBookingStatusAPI,
     submitBookingAPI,
     fetchOccupiedSlotsAPI,
-    fetchClientContactAPI
+    fetchClientContactAPI,
+    publishWorkPhotosAPI
 } from '../api.js';
 
 export {
@@ -11,5 +12,6 @@ export {
     updateBookingStatusAPI,
     submitBookingAPI,
     fetchOccupiedSlotsAPI,
-    fetchClientContactAPI
+    fetchClientContactAPI,
+    publishWorkPhotosAPI
 };
