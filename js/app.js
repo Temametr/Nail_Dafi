@@ -17,6 +17,7 @@ import {
     resetDateTimeSelection,
     showStep,
     moveBookingService,
+    moveBookingCalendarMonth,
     setBookingSuccessHandler
 } from './features/booking/bookingFlow.js';
 
@@ -176,6 +177,7 @@ window.appAPI = {
     
     focusService: focusBookingService,
     moveFocusedService: moveBookingService,
+    moveCalendarMonth: moveBookingCalendarMonth,
     confirmSelectedService,
 
     changeBookingStatus,
