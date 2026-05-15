@@ -48,81 +48,146 @@ export function renderCalendar() {
 
     if (!container) return;
 
-    container.innerHTML = '';
-
     const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
 
-    const monthsToShow = [
-        new Date(now.getFullYear(), now.getMonth(), 1),
-        new Date(now.getFullYear(), now.getMonth() + 1, 1)
-    ];
+    const maxMonthOffset = 11 - currentMonth;
+
+    if (
+        state.calendarMonthOffset === undefined ||
+        state.calendarMonthOffset === null
+    ) {
+        state.calendarMonthOffset = 0;
+    }
+
+    state.calendarMonthOffset = Math.max(
+        0,
+        Math.min(maxMonthOffset, Number(state.calendarMonthOffset) || 0)
+    );
+
+    const firstOfMonth = new Date(
+        currentYear,
+        currentMonth + state.calendarMonthOffset,
+        1
+    );
 
     let html = '';
 
-    monthsToShow.forEach(firstOfMonth => {
+    html += `
+        <div class="col-span-7 text-center text-[11px] font-black text-slate-900 mt-2 mb-3 uppercase tracking-[0.2em] bg-white/70 py-2.5 rounded-2xl border border-white shadow-sm">
+            ${monthNames[firstOfMonth.getMonth()]} ${firstOfMonth.getFullYear()}
+        </div>
+    `;
+
+    dayLabels.forEach(label => {
         html += `
-            <div class="col-span-7 text-center text-[11px] font-black text-slate-800 mt-4 mb-2 uppercase tracking-[0.2em] bg-white/50 py-2 rounded-xl border border-white/60 shadow-sm">
-                ${monthNames[firstOfMonth.getMonth()]} ${firstOfMonth.getFullYear()}
+            <div class="text-[9px] font-black text-rose-400 text-center pb-2 uppercase">
+                ${label}
             </div>
         `;
-
-        dayLabels.forEach(label => {
-            html += `
-                <div class="text-[9px] font-bold text-rose-300 text-center pb-2 uppercase">
-                    ${label}
-                </div>
-            `;
-        });
-
-        const firstDayIdx = firstOfMonth.getDay();
-
-        const offset = firstDayIdx === 0
-            ? 6
-            : firstDayIdx - 1;
-
-        for (let i = 0; i < offset; i++) {
-            html += `<div class="w-full aspect-square"></div>`;
-        }
-
-        const lastDay = new Date(
-            firstOfMonth.getFullYear(),
-            firstOfMonth.getMonth() + 1,
-            0
-        ).getDate();
-
-        for (let day = 1; day <= lastDay; day++) {
-            const date = new Date(
-                firstOfMonth.getFullYear(),
-                firstOfMonth.getMonth(),
-                day
-            );
-
-            const dayOfWeek = date.getDay();
-
-            const canBook =
-                !isPastDate(date) &&
-                isWorkingDay(dayOfWeek);
-
-            if (canBook) {
-                html += `
-                    <button
-                        onclick="window.appAPI.selectDate('${createDateString(date)}', this)"
-                        class="date-btn w-full aspect-square rounded-xl bg-white text-slate-950 flex items-center justify-center transition-all shadow-sm border border-slate-100 active:scale-90"
-                    >
-                        <span class="text-[15px] font-black">${day}</span>
-                    </button>
-                `;
-            } else {
-                html += `
-                    <div class="w-full aspect-square rounded-xl flex items-center justify-center text-slate-300 opacity-40">
-                        <span class="text-[15px] font-bold">${day}</span>
-                    </div>
-                `;
-            }
-        }
     });
 
+    const firstDayIdx = firstOfMonth.getDay();
+
+    const offset = firstDayIdx === 0
+        ? 6
+        : firstDayIdx - 1;
+
+    for (let i = 0; i < offset; i++) {
+        html += `<div class="w-full aspect-square"></div>`;
+    }
+
+    const lastDay = new Date(
+        firstOfMonth.getFullYear(),
+        firstOfMonth.getMonth() + 1,
+        0
+    ).getDate();
+
+    for (let day = 1; day <= lastDay; day++) {
+        const date = new Date(
+            firstOfMonth.getFullYear(),
+            firstOfMonth.getMonth(),
+            day
+        );
+
+        const dayOfWeek = date.getDay();
+
+        const canBook =
+            !isPastDate(date) &&
+            isWorkingDay(dayOfWeek);
+
+        const dateString = createDateString(date);
+        const isSelected =
+            state.selectedDate === dateString;
+
+        if (canBook) {
+            html += `
+                <button
+                    onclick="window.appAPI.selectDate('${dateString}', this)"
+                    class="date-btn w-full aspect-square rounded-xl bg-white text-slate-950 flex items-center justify-center transition-all shadow-sm border border-slate-100 active:scale-90 ${isSelected ? 'selected-item shadow-blue-300 border-transparent' : ''}"
+                >
+                    <span class="text-[15px] font-black">${day}</span>
+                </button>
+            `;
+        } else {
+            html += `
+                <div class="w-full aspect-square rounded-xl flex items-center justify-center bg-rose-100/80 text-rose-500 border border-rose-200/80">
+                    <span class="text-[15px] font-black">${day}</span>
+                </div>
+            `;
+        }
+    }
+
     container.innerHTML = html;
+
+    updateCalendarArrows(maxMonthOffset);
+}
+
+function updateCalendarArrows(maxMonthOffset) {
+    const left = document.getElementById('calendar-arrow-left');
+    const right = document.getElementById('calendar-arrow-right');
+
+    const offset = Number(state.calendarMonthOffset) || 0;
+
+    if (left) {
+        left.classList.toggle(
+            'is-hidden',
+            offset <= 0
+        );
+    }
+
+    if (right) {
+        right.classList.toggle(
+            'is-hidden',
+            offset >= maxMonthOffset
+        );
+    }
+}
+
+export function moveCalendarMonth(direction) {
+    const now = new Date();
+    const maxMonthOffset = 11 - now.getMonth();
+
+    const currentOffset =
+        Number(state.calendarMonthOffset) || 0;
+
+    const nextOffset = Math.max(
+        0,
+        Math.min(
+            maxMonthOffset,
+            currentOffset + Number(direction || 0)
+        )
+    );
+
+    if (nextOffset === currentOffset) {
+        updateCalendarArrows(maxMonthOffset);
+        return;
+    }
+
+    state.calendarMonthOffset = nextOffset;
+
+    renderCalendar();
 }
 
 export function renderTimeSlots(occupiedSlots = []) {
