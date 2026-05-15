@@ -153,6 +153,9 @@ body.is-telegram-fullscreen {
     border-radius: 1.7rem;
     transform-origin: center center;
     will-change: transform, opacity, filter;
+    contain: layout paint;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     transition:
         box-shadow 180ms ease,
         background-color 180ms ease;
@@ -163,12 +166,6 @@ body.is-telegram-fullscreen {
     filter: blur(0);
     z-index: 10;
     box-shadow: 0 18px 42px -24px rgba(15, 23, 42, 0.35);
-}
-
-.booking-service-card:not(.is-focused) {
-    opacity: 0.42;
-    filter: blur(3.5px);
-    z-index: 1;
 }
 
 .booking-master-list {
