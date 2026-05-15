@@ -15,18 +15,25 @@ on:
 
   workflow_dispatch:
 
+concurrency:
+  group: build-tailwind-main
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
 jobs:
   build-tailwind:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -34,7 +41,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --no-audit --no-fund
 
       - name: Ensure dist folder exists
         run: mkdir -p dist
@@ -52,6 +59,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No CSS changes to commit"
           else
-            git commit -m "Build Tailwind CSS"
+            git commit -m "Build Tailwind CSS [skip ci]"
+            git pull --rebase origin main
             git push
           fi
