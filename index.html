@@ -147,6 +147,49 @@ body.is-telegram-fullscreen {
     perspective: 900px;
 }
 
+.booking-service-stage {
+    position: relative;
+}
+
+.booking-service-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 95;
+    width: 54px;
+    height: 54px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.76);
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 16px 34px -22px rgba(15, 23, 42, 0.42);
+    backdrop-filter: blur(14px);
+    color: rgba(15, 23, 42, 0.72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        transform 140ms ease,
+        opacity 140ms ease,
+        background-color 140ms ease;
+}
+
+.booking-service-arrow:active {
+    transform: translateY(-50%) scale(0.92);
+}
+
+.booking-service-arrow-left {
+    left: max(18px, calc((100vw - min(100vw, 448px)) / 2 + 18px));
+}
+
+.booking-service-arrow-right {
+    right: max(18px, calc((100vw - min(100vw, 448px)) / 2 + 18px));
+}
+
+.booking-service-arrow.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
 .booking-service-carousel::-webkit-scrollbar {
     display: none;
 }
@@ -448,9 +491,45 @@ body.is-telegram-fullscreen {
         </p>
     </div>
 
-    <div class="booking-flow-body">
-        <div id="masters-list" class="booking-master-list space-y-4"></div>
+    <<div class="booking-flow-body">
+    <div class="booking-service-stage">
+        <button
+            id="service-arrow-left"
+            type="button"
+            onclick="window.appAPI.moveFocusedService(-1)"
+            class="booking-service-arrow booking-service-arrow-left is-hidden"
+            aria-label="Попередня послуга"
+        >
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M15 19l-7-7 7-7"
+                ></path>
+            </svg>
+        </button>
+
+        <div id="services-list" class="booking-service-carousel"></div>
+
+        <button
+            id="service-arrow-right"
+            type="button"
+            onclick="window.appAPI.moveFocusedService(1)"
+            class="booking-service-arrow booking-service-arrow-right"
+            aria-label="Наступна послуга"
+        >
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M9 5l7 7-7 7"
+                ></path>
+            </svg>
+        </button>
     </div>
+</div>
 </div>
 
             <div id="step-date" class="step-content hidden-step booking-flow-step">
