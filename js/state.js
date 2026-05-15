@@ -36,6 +36,7 @@ export const state = {
 
     selectedDate: null,
     selectedTime: null,
+    calendarMonthOffset: 0,
     
     clientPhone: '',
     clientPhoneStatus: 'unknown',
