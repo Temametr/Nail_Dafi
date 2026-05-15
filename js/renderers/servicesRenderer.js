@@ -2,41 +2,26 @@ import { state } from '../state.js';
 import { sanitizeHtml } from '../utils.js';
 
 let serviceFocusTimer = null;
+let coverflowFrame = null;
 
 function setFocusedService(serviceId) {
     state.focusedServiceId = serviceId;
 
-    const cards = Array.from(
-        document.querySelectorAll('.booking-service-card')
-    );
+    document
+        .querySelectorAll('.booking-service-card')
+        .forEach(card => {
+            const isFocused =
+                String(card.dataset.serviceId) === String(serviceId);
 
-    const focusedIndex = cards.findIndex(card =>
-        String(card.dataset.serviceId) === String(serviceId)
-    );
+            card.classList.toggle('is-focused', isFocused);
 
-    cards.forEach((card, index) => {
-        const isFocused = index === focusedIndex;
-        const distance = index - focusedIndex;
+            const check = card.querySelector('.service-check');
 
-        card.classList.toggle('is-focused', isFocused);
-        card.classList.toggle('is-side-left', distance === -1);
-        card.classList.toggle('is-side-right', distance === 1);
-        card.classList.toggle('is-far', Math.abs(distance) > 1);
-
-        if (isFocused) {
-            card.style.transform =
-                'translateX(0) translateY(0) scale(1) rotateY(0deg)';
-        } else {
-            card.style.transform = '';
-        }
-
-        const check = card.querySelector('.service-check');
-
-        if (check) {
-            check.classList.toggle('hidden', !isFocused);
-            check.classList.toggle('flex', isFocused);
-        }
-    });
+            if (check) {
+                check.classList.toggle('hidden', !isFocused);
+                check.classList.toggle('flex', isFocused);
+            }
+        });
 }
 
 function getClosestServiceToCenter(container) {
@@ -104,15 +89,23 @@ function applyCoverflowGeometry(container) {
     });
 }
 
-function updateFocusedServiceFromScroll(container) {
-    applyCoverflowGeometry(container);
+function scheduleCoverflowGeometry(container) {
+    if (coverflowFrame) {
+        cancelAnimationFrame(coverflowFrame);
+    }
 
+    coverflowFrame = requestAnimationFrame(() => {
+        applyCoverflowGeometry(container);
+        coverflowFrame = null;
+    });
+}
+
+function updateFocusedServiceFromScroll(container) {
     const closest = getClosestServiceToCenter(container);
 
     if (!closest) return;
 
     setFocusedService(closest.dataset.serviceId);
-    applyCoverflowGeometry(container);
 }
 
 export function renderServices() {
@@ -201,13 +194,14 @@ export function renderServices() {
     });
 
     list.onscroll = () => {
-    applyCoverflowGeometry(list);
+    scheduleCoverflowGeometry(list);
 
     clearTimeout(serviceFocusTimer);
 
     serviceFocusTimer = setTimeout(() => {
         updateFocusedServiceFromScroll(list);
-    }, 80);
+        scheduleCoverflowGeometry(list);
+    }, 120);
 };
 }
 
@@ -235,4 +229,5 @@ export function focusService(serviceId) {
 }
 
     setFocusedService(serviceId);
+    scheduleCoverflowGeometry(list);
 }
