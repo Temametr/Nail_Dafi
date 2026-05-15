@@ -485,6 +485,17 @@ body.is-telegram-fullscreen {
 
         <div id="time-slots" class="grid grid-cols-4 gap-2 px-1"></div>
     </div>
+   <div class="booking-flow-bottom-action">
+    <button
+        id="booking-submit-button"
+        type="button"
+        onclick="window.appAPI.submitSelectedBookingTime()"
+        disabled
+        class="w-full py-4 bg-slate-950 text-white rounded-3xl text-sm font-black shadow-lg active:scale-95 transition-all disabled:opacity-40 disabled:active:scale-100"
+    >
+        Оберіть час
+    </button>
+</div>
 </div>
 </div>
 
