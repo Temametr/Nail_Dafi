@@ -559,8 +559,44 @@ body.is-telegram-fullscreen {
     </div>
 
     <div class="booking-flow-body px-5">
+    <div class="booking-service-stage">
+        <button
+            id="calendar-arrow-left"
+            type="button"
+            onclick="window.appAPI.moveCalendarMonth(-1)"
+            class="booking-service-arrow booking-service-arrow-left is-hidden"
+            aria-label="Попередній місяць"
+        >
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M15 19l-7-7 7-7"
+                ></path>
+            </svg>
+        </button>
+
         <div id="date-scroll" class="grid grid-cols-7 gap-1.5 pb-4 px-1"></div>
+
+        <button
+            id="calendar-arrow-right"
+            type="button"
+            onclick="window.appAPI.moveCalendarMonth(1)"
+            class="booking-service-arrow booking-service-arrow-right"
+            aria-label="Наступний місяць"
+        >
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M9 5l7 7-7 7"
+                ></path>
+            </svg>
+        </button>
     </div>
+</div>
 </div>
 
 <div id="step-time" class="step-content hidden-step booking-flow-step">
