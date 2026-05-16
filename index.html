@@ -423,38 +423,20 @@ body.is-telegram-fullscreen {
                     Контакти
                 </h3>
 
-                <div onclick="window.appAPI.openMap()" class="card-convex p-1 overflow-hidden animate-pop-in cursor-pointer active:scale-[0.98] transition-all relative">
-                    <div class="p-4 flex items-center gap-4 relative z-20 bg-white rounded-t-[1.75rem]">
-                        <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0 border border-rose-100 text-xl shadow-inner">
-                            📍
-                        </div>
-
-                        <div>
-                            <h4 class="text-sm font-extrabold text-slate-900">
-                                Адреса
-                            </h4>
-
-                            <p class="text-[11px] font-medium text-slate-500 mt-0.5 leading-relaxed">
-                                ТРЦ «Дафі», м. Харків, вул. Нескорених, 9<br>
-                                <span class="font-extrabold text-blue-500 text-[10px] uppercase tracking-wider underline">
-                                    Відкрити маршрут
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="h-32 w-full bg-slate-200 relative overflow-hidden rounded-b-[1.75rem] border-t border-slate-50 pointer-events-none">
-                        <iframe
-                            src="https://maps.google.com/maps?q=50.0273880,36.3314636&hl=uk&z=15&output=embed"
-                            class="absolute top-1/2 left-1/2 w-[120%] h-[250px] -translate-x-1/2 -translate-y-1/2 opacity-80"
-                            frameborder="0"
-                            style="border:0;"
-                            loading="lazy"
-                        ></iframe>
-
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-100/40 to-transparent z-10"></div>
-                    </div>
-                </div>
+                <div
+    onclick="window.appAPI.openMap()"
+    class="h-32 w-full bg-gradient-to-br from-blue-50 to-rose-50 relative overflow-hidden rounded-b-[1.75rem] border-t border-slate-50"
+>
+    <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+        <div class="text-3xl mb-2">📍</div>
+        <div class="text-xs font-black text-slate-700">
+            ТРЦ «Дафі», Харків
+        </div>
+        <div class="text-[10px] font-black text-blue-500 uppercase tracking-wider mt-1">
+            Натисніть, щоб відкрити маршрут
+        </div>
+    </div>
+</div>
 
                 <div class="card-convex p-5 flex items-center gap-4 animate-pop-in" style="animation-delay: 100ms">
                     <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100 text-xl">
