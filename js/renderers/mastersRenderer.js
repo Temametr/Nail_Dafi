@@ -108,17 +108,6 @@ export function renderMasters() {
 
                 <div class="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-slate-950/70 via-slate-950/24 to-transparent"></div>
 
-                <div class="absolute top-2.5 right-2.5 w-9 h-9 rounded-full bg-white/85 backdrop-blur-md flex items-center justify-center text-slate-700 shadow-lg border border-white/60">
-                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="3"
-                            d="M9 5l7 7-7 7"
-                        ></path>
-                    </svg>
-                </div>
-
                 <div class="absolute bottom-2.5 left-2.5 right-2.5 bg-white/88 backdrop-blur-md rounded-2xl p-2.5 shadow-lg border border-white/70">
                     <div class="text-center">
                         <h3 class="font-black text-slate-950 text-sm tracking-tight leading-tight truncate">
@@ -130,27 +119,17 @@ export function renderMasters() {
                         </p>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-1.5 mt-2">
-                        <div class="rounded-xl bg-blue-50 border border-blue-100 px-2 py-1.5 text-center">
-                            <div class="text-[7px] font-black text-blue-400 uppercase tracking-[0.12em]">
-                                Графік
-                            </div>
+                    <div class="mt-2 rounded-xl bg-slate-50/90 border border-slate-100 px-2.5 py-2 text-center space-y-1">
+    <div class="text-[8px] font-bold text-slate-500 leading-tight truncate">
+        <span class="text-slate-400">Графік:</span>
+        ${sanitizeHtml(master.workHours || 'Не вказано')}
+    </div>
 
-                            <div class="text-[9px] font-black text-blue-700 mt-0.5 leading-tight truncate">
-                                ${sanitizeHtml(master.workHours || 'Не вказано')}
-                            </div>
-                        </div>
-
-                        <div class="rounded-xl bg-rose-50 border border-rose-100 px-2 py-1.5 text-center">
-                            <div class="text-[7px] font-black text-rose-400 uppercase tracking-[0.12em]">
-                                Дні
-                            </div>
-
-                            <div class="text-[9px] font-black text-rose-700 mt-0.5 leading-tight truncate">
-                                ${sanitizeHtml(formatMasterWorkDays(master.workDays))}
-                            </div>
-                        </div>
-                    </div>
+    <div class="text-[8px] font-bold text-slate-500 leading-tight truncate">
+        <span class="text-slate-400">Дні:</span>
+        ${sanitizeHtml(formatMasterWorkDays(master.workDays))}
+    </div>
+</div>
                 </div>
             </button>
         `;
