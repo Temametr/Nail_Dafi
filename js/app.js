@@ -110,12 +110,35 @@ import {
     requestClientContactAtLaunch
 } from './features/client/clientContactGate.js';
 
-import {
-    openWorkPhotosModal,
-    closeWorkPhotosModal,
-    handleWorkPhotoInputChange,
-    publishCurrentWorkPhotos
-} from './features/works/workPhotosModal.js';
+let workPhotosModulePromise = null;
+
+function loadWorkPhotosModule() {
+    if (!workPhotosModulePromise) {
+        workPhotosModulePromise = import('./features/works/workPhotosModal.js');
+    }
+
+    return workPhotosModulePromise;
+}
+
+async function openWorkPhotosModalLazy(booking) {
+    const module = await loadWorkPhotosModule();
+    module.openWorkPhotosModal(booking);
+}
+
+async function closeWorkPhotosModalLazy() {
+    const module = await loadWorkPhotosModule();
+    module.closeWorkPhotosModal();
+}
+
+async function handleWorkPhotoInputChangeLazy(input) {
+    const module = await loadWorkPhotosModule();
+    module.handleWorkPhotoInputChange(input);
+}
+
+async function publishCurrentWorkPhotosLazy() {
+    const module = await loadWorkPhotosModule();
+    module.publishCurrentWorkPhotos();
+}
 
 function prepareTelegramViewport() {
     try {
@@ -177,6 +200,7 @@ function openWorkPhotosModalByBookingId(bookingId) {
     }
 
     openWorkPhotosModal(booking);
+    openWorkPhotosModalLazy(booking);
 }
 
 window.appAPI = {
@@ -211,11 +235,12 @@ window.appAPI = {
     closeCancelModal,
     confirmCancel,
     
-    openWorkPhotosModal,
     openWorkPhotosModalByBookingId,
-    closeWorkPhotosModal,
-    handleWorkPhotoInputChange,
-    publishCurrentWorkPhotos,
+    openWorkPhotosModal: openWorkPhotosModalLazy,
+    closeWorkPhotosModal: closeWorkPhotosModalLazy,
+    handleWorkPhotoInputChange: handleWorkPhotoInputChangeLazy,
+    publishCurrentWorkPhotos: publishCurrentWorkPhotosLazy,
+    
 
     renderAdminStats,
 
