@@ -189,7 +189,7 @@ function prepareTelegramViewport() {
     }
 }
 
-function openWorkPhotosModalByBookingId(bookingId) {
+async function openWorkPhotosModalByBookingId(bookingId) {
     const booking = state.adminBookings.find(
         item => String(item.id) === String(bookingId)
     );
@@ -199,8 +199,7 @@ function openWorkPhotosModalByBookingId(bookingId) {
         return;
     }
 
-    openWorkPhotosModal(booking);
-    openWorkPhotosModalLazy(booking);
+    await openWorkPhotosModalLazy(booking);
 }
 
 window.appAPI = {
@@ -407,15 +406,15 @@ async function loadApp() {
 function handleBack() {
     
         const workPhotosModal =
-        document.getElementById('work-photos-modal');
+    document.getElementById('work-photos-modal');
 
-    if (
-        workPhotosModal &&
-        !workPhotosModal.classList.contains('hidden')
-    ) {
-        closeWorkPhotosModal();
-        return;
-    }
+if (
+    workPhotosModal &&
+    !workPhotosModal.classList.contains('hidden')
+) {
+    closeWorkPhotosModalLazy();
+    return;
+}
     
         const adminProfileEditModal =
         document.getElementById('admin-profile-edit-modal');
@@ -659,10 +658,10 @@ function askToAddWorkPhotos(booking) {
     try {
         tg.showConfirm(
             'Додати фото роботи в галерею?',
-            (confirmed) => {
+            async (confirmed) => {
                 if (!confirmed) return;
 
-                openWorkPhotosModal(booking);
+                await openWorkPhotosModalLazy(booking);
             }
         );
     } catch (error) {
@@ -673,7 +672,7 @@ function askToAddWorkPhotos(booking) {
         );
 
         if (confirmed) {
-            openWorkPhotosModal(booking);
+            openWorkPhotosModalLazy(booking);
         }
     }
 }
