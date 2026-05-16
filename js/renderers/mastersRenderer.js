@@ -95,7 +95,7 @@ export function renderMasters() {
             <button
                 type="button"
                 onclick="window.appAPI.selectMaster('${master.id}')"
-                class="relative w-full min-h-[330px] rounded-[2rem] overflow-hidden shadow-convex animate-pop-in border-2 border-white/70 active:scale-[0.98] transition-all text-left"
+                class="cursor-pointer relative w-full aspect-[4/5] rounded-3xl overflow-hidden shadow-convex animate-pop-in border-2 border-white/70 active:scale-[0.98] transition-all text-left"
                 style="animation-delay: ${index * 45}ms"
             >
                 <img
@@ -106,10 +106,10 @@ export function renderMasters() {
                     class="absolute inset-0 w-full h-full object-cover object-top"
                 >
 
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/72 via-slate-950/20 to-transparent"></div>
+                <div class="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-slate-950/70 via-slate-950/24 to-transparent"></div>
 
-                <div class="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/85 backdrop-blur-md flex items-center justify-center text-slate-700 shadow-lg border border-white/60">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="absolute top-2.5 right-2.5 w-9 h-9 rounded-full bg-white/85 backdrop-blur-md flex items-center justify-center text-slate-700 shadow-lg border border-white/60">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -119,34 +119,34 @@ export function renderMasters() {
                     </svg>
                 </div>
 
-                <div class="absolute bottom-3 left-3 right-3 bg-white/88 backdrop-blur-md rounded-[1.6rem] p-4 shadow-lg border border-white/70">
+                <div class="absolute bottom-2.5 left-2.5 right-2.5 bg-white/88 backdrop-blur-md rounded-2xl p-2.5 shadow-lg border border-white/70">
                     <div class="text-center">
-                        <h3 class="font-black text-slate-950 text-xl tracking-tight leading-tight truncate">
+                        <h3 class="font-black text-slate-950 text-sm tracking-tight leading-tight truncate">
                             ${cleanMasterName(master.name)}
                         </h3>
 
-                        <p class="text-[9px] font-black text-rose-400 uppercase tracking-[0.18em] mt-1">
+                        <p class="text-[8px] font-black text-rose-400 uppercase tracking-[0.16em] mt-1">
                             Топ-майстер
                         </p>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 mt-4">
-                        <div class="rounded-2xl bg-blue-50 border border-blue-100 px-3 py-3 text-center">
-                            <div class="text-[8px] font-black text-blue-400 uppercase tracking-[0.14em]">
+                    <div class="grid grid-cols-1 gap-1.5 mt-2">
+                        <div class="rounded-xl bg-blue-50 border border-blue-100 px-2 py-1.5 text-center">
+                            <div class="text-[7px] font-black text-blue-400 uppercase tracking-[0.12em]">
                                 Графік
                             </div>
 
-                            <div class="text-[11px] font-black text-blue-700 mt-1 leading-tight">
+                            <div class="text-[9px] font-black text-blue-700 mt-0.5 leading-tight truncate">
                                 ${sanitizeHtml(master.workHours || 'Не вказано')}
                             </div>
                         </div>
 
-                        <div class="rounded-2xl bg-rose-50 border border-rose-100 px-3 py-3 text-center">
-                            <div class="text-[8px] font-black text-rose-400 uppercase tracking-[0.14em]">
+                        <div class="rounded-xl bg-rose-50 border border-rose-100 px-2 py-1.5 text-center">
+                            <div class="text-[7px] font-black text-rose-400 uppercase tracking-[0.12em]">
                                 Дні
                             </div>
 
-                            <div class="text-[11px] font-black text-rose-700 mt-1 leading-tight">
+                            <div class="text-[9px] font-black text-rose-700 mt-0.5 leading-tight truncate">
                                 ${sanitizeHtml(formatMasterWorkDays(master.workDays))}
                             </div>
                         </div>
