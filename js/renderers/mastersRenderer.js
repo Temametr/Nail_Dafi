@@ -110,13 +110,10 @@ export function renderMasters() {
 
                 <div class="absolute bottom-2.5 left-2.5 right-2.5 bg-white/88 backdrop-blur-md rounded-2xl p-2.5 shadow-lg border border-white/70">
                     <div class="text-center">
-                        <h3 class="font-black text-slate-950 text-sm tracking-tight leading-tight truncate">
+                        <h3 class="font-white text-slate-950 text-sm tracking-tight leading-tight truncate">
                             ${cleanMasterName(master.name)}
                         </h3>
 
-                        <p class="text-[8px] font-black text-rose-400 uppercase tracking-[0.16em] mt-1">
-                            Топ-майстер
-                        </p>
                     </div>
 
                     <div class="mt-2 rounded-xl bg-slate-50/90 border border-slate-100 px-2.5 py-2 text-center space-y-1">
