@@ -230,9 +230,14 @@ body.is-telegram-fullscreen {
     box-shadow: 0 18px 42px -24px rgba(15, 23, 42, 0.35);
 }
 
-.booking-master-list {
-    padding-left: 24px;
-    padding-right: 24px;
+.booking-master-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 24px;
+    width: 100%;
 }
 
 .booking-flow-hidden-shell #client-screen > header,
@@ -570,7 +575,7 @@ body.is-telegram-fullscreen {
     </div>
 
     <div class="booking-flow-body">
-        <div id="masters-list" class="booking-master-list space-y-5"></div>
+        <div id="masters-list" class="booking-master-grid"></div>
     </div>
 </div>
 
