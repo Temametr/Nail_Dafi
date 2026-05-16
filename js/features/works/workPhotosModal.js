@@ -12,6 +12,7 @@ import {
 let currentBooking = null;
 let compressedPhotos = [];
 let isPublishing = false;
+let previewUrls = [];
 
 export function openWorkPhotosModal(booking) {
     currentBooking = booking;
@@ -29,12 +30,24 @@ export function openWorkPhotosModal(booking) {
     setWorkPhotosBookingInfo(booking);
 }
 
+function revokePreviewUrls() {
+    previewUrls.forEach(url => {
+        try {
+            URL.revokeObjectURL(url);
+        } catch (e) {}
+    });
+
+    previewUrls = [];
+}
+
 export function closeWorkPhotosModal() {
     const modal = document.getElementById('work-photos-modal');
 
     if (modal) {
         modal.classList.add('hidden');
     }
+    
+    revokePreviewUrls();
 
     currentBooking = null;
     compressedPhotos = [];
@@ -176,6 +189,7 @@ function renderWorkPhotoPreview(files, photos) {
     const container = document.getElementById('work-photos-preview');
 
     if (!container) return;
+    
 
     if (!photos.length) {
         container.innerHTML = `
@@ -183,6 +197,7 @@ function renderWorkPhotoPreview(files, photos) {
                 Фото ще не обрані
             </div>
         `;
+        revokePreviewUrls();
 
         return;
     }
@@ -192,8 +207,12 @@ function renderWorkPhotoPreview(files, photos) {
     container.innerHTML = photos.map((photo, index) => {
         const file = originalFiles[index];
         const previewUrl = file
-            ? URL.createObjectURL(file)
-            : '';
+    ? URL.createObjectURL(file)
+    : '';
+
+if (previewUrl) {
+    previewUrls.push(previewUrl);
+}
 
         return `
             <div class="relative aspect-square rounded-3xl overflow-hidden bg-slate-100 border border-white shadow-sm">
