@@ -92,42 +92,67 @@ export function renderMasters() {
 
     list.innerHTML = state.masters.map((master, index) => {
         return `
-            <div
+            <button
+                type="button"
                 onclick="window.appAPI.selectMaster('${master.id}')"
-                class="card-convex p-5 mb-4 flex justify-between items-center active:scale-95 shadow-convex animate-pop-in border border-white"
-                style="animation-delay: ${index * 40}ms"
+                class="relative w-full min-h-[330px] rounded-[2rem] overflow-hidden shadow-convex animate-pop-in border-2 border-white/70 active:scale-[0.98] transition-all text-left"
+                style="animation-delay: ${index * 45}ms"
             >
-                <div class="flex items-center gap-4 flex-1">
-                    <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                        <img
-                            src="${getMasterImage(index)}"
-                             loading="lazy"
-                             decoding="async"
-                            class="w-full h-full object-cover object-top"
-                        >
+                <img
+                    src="${getMasterImage(index)}"
+                    alt="${cleanMasterName(master.name)}"
+                    loading="lazy"
+                    decoding="async"
+                    class="absolute inset-0 w-full h-full object-cover object-top"
+                >
+
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/72 via-slate-950/20 to-transparent"></div>
+
+                <div class="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/85 backdrop-blur-md flex items-center justify-center text-slate-700 shadow-lg border border-white/60">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="3"
+                            d="M9 5l7 7-7 7"
+                        ></path>
+                    </svg>
+                </div>
+
+                <div class="absolute bottom-3 left-3 right-3 bg-white/88 backdrop-blur-md rounded-[1.6rem] p-4 shadow-lg border border-white/70">
+                    <div class="text-center">
+                        <h3 class="font-black text-slate-950 text-xl tracking-tight leading-tight truncate">
+                            ${cleanMasterName(master.name)}
+                        </h3>
+
+                        <p class="text-[9px] font-black text-rose-400 uppercase tracking-[0.18em] mt-1">
+                            Топ-майстер
+                        </p>
                     </div>
 
-                    <div class="flex-1 min-w-0">
-                        <div class="font-extrabold text-slate-950 text-lg truncate">
-                            ${cleanMasterName(master.name)}
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <div class="rounded-2xl bg-blue-50 border border-blue-100 px-3 py-3 text-center">
+                            <div class="text-[8px] font-black text-blue-400 uppercase tracking-[0.14em]">
+                                Графік
+                            </div>
+
+                            <div class="text-[11px] font-black text-blue-700 mt-1 leading-tight">
+                                ${sanitizeHtml(master.workHours || 'Не вказано')}
+                            </div>
                         </div>
 
-                        <div class="space-y-1 mt-1">
-    <div class="text-[10px] font-bold text-slate-500">
-        Графік: ${sanitizeHtml(master.workHours)}
-    </div>
+                        <div class="rounded-2xl bg-rose-50 border border-rose-100 px-3 py-3 text-center">
+                            <div class="text-[8px] font-black text-rose-400 uppercase tracking-[0.14em]">
+                                Дні
+                            </div>
 
-    <div class="text-[10px] font-bold text-slate-400">
-        Робочі дні: ${sanitizeHtml(formatMasterWorkDays(master.workDays))}
-    </div>
-</div>
+                            <div class="text-[11px] font-black text-rose-700 mt-1 leading-tight">
+                                ${sanitizeHtml(formatMasterWorkDays(master.workDays))}
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <div class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400">
-                    ➡️
-                </div>
-            </div>
+            </button>
         `;
     }).join('');
 }
