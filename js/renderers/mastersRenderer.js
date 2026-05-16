@@ -95,7 +95,7 @@ export function renderMasters() {
             <button
                 type="button"
                 onclick="window.appAPI.selectMaster('${master.id}')"
-                class="cursor-pointer relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-convex animate-pop-in border-2 border-white/70 active:scale-[0.98] transition-all text-left"
+                class="cursor-pointer relative w-full aspect-[2/3] rounded-3xl overflow-hidden shadow-convex animate-pop-in border-2 border-white/70 active:scale-[0.98] transition-all text-left"
                 style="animation-delay: ${index * 45}ms"
             >
                 <img
