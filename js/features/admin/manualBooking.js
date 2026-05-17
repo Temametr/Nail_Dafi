@@ -25,6 +25,113 @@ const manualState = {
     isSubmitting: false
 };
 
+function ensureManualBookingModalMounted() {
+    if (document.getElementById('manual-booking-modal')) {
+        return;
+    }
+
+    document.body.insertAdjacentHTML('beforeend', `
+        <div id="manual-booking-modal" class="fixed inset-0 bg-rose-50 z-[95] hidden flex-col w-full max-w-md mx-auto h-[100dvh] overflow-hidden">
+            <div class="px-5 pt-6 pb-4 ios-header rounded-none flex items-center justify-between shrink-0">
+                <div>
+                    <h2 class="text-xl font-black text-slate-950">
+                        Новий запис
+                    </h2>
+
+                    <p id="manual-booking-subtitle" class="text-xs font-medium text-slate-400 mt-1">
+                        Ручне створення запису
+                    </p>
+                </div>
+
+                <button onclick="window.appAPI.closeManualBookingModal()" class="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-sm active:scale-90 transition-all">
+                    ✕
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto hide-scrollbar px-4 py-5 pb-28">
+                <div id="manual-step-client" class="manual-step space-y-4 animate-pop-in">
+                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">
+                        Дані клієнта
+                    </h3>
+
+                    <div class="card-convex p-5 space-y-4">
+                        <input
+                            id="manual-booking-name"
+                            type="text"
+                            placeholder="Імʼя клієнта"
+                            class="w-full h-14 px-5 rounded-2xl border border-rose-100 bg-white outline-none text-sm font-semibold"
+                        >
+
+                        <input
+                            id="manual-booking-phone"
+                            type="tel"
+                            inputmode="tel"
+                            placeholder="+380..."
+                            class="w-full h-14 px-5 rounded-2xl border border-rose-100 bg-white outline-none text-sm font-semibold"
+                        >
+
+                        <textarea
+                            id="manual-booking-comment"
+                            placeholder="Коментар, якщо потрібно"
+                            class="w-full min-h-[100px] p-5 rounded-2xl border border-rose-100 bg-white outline-none text-sm font-medium resize-none"
+                        ></textarea>
+                    </div>
+
+                    <button onclick="window.appAPI.manualBookingNextFromClient()" class="w-full py-4 bg-slate-950 text-white rounded-3xl text-sm font-black shadow-lg active:scale-95 transition-all">
+                        Далі
+                    </button>
+                </div>
+
+                <div id="manual-step-service" class="manual-step hidden-step space-y-4 animate-pop-in">
+                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">
+                        Оберіть послугу
+                    </h3>
+
+                    <div id="manual-services-list" class="space-y-4 px-1"></div>
+                </div>
+
+                <div id="manual-step-master" class="manual-step hidden-step space-y-4 animate-pop-in">
+                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">
+                        Оберіть майстра
+                    </h3>
+
+                    <div id="manual-masters-list" class="space-y-4 px-1"></div>
+                </div>
+
+                <div id="manual-step-date" class="manual-step hidden-step space-y-4 animate-pop-in">
+                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]">
+                        Оберіть дату
+                    </h3>
+
+                    <div id="manual-date-scroll" class="grid grid-cols-7 gap-1.5 pb-4 px-1"></div>
+                </div>
+
+                <div id="manual-step-time" class="manual-step hidden-step space-y-4 animate-pop-in">
+                    <h3 class="font-bold text-xs px-2 text-rose-400 uppercase tracking-[0.15em]" id="manual-time-step-title">
+                        Оберіть час
+                    </h3>
+
+                    <div id="manual-time-loader" class="hidden text-center text-sm font-medium text-rose-300 py-6">
+                        Аналізуємо графік...
+                    </div>
+
+                    <div id="manual-time-slots" class="grid grid-cols-4 gap-2 px-1"></div>
+                </div>
+            </div>
+
+            <div id="manual-booking-footer" class="hidden absolute bottom-0 left-0 right-0 p-5 bg-white/80 backdrop-blur-xl border-t border-slate-100 pb-8">
+                <button
+                    id="manual-booking-submit"
+                    onclick="window.appAPI.createManualBooking()"
+                    class="w-full h-14 rounded-2xl bg-slate-950 text-white font-black text-sm shadow-xl active:scale-[0.98] transition-all disabled:opacity-60"
+                >
+                    Створити запис
+                </button>
+            </div>
+        </div>
+    `);
+}
+
 function normalizePhone(value) {
     return String(value || '')
         .replace(/[^\d+]/g, '')
@@ -365,6 +472,8 @@ function renderManualTimeSlots(occupiedSlots = []) {
 }
 
 export function openManualBookingModal() {
+    ensureManualBookingModalMounted();
+
     const modal = document.getElementById('manual-booking-modal');
 
     if (!modal) return;
