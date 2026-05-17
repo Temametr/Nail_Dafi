@@ -104,6 +104,12 @@ function getClientSourceLabel(client) {
         : 'Клієнт від майстра';
 }
 
+function getClientSourceListLabel(client) {
+    return isTelegramClient(client)
+        ? 'Telegram'
+        : 'Від майстра';
+}
+
 function getFilteredClients() {
     const query = normalize(state.adminClientsSearchQuery);
 
