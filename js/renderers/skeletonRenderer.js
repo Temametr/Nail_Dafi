@@ -37,3 +37,34 @@ export function renderCardSkeleton(count = 2) {
         <div class="ui-skeleton ui-appear" style="height: 140px; animation-delay: ${index * 45}ms;"></div>
     `).join('');
 }
+
+export function renderBookingSkeleton(count = 4) {
+    return Array.from({ length: count }).map((_, index) => `
+        <div
+            class="ui-card p-3 ui-appear"
+            style="animation-delay: ${index * 35}ms"
+        >
+            <div class="flex items-start gap-3">
+                <div class="ui-skeleton-avatar"></div>
+
+                <div style="flex: 1; min-width: 0;">
+                    <div class="flex items-center justify-between gap-3">
+                        <div style="min-width: 0; flex: 1;">
+                            <div class="ui-skeleton-line" style="width: 34%; margin-bottom: 8px;"></div>
+                            <div class="ui-skeleton-line" style="width: 58%;"></div>
+                        </div>
+
+                        <div class="ui-skeleton" style="width: 74px; height: 26px; border-radius: 999px;"></div>
+                    </div>
+
+                    <div class="ui-skeleton-line" style="width: 78%; margin-top: 12px;"></div>
+
+                    <div style="display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;">
+                        <div class="ui-skeleton" style="width: 104px; height: 26px; border-radius: 999px;"></div>
+                        <div class="ui-skeleton" style="width: 92px; height: 26px; border-radius: 999px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
