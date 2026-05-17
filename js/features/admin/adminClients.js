@@ -17,6 +17,10 @@ import {
 } from '../../utils/telegramChat.js';
 
 import {
+    renderListSkeleton
+} from '../../renderers/skeletonRenderer.js';
+
+import {
     showBackButton,
     hideBackButton
 } from '../../core/telegram/backButton.js';
@@ -333,12 +337,8 @@ export async function loadAdminClients(silent = false) {
     const usedCache = hydrateClientsFromCache();
 
     if (!silent && !usedCache && container) {
-        container.innerHTML = `
-            <div class="text-center text-sm font-medium text-slate-400 py-10">
-                Завантажуємо клієнтів...
-            </div>
-        `;
-    }
+    container.innerHTML = renderListSkeleton(5);
+}
 
     try {
         const response = await fetchClientsAPI();
