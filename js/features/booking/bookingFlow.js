@@ -273,21 +273,41 @@ if (headerTitle) {
 }
 
 export function selectService(id) {
-    state.selectedService = state.services.find(
-        s => s.id.toString() === id.toString()
+    const nextService = state.services.find(
+        service => service.id.toString() === id.toString()
     );
 
-    if (!state.selectedService) {
+    if (!nextService) {
         return tg.showAlert('Послугу не знайдено');
     }
 
-    if (state.selectedMaster) {
-    renderCalendar();
-    showStep('step-date');
-} else {
+    state.selectedService = nextService;
+
+    resetDateTimeSelection();
+
+    state.calendarMonthOffset = 0;
+
+    if (state.viewedMasterId) {
+        state.selectedMaster = state.masters.find(
+            master =>
+                master.id.toString() ===
+                state.viewedMasterId.toString()
+        );
+
+        if (!state.selectedMaster) {
+            return tg.showAlert('Майстра не знайдено');
+        }
+
+        renderCalendar();
+        showStep('step-date');
+
+        return;
+    }
+
+    state.selectedMaster = null;
+
     renderMasters();
     showStep('step-master');
-}
 }
 
 export function focusBookingService(id) {
