@@ -55,7 +55,20 @@ function applyClients(clients, forceRender = false) {
 
     state.adminClients = nextClients;
 
-    if (!hasChanged && !forceRender) {
+    const container = document.getElementById('admin-clients-list');
+
+    const shouldRenderBecauseContainerIsInitial =
+        container &&
+        (
+            container.textContent.includes('Завантажуємо') ||
+            container.innerHTML.trim() === ''
+        );
+
+    if (
+        !hasChanged &&
+        !forceRender &&
+        !shouldRenderBecauseContainerIsInitial
+    ) {
         return;
     }
 
@@ -102,12 +115,6 @@ function getClientSourceLabel(client) {
     return isTelegramClient(client)
         ? 'Telegram-клієнт'
         : 'Клієнт від майстра';
-}
-
-function getClientSourceListLabel(client) {
-    return isTelegramClient(client)
-        ? 'Telegram'
-        : 'Від майстра';
 }
 
 function getFilteredClients() {
@@ -360,9 +367,9 @@ export async function loadAdminClients(silent = false) {
         );
 
         applyClients(
-            freshClients,
-            false
-        );
+    freshClients,
+    !silent
+);
 
     } catch (error) {
         if (!silent && !usedCache && container) {
@@ -393,7 +400,14 @@ export function renderAdminClients() {
 
     if (!container) return;
 
-    const clients = getFilteredClients();
+    let clients = [];
+
+    try {
+        clients = getFilteredClients();
+    } catch (error) {
+        console.error('getFilteredClients failed:', error);
+        clients = [];
+    }
 
     if (!clients.length) {
         renderEmptyClients(
@@ -405,63 +419,94 @@ export function renderAdminClients() {
         return;
     }
 
-    container.innerHTML = clients.map(client => {
-        const hasTelegram = isTelegramClient(client);
-        const blocked = Boolean(client.isBlocked);
-        const isPending = pendingClientActionId === String(client.id);
+    try {
+        container.innerHTML = clients.map(client => {
+            const blocked = Boolean(client.isBlocked);
 
-        return `
-    <div
-        onclick="window.appAPI.openClientProfile('${client.id}')"
-        class="
-            flex items-center gap-3 px-1 py-3
-            border-b border-slate-100
-            active:bg-slate-50
-            transition-colors duration-150
-            ${blocked ? 'opacity-70' : ''}
-        "
-    >
-        <div class="shrink-0">
-            <div class="
-                w-12 h-12 rounded-full overflow-hidden
-                bg-slate-100 border border-slate-200
-                flex items-center justify-center
-                text-lg
-            ">
-<span class="text-slate-500 text-sm font-bold">
-    ${sanitize((client.name || 'К').trim().charAt(0).toUpperCase())}
-</span>
-            </div>
-        </div>
+            const clientId = sanitize(client.id || '');
+            const clientName = sanitize(client.name || 'Клієнт');
+            const clientPhone = sanitize(client.phone || 'Номер не вказано');
 
-        <div class="flex-1 min-w-0">
-            <div class="text-[15px] font-semibold text-slate-900 truncate leading-tight">
-                ${sanitize(client.name || 'Клієнт')}
-            </div>
+            const firstLetter = sanitize(
+                String(client.name || 'К')
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase() || 'К'
+            );
 
-            <div class="mt-1 text-[12px] text-slate-400 truncate">
-                ${sanitize(client.phone || 'Номер не вказано')}
-            </div>
+            const sourceLabel = isTelegramClient(client)
+                ? 'Telegram'
+                : 'Від майстра';
 
-            ${
-                blocked
-                    ? `
-                        <div class="mt-1 text-[11px] font-medium text-red-500 truncate">
-                            У чорному списку
+            return `
+                <div
+                    onclick="window.appAPI.openClientProfile('${clientId}')"
+                    class="
+                        flex items-center gap-3 px-3 py-3
+                        border-b border-slate-100 last:border-b-0
+                        active:bg-slate-50
+                        transition-colors duration-150
+                        ${blocked ? 'opacity-70' : ''}
+                    "
+                >
+                    <div class="shrink-0">
+                        <div class="
+                            w-12 h-12 rounded-full overflow-hidden
+                            bg-slate-100 border border-slate-200
+                            flex items-center justify-center
+                        ">
+                            <span class="text-slate-500 text-sm font-bold">
+                                ${firstLetter}
+                            </span>
                         </div>
-                    `
-                    : ''
-            }
-        </div>
+                    </div>
 
-        <div class="shrink-0 pl-2">
-            <div class="text-[12px] font-medium text-slate-400 whitespace-nowrap">
-                ${getClientSourceListLabel(client)}
+                    <div class="flex-1 min-w-0">
+                        <div class="text-[15px] font-semibold text-slate-900 truncate leading-tight">
+                            ${clientName}
+                        </div>
+
+                        <div class="mt-1 text-[12px] text-slate-400 truncate">
+                            ${clientPhone}
+                        </div>
+
+                        ${
+                            blocked
+                                ? `
+                                    <div class="mt-1 text-[11px] font-medium text-red-500 truncate">
+                                        У чорному списку
+                                    </div>
+                                `
+                                : ''
+                        }
+                    </div>
+
+                    <div class="shrink-0 pl-2">
+                        <div class="text-[12px] font-medium text-slate-400 whitespace-nowrap">
+                            ${sourceLabel}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('renderAdminClients failed:', error);
+
+        container.innerHTML = `
+            <div class="bg-white rounded-[1.5rem] px-5 py-10 text-center">
+                <div class="text-4xl mb-3">⚠️</div>
+
+                <div class="text-[15px] font-semibold text-red-500">
+                    Помилка відображення клієнтів
+                </div>
+
+                <div class="text-[12px] text-slate-400 mt-2">
+                    ${sanitize(error.message || '')}
+                </div>
             </div>
-        </div>
-    </div>
-`;
-    }).join('');
+        `;
+    }
 }
 
 export function openClientTelegram(identifier) {
