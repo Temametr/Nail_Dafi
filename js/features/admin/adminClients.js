@@ -149,6 +149,188 @@ function getActionButtonClass(extra = '') {
     `;
 }
 
+function ensureClientProfileModalMounted() {
+    if (document.getElementById('client-profile-modal')) {
+        return;
+    }
+
+    document.body.insertAdjacentHTML('beforeend', `
+        <div id="client-profile-modal" class="fixed inset-0 bg-rose-50 z-[88] hidden flex-col w-full max-w-md mx-auto h-[100dvh] overflow-hidden">
+            <button
+                onclick="window.appAPI.closeClientProfile()"
+                class="absolute top-6 left-5 z-20 w-11 h-11 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 border border-white shadow-md active:scale-90 transition-all"
+            >
+                <svg class="w-6 h-6 pr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+
+            <div class="flex-1 overflow-y-auto hide-scrollbar pb-32">
+                <div class="w-full h-64 relative bg-gradient-to-br from-rose-100 via-pink-50 to-blue-100 flex items-center justify-center">
+                    <div id="client-profile-avatar" class="w-28 h-28 rounded-[2rem] bg-white shadow-floating flex items-center justify-center text-5xl">
+                        👤
+                    </div>
+
+                    <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-rose-50 via-rose-50/80 to-transparent"></div>
+                </div>
+
+                <div class="px-6 -mt-8 relative z-10">
+                    <div class="mb-6">
+                        <div class="flex items-center gap-2">
+                            <h2 id="client-profile-name" class="text-3xl font-black text-slate-900 tracking-tight leading-none">
+                                Клієнт
+                            </h2>
+
+                            <span id="client-profile-telegram-badge" class="hidden w-7 h-7 rounded-full bg-sky-50 text-sky-500 items-center justify-center text-xs font-black">
+                                ✈️
+                            </span>
+
+                            <span id="client-profile-blocked-badge" class="hidden text-[10px] font-black px-2.5 py-1 rounded-full bg-red-50 text-red-600 border border-red-100">
+                                ЧС
+                            </span>
+                        </div>
+
+                        <p id="client-profile-source" class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-2">
+                            Профіль клієнта
+                        </p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="card-convex p-5">
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
+                                        📞
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                                            Телефон
+                                        </div>
+
+                                        <div id="client-profile-phone" class="text-sm font-extrabold text-slate-900 mt-0.5 truncate">
+                                            —
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="client-profile-telegram-row" class="hidden items-center gap-3">
+                                    <div class="w-9 h-9 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                                        ✈️
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                                            Telegram
+                                        </div>
+
+                                        <div id="client-profile-telegram" class="text-sm font-extrabold text-sky-600 mt-0.5 truncate">
+                                            —
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+                                        💅
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                                            Візити
+                                        </div>
+
+                                        <div class="text-sm font-extrabold text-slate-900 mt-0.5">
+                                            <span id="client-profile-total">0</span> всього
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                                        🕒
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                                            Останній запис
+                                        </div>
+
+                                        <div id="client-profile-last-booking" class="text-sm font-extrabold text-slate-900 mt-0.5 truncate">
+                                            —
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="client-profile-block-reason-card" class="card-convex p-4 hidden border border-red-100">
+                            <div class="text-[10px] font-bold text-red-400 uppercase tracking-wide">
+                                Причина ЧС
+                            </div>
+
+                            <div id="client-profile-block-reason" class="text-sm font-bold text-red-600 mt-1">
+                                —
+                            </div>
+                        </div>
+
+                        <div class="card-convex p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                                        Історія візитів
+                                    </div>
+
+                                    <div class="text-xs font-medium text-slate-400 mt-1">
+                                        Останні записи клієнта
+                                    </div>
+                                </div>
+
+                                <div id="client-profile-history-count" class="text-xs font-black text-slate-400">
+                                    0
+                                </div>
+                            </div>
+
+                            <div id="client-profile-history" class="space-y-3">
+                                <div class="text-sm font-medium text-slate-400 text-center py-4">
+                                    Завантажуємо історію...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute bottom-0 left-0 right-0 p-5 bg-white/80 backdrop-blur-xl border-t border-slate-100 pb-8 z-20">
+                <div class="grid grid-cols-3 gap-3">
+                    <button
+                        id="client-profile-contact-btn"
+                        onclick="window.appAPI.contactClientFromProfile()"
+                        class="py-4 bg-slate-950 text-white rounded-2xl text-sm font-black shadow-lg active:scale-95 transition-all"
+                    >
+                        💬
+                    </button>
+
+                    <button
+                        id="client-profile-block-btn"
+                        onclick="window.appAPI.toggleClientBlockedFromProfile()"
+                        class="py-4 bg-amber-50 text-amber-700 rounded-2xl text-sm font-black active:scale-95 transition-all"
+                    >
+                        🚫
+                    </button>
+
+                    <button
+                        onclick="window.appAPI.deleteClientFromProfile()"
+                        class="py-4 bg-red-50 text-red-600 rounded-2xl text-sm font-black active:scale-95 transition-all"
+                    >
+                        🗑
+                    </button>
+                </div>
+            </div>
+        </div>
+    `);
+}
+
 export async function loadAdminClients(silent = false) {
     const container = document.getElementById('admin-clients-list');
 
@@ -479,6 +661,8 @@ function toggleClientProfileElement(id, shouldShow, displayClass = 'block') {
 }
 
 export function openClientProfile(clientId) {
+    ensureClientProfileModalMounted();
+
     const client = getClientById(clientId);
     const modal = document.getElementById('client-profile-modal');
 
@@ -490,7 +674,7 @@ export function openClientProfile(clientId) {
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
-    
+
     loadClientBookingsHistory(clientId);
 }
 
