@@ -69,10 +69,13 @@ export function showStep(stepId) {
 
 export function startClientBookingFlow() {
     state.editingBookingId = null;
-    state.selectedMaster = null;
-    state.viewedMasterId = null;
-    state.clientPhone = '';
-    state.calendarMonthOffset = 0;
+state.selectedService = null;
+state.selectedMaster = null;
+state.selectedDate = null;
+state.selectedTime = null;
+state.viewedMasterId = null;
+state.clientPhone = '';
+state.calendarMonthOffset = 0;
     const activeClientTab = document.querySelector(
     '.tab-content:not(.hidden-step)'
 );
