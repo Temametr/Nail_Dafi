@@ -994,52 +994,6 @@
         </div>
     </div>
 
-    <div id="master-profile-modal" class="fixed inset-0 bg-rose-50 z-[80] hidden flex-col w-full max-w-md mx-auto h-[100dvh] overflow-hidden">
-
-        <div class="flex-1 overflow-y-auto hide-scrollbar pb-32">
-            <div class="w-full aspect-[3/4] shrink-0 relative">
-                <img id="mp-image" src="" alt="Master" class="w-full h-full object-cover object-top">
-                <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-rose-50 via-rose-50/80 to-transparent"></div>
-            </div>
-
-            <div class="px-6 -mt-10 relative z-10">
-                <h2 id="mp-name" class="text-3xl font-black text-slate-900 tracking-tight leading-none"></h2>
-
-                <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-2 mb-6">
-                    Топ-майстер
-                </p>
-
-                <a id="mp-phone-link" href="#" class="card-convex p-4 mb-5 flex items-center gap-4 active:scale-95 transition-all">
-                    <div class="w-10 h-10 rounded-2xl bg-green-50 flex items-center justify-center border border-green-100 shrink-0 text-lg shadow-inner">
-                        📞
-                    </div>
-
-                    <div>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                            Телефон
-                        </div>
-
-                        <div id="mp-phone" class="text-sm font-extrabold text-slate-900 mt-0.5"></div>
-                    </div>
-                </a>
-
-                <div class="card-convex p-5">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-2">
-                        Про майстра
-                    </h4>
-
-                    <p id="mp-description" class="text-sm font-medium text-slate-600 leading-relaxed"></p>
-                </div>
-            </div>
-        </div>
-
-        <div class="absolute bottom-0 left-0 right-0 p-5 bg-white/80 backdrop-blur-xl border-t border-slate-100 pb-8 z-20">
-            <button onclick="window.appAPI.bookFromProfile()" class="w-full py-4 bg-blue-500 text-white rounded-2xl text-sm font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">
-                ЗАПИСАТИСЯ ДО МАЙСТРА
-            </button>
-        </div>
-    </div>
-
     <div id="cancel-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-5 z-[90]">
         <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-sm space-y-6 shadow-floating animate-pop-in">
             <h3 class="font-black text-xl text-center text-slate-900" id="cancel-modal-title">
