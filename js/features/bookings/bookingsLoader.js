@@ -17,6 +17,10 @@ import {
 } from '../../core/ui/loadingManager.js';
 
 import {
+    renderBookingSkeleton
+} from '../../renderers/skeletonRenderer.js';
+
+import {
     logError
 } from '../../core/ui/notify.js';
 
@@ -37,6 +41,16 @@ function areBookingsEqual(currentBookings, nextBookings) {
     } catch (_) {
         return false;
     }
+}
+
+function renderBookingsSkeleton(containerId, role) {
+    const container = document.getElementById(containerId);
+
+    if (!container) return;
+
+    container.innerHTML = renderBookingSkeleton(
+        role === 'admin' ? 5 : 4
+    );
 }
 
 function applyBookings(role, bookings, dash = false, forceRender = false) {
@@ -97,12 +111,8 @@ export async function loadBookings(
     const usedCache = hydrateFromCache(role, dash);
 
     if (!silent && !usedCache && containerId) {
-        renderLoading(containerId, {
-            color: role === 'admin'
-                ? 'border-t-teal-500'
-                : 'border-t-blue-500'
-        });
-    }
+    renderBookingsSkeleton(containerId, role);
+}
 
     try {
         const data = await fetchBookings(role);
@@ -115,11 +125,11 @@ export async function loadBookings(
         );
 
         applyBookings(
-            role,
-            freshBookings,
-            dash,
-            false
-        );
+    role,
+    freshBookings,
+    dash,
+    !silent
+);
 
     } catch (error) {
         logError(
