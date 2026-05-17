@@ -16,6 +16,11 @@ import {
     openTelegramChat
 } from '../../utils/telegramChat.js';
 
+import {
+    showBackButton,
+    hideBackButton
+} from '../../core/telegram/backButton.js';
+
 let pendingClientActionId = null;
 let activeClientProfileId = null;
 let activeClientBookings = [];
@@ -156,15 +161,6 @@ function ensureClientProfileModalMounted() {
 
     document.body.insertAdjacentHTML('beforeend', `
         <div id="client-profile-modal" class="fixed inset-0 bg-rose-50 z-[88] hidden flex-col w-full max-w-md mx-auto h-[100dvh] overflow-hidden">
-            <button
-                onclick="window.appAPI.closeClientProfile()"
-                class="absolute top-6 left-5 z-20 w-11 h-11 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 border border-white shadow-md active:scale-90 transition-all"
-            >
-                <svg class="w-6 h-6 pr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
-                </svg>
-            </button>
-
             <div class="flex-1 overflow-y-auto hide-scrollbar pb-32">
                 <div class="w-full h-64 relative bg-gradient-to-br from-rose-100 via-pink-50 to-blue-100 flex items-center justify-center">
                     <div id="client-profile-avatar" class="w-28 h-28 rounded-[2rem] bg-white shadow-floating flex items-center justify-center text-5xl">
@@ -674,6 +670,8 @@ export function openClientProfile(clientId) {
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    
+    showBackButton();
 
     loadClientBookingsHistory(clientId);
 }
@@ -681,12 +679,14 @@ export function openClientProfile(clientId) {
 export function closeClientProfile() {
     const modal = document.getElementById('client-profile-modal');
 
-    if (!modal) return;
-
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
 
     activeClientProfileId = null;
+
+    hideBackButton();
 }
 
 export function renderClientProfile(client = null) {
