@@ -415,6 +415,17 @@ if (
     closeWorkPhotosModalLazy();
     return;
 }
+
+const clientProfileModal =
+    document.getElementById('client-profile-modal');
+
+if (
+    clientProfileModal &&
+    !clientProfileModal.classList.contains('hidden')
+) {
+    closeClientProfile();
+    return;
+}
     
         const adminProfileEditModal =
         document.getElementById('admin-profile-edit-modal');
