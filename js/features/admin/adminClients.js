@@ -407,127 +407,118 @@ export function renderAdminClients() {
         const isPending = pendingClientActionId === String(client.id);
 
         return `
-           <div
-    onclick="window.appAPI.openClientProfile('${client.id}')"
-    class="
-        bg-white rounded-3xl border border-white shadow-sm
-        px-4 py-4 transition-all active:scale-[0.99]
-        ${blocked ? 'opacity-75' : ''}
-    "
->
-                <div class="flex items-start justify-between gap-3">
-
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <div class="text-[15px] font-black text-slate-950 truncate">
-                                ${sanitize(client.name || 'Клієнт')}
-                            </div>
-
-                            ${
-                                hasTelegram
-                                    ? `
-                                        <span class="w-5 h-5 rounded-full bg-sky-50 text-sky-500 flex items-center justify-center text-[11px] font-black shrink-0">
-                                            ✈️
-                                        </span>
-                                    `
-                                    : ''
-                            }
-
-                            ${
-                                blocked
-                                    ? `
-                                        <span class="text-[9px] font-black px-2 py-1 rounded-full bg-red-50 text-red-600 border border-red-100 shrink-0">
-                                            ЧС
-                                        </span>
-                                    `
-                                    : ''
-                            }
-                        </div>
-
-                        <div class="text-[12px] font-bold text-slate-400 mt-1 truncate">
-                            ${getClientSourceLabel(client)}
-                        </div>
-
-                        <div class="mt-3 space-y-1.5">
-                            <div class="text-[13px] font-bold text-slate-700 truncate">
-                                📞 ${sanitize(client.phone || 'Телефон не вказано')}
-                            </div>
-
-                            ${
-                                client.telegram
-                                    ? `
-                                        <div class="text-[13px] font-bold text-sky-600 truncate">
-                                            @${sanitize(client.telegram)}
-                                        </div>
-                                    `
-                                    : ''
-                            }
-
-                            ${
-                                client.blockReason
-                                    ? `
-                                        <div class="inline-flex mt-1 text-[11px] font-bold text-red-600 bg-red-50 border border-red-100 rounded-2xl px-3 py-2">
-                                            ${sanitize(client.blockReason)}
-                                        </div>
-                                    `
-                                    : ''
-                            }
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-1.5 shrink-0">
-
-                        ${
-                            hasTelegram
-                                ? `
-                                    <button
-                                        title="Написати"
-                                        onclick="event.stopPropagation(); window.appAPI.openClientTelegram('${client.telegram || client.id}')"
-                                        class="${getActionButtonClass('bg-sky-50 text-sky-600')}"
-                                    >
-                                        💬
-                                    </button>
-                                `
-                                : `
-                                    <a
-                                          onclick="event.stopPropagation()"
-                                        title="Подзвонити"
-                                        href="tel:${sanitize(client.phone || '')}"
-                                        class="${getActionButtonClass('bg-emerald-50 text-emerald-600')}"
-                                    >
-                                        📞
-                                    </a>
-                                `
-                        }
-
-                        <button
-                            title="${blocked ? 'Прибрати з ЧС' : 'В ЧС'}"
-                            onclick="event.stopPropagation(); window.appAPI.toggleClientBlocked('${client.id}', ${blocked ? 'false' : 'true'})"
-                            class="${getActionButtonClass(blocked ? 'bg-slate-100 text-slate-500' : 'bg-amber-50 text-amber-600')}"
-                            ${isPending ? 'disabled' : ''}
-                        >
-                            ${
-                                isPending
-                                    ? renderSmallLoader()
-                                    : blocked
-                                        ? '✅'
-                                        : '🚫'
-                            }
-                        </button>
-
-                        <button
-                            title="Видалити"
-                            onclick="event.stopPropagation(); window.appAPI.deleteAdminClient('${client.id}')"
-                            class="${getActionButtonClass('bg-red-50 text-red-600')}"
-                            ${isPending ? 'disabled' : ''}
-                        >
-                            🗑
-                        </button>
-
-                    </div>
-                </div>
+    <div
+        onclick="window.appAPI.openClientProfile('${client.id}')"
+        class="
+            ui-card ui-appear p-3 active:scale-[0.985]
+            transition-all duration-200
+            ${blocked ? 'opacity-70' : ''}
+        "
+    >
+        <div class="flex items-start gap-3">
+            <div class="ui-icon ${hasTelegram ? 'ui-icon-blue' : 'ui-icon-green'}">
+                ${hasTelegram ? '✈️' : '👤'}
             </div>
-        `;
+
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 min-w-0">
+                    <div class="ui-title truncate">
+                        ${sanitize(client.name || 'Клієнт')}
+                    </div>
+
+                    ${
+                        blocked
+                            ? `
+                                <span class="ui-chip bg-red-50 text-red-600 border-red-100">
+                                    🚫 ЧС
+                                </span>
+                            `
+                            : ''
+                    }
+                </div>
+
+                <div class="ui-subtitle mt-1 truncate">
+                    ${getClientSourceLabel(client)}
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                    <span class="ui-chip">
+                        📞 ${sanitize(client.phone || 'немає')}
+                    </span>
+
+                    ${
+                        client.telegram
+                            ? `
+                                <span class="ui-chip bg-sky-50 text-sky-600 border-sky-100">
+                                    @${sanitize(client.telegram)}
+                                </span>
+                            `
+                            : ''
+                    }
+                </div>
+
+                ${
+                    client.blockReason
+                        ? `
+                            <div class="mt-2 text-[11px] font-bold text-red-600 bg-red-50 border border-red-100 rounded-2xl px-3 py-2">
+                                ${sanitize(client.blockReason)}
+                            </div>
+                        `
+                        : ''
+                }
+            </div>
+
+            <div class="flex flex-col gap-1.5 shrink-0">
+                ${
+                    hasTelegram
+                        ? `
+                            <button
+                                title="Написати"
+                                onclick="event.stopPropagation(); window.appAPI.openClientTelegram('${client.telegram || client.id}')"
+                                class="ui-action-btn bg-sky-50 text-sky-600"
+                            >
+                                💬
+                            </button>
+                        `
+                        : `
+                            <a
+                                onclick="event.stopPropagation()"
+                                title="Подзвонити"
+                                href="tel:${sanitize(client.phone || '')}"
+                                class="ui-action-btn bg-emerald-50 text-emerald-600"
+                            >
+                                📞
+                            </a>
+                        `
+                }
+
+                <button
+                    title="${blocked ? 'Прибрати з ЧС' : 'В ЧС'}"
+                    onclick="event.stopPropagation(); window.appAPI.toggleClientBlocked('${client.id}', ${blocked ? 'false' : 'true'})"
+                    class="ui-action-btn ${blocked ? 'bg-slate-100 text-slate-500' : 'bg-amber-50 text-amber-600'}"
+                    ${isPending ? 'disabled' : ''}
+                >
+                    ${
+                        isPending
+                            ? renderSmallLoader()
+                            : blocked
+                                ? '✅'
+                                : '🚫'
+                    }
+                </button>
+
+                <button
+                    title="Видалити"
+                    onclick="event.stopPropagation(); window.appAPI.deleteAdminClient('${client.id}')"
+                    class="ui-action-btn bg-red-50 text-red-600"
+                    ${isPending ? 'disabled' : ''}
+                >
+                    🗑
+                </button>
+            </div>
+        </div>
+    </div>
+`;
     }).join('');
 }
 
