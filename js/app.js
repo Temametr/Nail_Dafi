@@ -499,39 +499,44 @@ if (
         }
 
         const dateStep =
-            document.getElementById('step-date');
+    document.getElementById('step-date');
 
-        if (
-            dateStep &&
-            !dateStep.classList.contains('hidden-step')
-        ) {
+if (
+    dateStep &&
+    !dateStep.classList.contains('hidden-step')
+) {
+    resetDateTimeSelection();
 
-            resetDateTimeSelection();
+    state.calendarMonthOffset = 0;
 
-            if (state.viewedMasterId) {
+    if (state.viewedMasterId) {
+        state.selectedService = null;
 
-                showStep('step-booking');
+        showStep('step-booking');
 
-            } else {
+    } else {
+        showStep('step-master');
+    }
 
-                showStep('step-master');
-            }
+    return;
+}
 
-            return;
-        }
+const masterStep =
+    document.getElementById('step-master');
 
-        const masterStep =
-            document.getElementById('step-master');
+if (
+    masterStep &&
+    !masterStep.classList.contains('hidden-step')
+) {
+    state.selectedMaster = null;
+    state.selectedDate = null;
+    state.selectedTime = null;
+    state.calendarMonthOffset = 0;
 
-        if (
-            masterStep &&
-            !masterStep.classList.contains('hidden-step')
-        ) {
+    showStep('step-booking');
 
-            showStep('step-booking');
-
-            return;
-        }
+    return;
+}
 
         if (state.viewedMasterId) {
     closeClientBookingFlow();
