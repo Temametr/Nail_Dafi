@@ -129,18 +129,16 @@ function renderEmptyClients(message = 'Клієнтів поки немає') {
     if (!container) return;
 
     container.innerHTML = `
-        <div class="card-convex p-8 text-center">
-            <div class="text-5xl mb-4">🌸</div>
-
-            <div class="text-sm font-black text-slate-700">
-                ${sanitize(message)}
-            </div>
-
-            <div class="text-xs font-medium text-slate-400 mt-2">
-                Клієнти зʼявляться після першого запису
-            </div>
+    <div class="bg-white rounded-[1.5rem] px-5 py-10 text-center">
+        <div class="text-4xl mb-3">👥</div>
+        <div class="text-[15px] font-semibold text-slate-800">
+            ${sanitize(message)}
         </div>
-    `;
+        <div class="text-[12px] text-slate-400 mt-2">
+            Клієнти зʼявляться після першого запису
+        </div>
+    </div>
+`;
 }
 
 function renderSmallLoader() {
@@ -424,7 +422,9 @@ export function renderAdminClients() {
                 flex items-center justify-center
                 text-lg
             ">
-                ${isTelegramClient(client) ? '✈️' : '👤'}
+<span class="text-slate-500 text-sm font-bold">
+    ${sanitize((client.name || 'К').trim().charAt(0).toUpperCase())}
+</span>
             </div>
         </div>
 
