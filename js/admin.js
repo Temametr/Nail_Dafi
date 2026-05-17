@@ -231,10 +231,21 @@ export function renderAdminBookings() {
     const filtered = getFilteredAdminBookings();
 
     if (!filtered.length) {
-        container.innerHTML =
-            "<div class='text-center py-12 text-slate-400 font-medium'>У цьому розділі записів немає.</div>";
-        return;
-    }
+    container.innerHTML = `
+        <div class="bg-white rounded-[1.5rem] px-5 py-10 text-center">
+            <div class="text-4xl mb-3">📅</div>
+
+            <div class="text-[15px] font-semibold text-slate-800">
+                У цьому розділі записів немає
+            </div>
+
+            <div class="text-[12px] text-slate-400 mt-2">
+                Нові записи зʼявляться тут автоматично
+            </div>
+        </div>
+    `;
+    return;
+}
 
     container.innerHTML = filtered
         .map((booking, index) => renderAdminBookingCard(booking, index))
@@ -243,58 +254,119 @@ export function renderAdminBookings() {
 
 function renderAdminBookingCard(booking, index) {
     const statusData = getStatusData(booking.status);
-    const delay = index * 35;
+    const delay = index * 30;
+
+    const isPending = booking.status === STATUS_PENDING;
+    const isConfirmed = booking.status === STATUS_CONFIRMED;
+    const isDone = isDoneBookingStatus(booking.status);
+    const isCancelled = booking.status === STATUS_CANCELLED;
+
+    const time = formatDisplayTime(booking.time);
+    const clientName = sanitizeHtml(booking.clientName || 'Клієнт');
+    const clientPhone = sanitizeHtml(booking.clientPhone || 'Телефон не вказано');
+    const service = sanitizeHtml(booking.service || 'Послуга');
+    const date = sanitizeHtml(booking.date || '');
+    const masterName = sanitizeHtml(booking.masterName || '');
+
+    const statusIcon = isDone
+        ? '✅'
+        : isCancelled
+            ? '✕'
+            : isConfirmed
+                ? '🔵'
+                : '⏳';
+
+    const statusIconClass = isDone
+        ? 'ui-icon-green'
+        : isCancelled
+            ? 'ui-icon-red'
+            : isConfirmed
+                ? 'ui-icon-blue'
+                : 'ui-icon-amber';
 
     return `
         <div
-            class="card-convex p-5 mb-5 shadow-convex animate-pop-in border border-white"
+            class="
+                ui-card p-3 ui-appear
+                active:scale-[0.99]
+                transition-all duration-200
+                ${isCancelled ? 'opacity-70' : ''}
+            "
             style="animation-delay: ${delay}ms;"
         >
-            <div class="flex justify-between items-start mb-4">
-                <div class="w-full pr-3">
-                    <div class="font-extrabold text-slate-950 text-lg mb-4 tracking-tight leading-tight">
-                        ${sanitizeHtml(booking.service)}
-                    </div>
-
-                    <div class="space-y-2">
-                        <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5">
-                            <span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500 text-[10px]">
-                                📅
-                            </span>
-                            ${sanitizeHtml(booking.date)} в ${formatDisplayTime(booking.time)}
-                        </div>
-
-                        <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5">
-                            <span class="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-slate-500 text-[10px]">
-                                👤
-                            </span>
-                            ${sanitizeHtml(booking.clientName)}
-                        </div>
-                        <div class="text-sm font-semibold text-slate-600 flex items-center gap-2.5">
-    <span class="w-7 h-7 rounded-full bg-green-50 flex justify-center items-center text-green-600 text-[10px]">
-        📞
-    </span>
-    ${sanitizeHtml(booking.clientPhone || 'Телефон не вказано')}
-</div>
-                    </div>
+            <div class="flex items-start gap-3">
+                <div class="ui-icon ${statusIconClass}">
+                    ${statusIcon}
                 </div>
 
-                <span class="text-[10px] font-bold px-3 py-1.5 rounded-full border shrink-0 ${statusData.color}">
-                    ${statusData.text}
-                </span>
-            </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="text-[16px] font-black text-slate-950 leading-tight truncate">
+                                    ${time}
+                                </div>
 
-            ${renderAdminTelegramButton(booking)}
+                                <div class="text-[11px] font-bold text-slate-400 truncate">
+                                    ${date}
+                                </div>
+                            </div>
 
-            ${
-                booking.cancelReason
-                    ? `
-                        <div class="text-xs text-red-700 mt-4 bg-red-50 p-4 rounded-2xl border border-red-100 font-medium leading-relaxed">
-                            Причина: ${sanitizeHtml(booking.cancelReason)}
+                            <div class="text-[15px] font-black text-slate-900 mt-1 truncate">
+                                ${clientName}
+                            </div>
                         </div>
-                    `
-                    : ''
-            }
+
+                        <span class="text-[10px] font-black px-2.5 py-1.5 rounded-full border shrink-0 ${statusData.color}">
+                            ${statusData.text}
+                        </span>
+                    </div>
+
+                    <div class="text-[13px] font-bold text-slate-600 mt-2 truncate">
+                        ${service}
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                        <span class="ui-chip">
+                            📞 ${clientPhone}
+                        </span>
+
+                        ${
+                            masterName
+                                ? `
+                                    <span class="ui-chip">
+                                        💅 ${masterName}
+                                    </span>
+                                `
+                                : ''
+                        }
+
+                        ${
+                            booking.clientTelegram
+                                ? `
+                                    <button
+                                        type="button"
+                                        onclick="event.stopPropagation(); window.appAPI.openTelegramChat('${sanitizeHtml(booking.clientTelegram)}')"
+                                        class="ui-chip bg-teal-50 text-teal-700 border-teal-100 active:scale-95 transition-all"
+                                    >
+                                        💬 Telegram
+                                    </button>
+                                `
+                                : ''
+                        }
+                    </div>
+
+                    ${
+                        booking.cancelReason
+                            ? `
+                                <div class="mt-3 text-[11px] font-bold text-red-600 bg-red-50 border border-red-100 rounded-2xl px-3 py-2 leading-relaxed">
+                                    Причина: ${sanitizeHtml(booking.cancelReason)}
+                                </div>
+                            `
+                            : ''
+                    }
+                </div>
+            </div>
 
             ${renderAdminActions(booking)}
         </div>
@@ -302,18 +374,7 @@ function renderAdminBookingCard(booking, index) {
 }
 
 function renderAdminTelegramButton(booking) {
-    if (!booking.clientTelegram) {
-        return '';
-    }
-
-    return `
-        <button
-            onclick="window.appAPI.openTelegramChat('${booking.clientTelegram}')"
-            class="card-convex-sm shadow-convex-sm flex items-center justify-center w-full py-3 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-sm font-bold mt-5 active:scale-95 transition-all"
-        >
-            💬 Написати клієнту
-        </button>
-    `;
+    return '';
 }
 
 function isDoneBookingStatus(status) {
@@ -329,19 +390,19 @@ function isDoneBookingStatus(status) {
 function renderAdminActions(booking) {
     if (booking.status === STATUS_PENDING) {
         return `
-            <div class="flex gap-3 mt-4 pt-4 border-t border-slate-100">
+            <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100">
                 <button
                     onclick="window.appAPI.changeBookingStatus('${booking.id}', '${STATUS_CONFIRMED}')"
-                    class="card-convex-sm flex-1 py-3.5 bg-slate-950 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all"
+                    class="h-11 rounded-2xl bg-slate-950 text-white text-xs font-black shadow-lg active:scale-95 transition-all"
                 >
-                    Прийняти
+                    ✅ Прийняти
                 </button>
 
                 <button
                     onclick="window.appAPI.openCancelModal('${booking.id}', 'admin')"
-                    class="card-convex-sm flex-1 py-3.5 bg-white text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-bold active:scale-95 transition-all border border-slate-200"
+                    class="h-11 rounded-2xl bg-white text-red-600 text-xs font-black border border-red-100 active:scale-95 transition-all"
                 >
-                    Відмовити
+                    ✕ Відмовити
                 </button>
             </div>
         `;
@@ -349,19 +410,19 @@ function renderAdminActions(booking) {
 
     if (booking.status === STATUS_CONFIRMED) {
         return `
-            <div class="flex gap-3 mt-4 pt-4 border-t border-slate-100">
+            <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100">
                 <button
                     onclick="window.appAPI.changeBookingStatus('${booking.id}', '${STATUS_DONE}')"
-                    class="card-convex-sm flex-1 py-3.5 bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg active:scale-95 transition-all"
+                    class="h-11 rounded-2xl bg-emerald-500 text-white text-xs font-black shadow-lg active:scale-95 transition-all"
                 >
-                    Виконано
+                    ✅ Виконано
                 </button>
 
                 <button
                     onclick="window.appAPI.openCancelModal('${booking.id}', 'admin')"
-                    class="card-convex-sm flex-1 py-3.5 bg-white text-red-600 hover:bg-red-50 rounded-xl text-sm font-bold active:scale-95 transition-all border border-red-100"
+                    class="h-11 rounded-2xl bg-white text-red-600 text-xs font-black border border-red-100 active:scale-95 transition-all"
                 >
-                    Скасувати
+                    ✕ Скасувати
                 </button>
             </div>
         `;
@@ -369,11 +430,11 @@ function renderAdminActions(booking) {
 
     if (isDoneBookingStatus(booking.status)) {
         return `
-            <div class="grid grid-cols-1 gap-3 mt-4 pt-4 border-t border-slate-100">
+            <div class="mt-3 pt-3 border-t border-slate-100">
                 <button
                     type="button"
                     onclick="window.appAPI.openWorkPhotosModalByBookingId('${booking.id}')"
-                    class="card-convex-sm py-3.5 bg-slate-950 text-white rounded-xl text-sm font-black shadow-lg active:scale-95 transition-all"
+                    class="w-full h-11 rounded-2xl bg-slate-950 text-white text-xs font-black shadow-lg active:scale-95 transition-all"
                 >
                     📸 Додати фото роботи
                 </button>
